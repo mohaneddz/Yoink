@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Yoink.Application/Yoink.Application.csproj" />
+    <Project Path="src/Yoink.Domain/Yoink.Domain.csproj" />
+    <Project Path="src/Yoink.Infrastructure/Yoink.Infrastructure.csproj" />
+    <Project Path="src/Yoink.Presentation/Yoink.Presentation.csproj" />
+    <Project Path="src/Yoink.Shared/Yoink.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Yoink.Tests/Yoink.Tests.csproj" />
+  </Folder>
+</Solution>
