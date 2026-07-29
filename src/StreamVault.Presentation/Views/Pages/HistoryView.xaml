@@ -93,7 +93,8 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Path Grid.Column="0" Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}" Margin="14,0,0,0"/>
-                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="10,12"/>
+                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="10,12"
+                             Tag="Search history by title, channel, or URL..."/>
                 </Grid>
             </Border>
             <Border Grid.Column="2" Style="{StaticResource Card}">

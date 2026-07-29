@@ -44,7 +44,8 @@
                             <Path Data="{StaticResource IconPlay}" Fill="White" Width="9" Height="9" Stretch="Uniform"/>
                         </Border>
                         <TextBox Grid.Column="1" Text="{Binding SourceUrl, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11" VerticalAlignment="Center"/>
+                                 Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11" VerticalAlignment="Center"
+                                 Tag="Paste a YouTube, Vimeo, or direct media URL..."/>
                         <Button Grid.Column="2" Style="{StaticResource IconButton}" Command="{Binding ClearSourceCommand}" Margin="0,0,6,0">
                             <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextMutedBrush}"/>
                         </Button>

@@ -48,7 +48,8 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Path Grid.Column="0" Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}" Margin="12,0,0,0"/>
-                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="10,11"/>
+                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="10,11"
+                             Tag="Search by title, channel, or tag..."/>
                 </Grid>
             </Border>
             <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0">

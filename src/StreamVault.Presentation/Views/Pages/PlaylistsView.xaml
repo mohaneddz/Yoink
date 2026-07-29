@@ -36,7 +36,8 @@
                         <Border Grid.Column="0" Background="#FFE8281E" Width="22" Height="16" Margin="12,0,10,0" VerticalAlignment="Center">
                             <Path Data="{StaticResource IconPlay}" Fill="White" Width="9" Height="9" Stretch="Uniform"/>
                         </Border>
-                        <TextBox Grid.Column="1" Text="{Binding PlaylistUrl}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11"/>
+                        <TextBox Grid.Column="1" Text="{Binding PlaylistUrl}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11"
+                                 Tag="Paste a playlist or channel URL..."/>
                     </Grid>
                 </Border>
                 <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0">
@@ -121,7 +122,8 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Path Grid.Column="0" Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextMutedBrush}" Margin="10,0,0,0"/>
-                                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="8,9"/>
+                                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="8,9"
+                                             Tag="Search videos..."/>
                                 </Grid>
                             </Border>
                         </StackPanel>
