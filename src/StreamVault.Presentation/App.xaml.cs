@@ -45,16 +45,17 @@ public partial class App : System.Windows.Application
         services.AddSingleton<InspectorViewModel>();
 
         services.AddTransient<DownloadViewModel>();
+        services.AddTransient<QueueViewModel>();
 
         services.AddSingleton<Func<AppPage, object>>(provider => page => page switch
         {
             AppPage.Download => provider.GetRequiredService<DownloadViewModel>(),
+            AppPage.Queue => provider.GetRequiredService<QueueViewModel>(),
             _ => new PlaceholderPageViewModel
             {
                 Title = page.ToString().ToUpperInvariant(),
                 Tagline = page switch
                 {
-                    AppPage.Queue => "MONITOR. CONTROL. PRIORITIZE.",
                     AppPage.Playlists => "BATCH. ORGANIZE. DOWNLOAD.",
                     AppPage.Channels => "FOLLOW. REVIEW. QUEUE.",
                     AppPage.Library => "BROWSE. SEARCH. MANAGE.",
