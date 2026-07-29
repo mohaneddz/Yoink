@@ -48,6 +48,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<QueueViewModel>();
         services.AddTransient<PlaylistsViewModel>();
         services.AddTransient<ChannelsViewModel>();
+        services.AddTransient<LibraryViewModel>();
 
         services.AddSingleton<Func<AppPage, object>>(provider => page => page switch
         {
@@ -55,6 +56,7 @@ public partial class App : System.Windows.Application
             AppPage.Queue => provider.GetRequiredService<QueueViewModel>(),
             AppPage.Playlists => provider.GetRequiredService<PlaylistsViewModel>(),
             AppPage.Channels => provider.GetRequiredService<ChannelsViewModel>(),
+            AppPage.Library => provider.GetRequiredService<LibraryViewModel>(),
             _ => new PlaceholderPageViewModel
             {
                 Title = page.ToString().ToUpperInvariant(),

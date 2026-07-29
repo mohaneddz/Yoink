@@ -1,0 +1,15 @@
+namespace StreamVault.Presentation.ViewModels.Models;
+
+public enum LibraryMediaFilter
+{
+    Video,
+    Audio,
+    Subtitles,
+    Thumbnails
+}
+
+public enum LibraryViewMode
+{
+    Grid,
+    List
+}
