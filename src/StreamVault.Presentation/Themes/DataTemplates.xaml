@@ -30,6 +30,14 @@
         <pages:LibraryView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type vm:HistoryViewModel}">
+        <pages:HistoryView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type models:HistoryRecord}">
+        <pages:HistoryRecordInspectorView/>
+    </DataTemplate>
+
     <!-- Inspector content template: shown in the shell's right panel when a queue job is selected. -->
     <DataTemplate DataType="{x:Type models:QueueJob}">
         <pages:QueueJobInspectorView/>

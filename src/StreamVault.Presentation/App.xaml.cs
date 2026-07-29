@@ -49,6 +49,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<PlaylistsViewModel>();
         services.AddTransient<ChannelsViewModel>();
         services.AddTransient<LibraryViewModel>();
+        services.AddTransient<HistoryViewModel>();
 
         services.AddSingleton<Func<AppPage, object>>(provider => page => page switch
         {
@@ -57,14 +58,12 @@ public partial class App : System.Windows.Application
             AppPage.Playlists => provider.GetRequiredService<PlaylistsViewModel>(),
             AppPage.Channels => provider.GetRequiredService<ChannelsViewModel>(),
             AppPage.Library => provider.GetRequiredService<LibraryViewModel>(),
+            AppPage.History => provider.GetRequiredService<HistoryViewModel>(),
             _ => new PlaceholderPageViewModel
             {
                 Title = page.ToString().ToUpperInvariant(),
                 Tagline = page switch
                 {
-                    AppPage.Channels => "FOLLOW. REVIEW. QUEUE.",
-                    AppPage.Library => "BROWSE. SEARCH. MANAGE.",
-                    AppPage.History => "REVIEW. RETRY. AUDIT.",
                     AppPage.Settings => "CONFIGURE. OPTIMIZE. CONTROL.",
                     _ => string.Empty
                 }
