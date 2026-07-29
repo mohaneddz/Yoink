@@ -1,0 +1,25 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## Test results
+[Tt]est[Rr]esult*/
+coverage/
+
+## Local runtime data (never commit user downloads, db, logs, tool binaries)
+tools/
+*.db
+*.db-shm
+*.db-wal
+logs/
+
+## OS
+Thumbs.db
+.DS_Store
