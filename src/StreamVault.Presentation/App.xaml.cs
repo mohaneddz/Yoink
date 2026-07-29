@@ -47,12 +47,14 @@ public partial class App : System.Windows.Application
         services.AddTransient<DownloadViewModel>();
         services.AddTransient<QueueViewModel>();
         services.AddTransient<PlaylistsViewModel>();
+        services.AddTransient<ChannelsViewModel>();
 
         services.AddSingleton<Func<AppPage, object>>(provider => page => page switch
         {
             AppPage.Download => provider.GetRequiredService<DownloadViewModel>(),
             AppPage.Queue => provider.GetRequiredService<QueueViewModel>(),
             AppPage.Playlists => provider.GetRequiredService<PlaylistsViewModel>(),
+            AppPage.Channels => provider.GetRequiredService<ChannelsViewModel>(),
             _ => new PlaceholderPageViewModel
             {
                 Title = page.ToString().ToUpperInvariant(),

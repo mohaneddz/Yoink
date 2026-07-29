@@ -22,6 +22,10 @@
         <pages:PlaylistsView/>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type vm:ChannelsViewModel}">
+        <pages:ChannelsView/>
+    </DataTemplate>
+
     <!-- Inspector content template: shown in the shell's right panel when a queue job is selected. -->
     <DataTemplate DataType="{x:Type models:QueueJob}">
         <pages:QueueJobInspectorView/>
