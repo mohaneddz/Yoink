@@ -1,0 +1,390 @@
+<UserControl x:Class="StreamVault.Presentation.Views.Pages.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:shared="clr-namespace:StreamVault.Presentation.Views.Shared"
+             xmlns:conv="clr-namespace:StreamVault.Presentation.Converters"
+             xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
+             xmlns:models="clr-namespace:StreamVault.Presentation.ViewModels.Models"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:SettingsViewModel}">
+
+    <UserControl.Resources>
+        <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
+        <conv:EnumEqualsToVisibilityConverter x:Key="EnumEqualsToVisibility"/>
+
+        <Style x:Key="SectionNavItem" TargetType="RadioButton">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="Bar" Grid.Column="0" Background="{StaticResource OrangePrimaryBrush}" Opacity="0"/>
+                            <ContentPresenter Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource OrangePrimaryBrush}"/>
+                                <Setter TargetName="Bar" Property="Opacity" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SegmentButton" TargetType="RadioButton" BasedOn="{StaticResource ChipToggleButton}">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="SettingTitle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style x:Key="SettingHint" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
+        <Style x:Key="CardSectionTitle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="40,0,40,24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <shared:PageHeaderView Grid.Row="0" HeaderTitle="SETTINGS" HeaderTagline="CONFIGURE. OPTIMIZE. CONTROL."/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="190"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="330"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Section nav -->
+            <StackPanel Grid.Column="0">
+                <RadioButton Style="{StaticResource SectionNavItem}" GroupName="Section" Content="GENERAL" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static models:SettingsSection.General}" IsChecked="{Binding SelectedSection, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=General, Mode=OneWay}"/>
+                <RadioButton Style="{StaticResource SectionNavItem}" GroupName="Section" Content="DOWNLOADS" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static models:SettingsSection.Downloads}" IsChecked="{Binding SelectedSection, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Downloads, Mode=OneWay}"/>
+                <RadioButton Style="{StaticResource SectionNavItem}" GroupName="Section" Content="FORMATS" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static models:SettingsSection.Formats}" IsChecked="{Binding SelectedSection, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Formats, Mode=OneWay}"/>
+                <RadioButton Style="{StaticResource SectionNavItem}" GroupName="Section" Content="NAMING" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static models:SettingsSection.Naming}" IsChecked="{Binding SelectedSection, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Naming, Mode=OneWay}"/>
+                <RadioButton Style="{StaticResource SectionNavItem}" GroupName="Section" Content="NETWORK" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static models:SettingsSection.Network}" IsChecked="{Binding SelectedSection, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Network, Mode=OneWay}"/>
+                <RadioButton Style="{StaticResource SectionNavItem}" GroupName="Section" Content="INTEGRATIONS" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static models:SettingsSection.Integrations}" IsChecked="{Binding SelectedSection, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Integrations, Mode=OneWay}"/>
+                <RadioButton Style="{StaticResource SectionNavItem}" GroupName="Section" Content="APPEARANCE" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static models:SettingsSection.Appearance}" IsChecked="{Binding SelectedSection, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Appearance, Mode=OneWay}"/>
+                <RadioButton Style="{StaticResource SectionNavItem}" GroupName="Section" Content="ADVANCED" Command="{Binding SelectSectionCommand}" CommandParameter="{x:Static models:SettingsSection.Advanced}" IsChecked="{Binding SelectedSection, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Advanced, Mode=OneWay}"/>
+            </StackPanel>
+
+            <!-- Main content -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+              <Grid>
+                <StackPanel Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=General}">
+                    <Border Style="{StaticResource Card}" Padding="20" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="GENERAL" Style="{StaticResource CardSectionTitle}"/>
+
+                            <Grid Margin="0,0,0,16">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="Default download folder" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Where new downloads are saved by default." Style="{StaticResource SettingHint}"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,-6,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding DefaultDownloadFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Command="{Binding BrowseCommand}" Padding="14,11" FontSize="12" Content="BROWSE"/>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,6">
+                                <TextBlock Text="Simultaneous downloads" Style="{StaticResource SettingTitle}"/>
+                            </Grid>
+                            <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding SimultaneousDownloads}" IsEditable="True" IsReadOnly="True" Margin="0,0,0,16"/>
+
+                            <TextBlock Text="Download speed limit" Style="{StaticResource SettingTitle}" Margin="0,0,0,6"/>
+                            <TextBlock Text="Throttle total download speed (0 = unlimited)." Style="{StaticResource SettingHint}" Margin="0,-4,0,6"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding DownloadSpeedLimit}" IsEditable="True" IsReadOnly="True" Margin="0,0,0,20"/>
+
+                            <TextBlock Text="NOTIFICATIONS" Style="{StaticResource CardSectionTitle}"/>
+                            <Grid Margin="0,0,0,14">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="Desktop notifications" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Show notifications on download events." Style="{StaticResource SettingHint}"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding DesktopNotifications}" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,20">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="Sound notifications" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Play a sound when downloads complete." Style="{StaticResource SettingHint}"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding SoundNotifications}" HorizontalAlignment="Right"/>
+                            </Grid>
+
+                            <TextBlock Text="PREFERRED CONTAINERS" Style="{StaticResource CardSectionTitle}"/>
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0" Style="{StaticResource FieldComboBox}" Text="{Binding PreferredVideoContainer}" IsEditable="True" IsReadOnly="True"/>
+                                <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" Text="{Binding PreferredAudioContainer}" IsEditable="True" IsReadOnly="True"/>
+                            </Grid>
+
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="PREFERRED VIDEO QUALITY" Style="{StaticResource FieldLabel}"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding PreferredVideoQuality}" IsEditable="True" IsReadOnly="True"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="PREFERRED AUDIO QUALITY" Style="{StaticResource FieldLabel}"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding PreferredAudioQuality}" IsEditable="True" IsReadOnly="True"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="DEFAULT SUBTITLES" Style="{StaticResource FieldLabel}"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding DefaultSubtitles}" IsEditable="True" IsReadOnly="True"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="FILENAME TEMPLATE" Style="{StaticResource SettingTitle}"/>
+                            <TextBlock Text="Customize how downloaded files are named." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding FilenameTemplate}" Style="{StaticResource FieldTextBox}"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="13,11">
+                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}"/>
+                                </Button>
+                            </Grid>
+
+                            <TextBlock Text="TOOLS &amp; PATHS" Style="{StaticResource CardSectionTitle}"/>
+                            <TextBlock Text="Proxy (optional)" Style="{StaticResource SettingTitle}"/>
+                            <TextBlock Text="Leave blank to use system proxy settings." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding Proxy}" Style="{StaticResource FieldTextBox}" Margin="0,0,0,16" Tag="http://user:pass@proxy.example.com:8080"/>
+
+                            <TextBlock Text="Cookies file (optional)" Style="{StaticResource SettingTitle}"/>
+                            <TextBlock Text="Use cookies for age-restricted content." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding CookiesFile}" Style="{StaticResource FieldTextBox}"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE"/>
+                            </Grid>
+
+                            <TextBlock Text="yt-dlp path" Style="{StaticResource SettingTitle}"/>
+                            <TextBlock Text="Path to yt-dlp executable." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding YtDlpPath}" Style="{StaticResource FieldTextBox}"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE"/>
+                            </Grid>
+
+                            <TextBlock Text="FFmpeg path" Style="{StaticResource SettingTitle}"/>
+                            <TextBlock Text="Path to FFmpeg executable." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding FfmpegPath}" Style="{StaticResource FieldTextBox}"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Other sections: not yet detailed in the mockup; shown as a lightweight placeholder until wired to real settings storage. -->
+                <Border Style="{StaticResource Card}" Padding="30"
+                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Downloads}">
+                    <TextBlock Text="Downloads settings coming soon." Style="{StaticResource MetaText}"/>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="30"
+                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Formats}">
+                    <TextBlock Text="Formats settings coming soon." Style="{StaticResource MetaText}"/>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="30"
+                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Naming}">
+                    <TextBlock Text="Naming settings coming soon." Style="{StaticResource MetaText}"/>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="30"
+                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Network}">
+                    <TextBlock Text="Network settings coming soon." Style="{StaticResource MetaText}"/>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="30"
+                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Integrations}">
+                    <TextBlock Text="Integrations settings coming soon." Style="{StaticResource MetaText}"/>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="30"
+                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Appearance}">
+                    <TextBlock Text="Appearance settings coming soon." Style="{StaticResource MetaText}"/>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="30"
+                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Advanced}">
+                    <TextBlock Text="Advanced settings coming soon." Style="{StaticResource MetaText}"/>
+                </Border>
+              </Grid>
+            </ScrollViewer>
+
+            <!-- Right column -->
+            <StackPanel Grid.Column="4">
+                <Border Style="{StaticResource Card}" Padding="18" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="SYSTEM INFO" Style="{StaticResource CardSectionTitle}"/>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="StreamVault Version" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding AppVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
+                                <Border Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2"><TextBlock Text="LATEST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="yt-dlp Version" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding YtDlpVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
+                                <Border Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2"><TextBlock Text="LATEST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <TextBlock Text="FFmpeg" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding FfmpegVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
+                                <Border Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2"><TextBlock Text="OK" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Margin="0,0,0,14">
+                            <TextBlock Text="Last Checked" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
+                            <TextBlock Text="{Binding LastChecked}" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Right"/>
+                        </Grid>
+                        <Button Style="{StaticResource SecondaryButton}" Padding="12,11" Command="{Binding CheckUpdatesCommand}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="CHECK UPDATES" FontWeight="Bold" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="18" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="STORAGE LOCATIONS" Style="{StaticResource CardSectionTitle}"/>
+                        <TextBlock Text="Downloads" Style="{StaticResource SettingTitle}" FontSize="12"/>
+                        <TextBlock Text="{Binding DownloadsPath}" Style="{StaticResource MetaText}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,12"/>
+                        <TextBlock Text="Temp Files" Style="{StaticResource SettingTitle}" FontSize="12"/>
+                        <TextBlock Text="{Binding TempPath}" Style="{StaticResource MetaText}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,12"/>
+                        <TextBlock Text="Cache" Style="{StaticResource SettingTitle}" FontSize="12"/>
+                        <TextBlock Text="{Binding CachePath}" Style="{StaticResource MetaText}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,14"/>
+                        <Button Style="{StaticResource SecondaryButton}" Padding="12,11" Command="{Binding ManageStorageCommand}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="MANAGE STORAGE" FontWeight="Bold" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="18" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="APPEARANCE" Style="{StaticResource CardSectionTitle}"/>
+                        <TextBlock Text="Theme" Style="{StaticResource SettingTitle}" FontSize="12" Margin="0,0,0,8"/>
+                        <UniformGrid Columns="3" Margin="0,0,0,14">
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="Theme" Content="LIGHT" Command="{Binding SetThemeCommand}" CommandParameter="Light" IsChecked="{Binding Theme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Light, Mode=OneWay}"/>
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="Theme" Content="DARK" Command="{Binding SetThemeCommand}" CommandParameter="Dark" IsChecked="{Binding Theme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Dark, Mode=OneWay}"/>
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="Theme" Content="SYSTEM" Command="{Binding SetThemeCommand}" CommandParameter="System" IsChecked="{Binding Theme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=System, Mode=OneWay}"/>
+                        </UniformGrid>
+                        <TextBlock Text="Density" Style="{StaticResource SettingTitle}" FontSize="12" Margin="0,0,0,8"/>
+                        <UniformGrid Columns="2">
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="Density" Content="COMFORTABLE" Command="{Binding SetDensityCommand}" CommandParameter="Comfortable" IsChecked="{Binding Density, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Comfortable, Mode=OneWay}"/>
+                            <RadioButton Style="{StaticResource SegmentButton}" GroupName="Density" Content="COMPACT" Command="{Binding SetDensityCommand}" CommandParameter="Compact" IsChecked="{Binding Density, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Compact, Mode=OneWay}"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="18">
+                    <StackPanel>
+                        <TextBlock Text="ADVANCED" Style="{StaticResource CardSectionTitle}"/>
+                        <Grid Margin="0,0,0,14">
+                            <StackPanel HorizontalAlignment="Left" MaxWidth="180">
+                                <TextBlock Text="Diagnostic logging" Style="{StaticResource SettingTitle}" FontSize="12"/>
+                                <TextBlock Text="Collect detailed logs for troubleshooting." Style="{StaticResource SettingHint}" FontSize="10.5"/>
+                            </StackPanel>
+                            <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding DiagnosticLogging}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                        </Grid>
+                        <Grid Margin="0,0,0,14">
+                            <StackPanel HorizontalAlignment="Left" MaxWidth="180">
+                                <TextBlock Text="Verbose output" Style="{StaticResource SettingTitle}" FontSize="12"/>
+                                <TextBlock Text="Show detailed output in logs." Style="{StaticResource SettingHint}" FontSize="10.5"/>
+                            </StackPanel>
+                            <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding VerboseOutput}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                        </Grid>
+                        <Button Style="{StaticResource SecondaryButton}" Padding="12,11" Command="{Binding ViewLogsCommand}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="VIEW LOGS" FontWeight="Bold" FontSize="12"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Bottom actions -->
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource PrimaryButton}" Padding="22,13" Command="{Binding SaveChangesCommand}" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconCheck}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
+                        <TextBlock Text="SAVE CHANGES"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource SecondaryButton}" Padding="22,12" Command="{Binding RevertCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconRotateCcw}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="REVERT" FontWeight="Bold"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+            <Button Style="{StaticResource DestructiveButton}" HorizontalAlignment="Right" Padding="22,12" Command="{Binding ResetDefaultsCommand}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource ErrorBrush}" Margin="0,0,8,0"/>
+                    <TextBlock Text="RESET DEFAULTS" FontWeight="Bold"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Grid>
+</UserControl>

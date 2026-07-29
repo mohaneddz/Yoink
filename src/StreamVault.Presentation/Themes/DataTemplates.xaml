@@ -2,14 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
                     xmlns:models="clr-namespace:StreamVault.Presentation.ViewModels.Models"
-                    xmlns:shell="clr-namespace:StreamVault.Presentation.Views.Shell"
                     xmlns:pages="clr-namespace:StreamVault.Presentation.Views.Pages">
 
     <!-- Maps each page view model to its view for the shell's ViewModel-first navigation. -->
-    <DataTemplate DataType="{x:Type vm:PlaceholderPageViewModel}">
-        <shell:PlaceholderPageView/>
-    </DataTemplate>
-
     <DataTemplate DataType="{x:Type vm:DownloadViewModel}">
         <pages:DownloadView/>
     </DataTemplate>
@@ -36,6 +31,10 @@
 
     <DataTemplate DataType="{x:Type models:HistoryRecord}">
         <pages:HistoryRecordInspectorView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+        <pages:SettingsView/>
     </DataTemplate>
 
     <!-- Inspector content template: shown in the shell's right panel when a queue job is selected. -->
