@@ -1,0 +1,11 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
+                    xmlns:shell="clr-namespace:StreamVault.Presentation.Views.Shell">
+
+    <!-- Maps each page view model to its view for the shell's ViewModel-first navigation. -->
+    <DataTemplate DataType="{x:Type vm:PlaceholderPageViewModel}">
+        <shell:PlaceholderPageView/>
+    </DataTemplate>
+
+</ResourceDictionary>

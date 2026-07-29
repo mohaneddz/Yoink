@@ -1,0 +1,16 @@
+<UserControl x:Class="StreamVault.Presentation.Views.Shell.PlaceholderPageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Background="{StaticResource SurfacePrimaryBrush}" Margin="40">
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleText}"/>
+                <TextBlock Text="{Binding Tagline}" Style="{StaticResource PageTaglineText}"
+                           Margin="24,0,0,18" VerticalAlignment="Bottom"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>
