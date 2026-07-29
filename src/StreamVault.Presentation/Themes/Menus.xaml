@@ -10,7 +10,7 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="0,5"/>
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
-        <Setter Property="HasDropShadow" Value="True"/>
+        <Setter Property="HasDropShadow" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContextMenu">
@@ -88,7 +88,7 @@
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="Padding" Value="10,6"/>
-        <Setter Property="HasDropShadow" Value="True"/>
+        <Setter Property="HasDropShadow" Value="False"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">

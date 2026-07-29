@@ -229,7 +229,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource IconButton}" Width="22" Height="22"
+                                    <Button Style="{StaticResource IconButton}" Width="22" Height="22" ToolTip="Pause / resume"
                                             Command="{Binding DataContext.ToggleJobCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}">
                                         <Path Data="{Binding Status, Converter={StaticResource ActionIconConverter}}"
@@ -250,13 +250,13 @@
         <Grid Grid.Row="4" Margin="0,12,0,0">
             <TextBlock Text="{Binding Jobs.Count, StringFormat={}{0} items}" Style="{StaticResource MetaText}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Style="{StaticResource IconButton}">
+                <Button Style="{StaticResource IconButton}" ToolTip="Previous page">
                     <Path Data="{StaticResource IconChevronLeft}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextMutedBrush}"/>
                 </Button>
                 <Border Background="{StaticResource OrangePrimaryBrush}" Width="28" Height="28" Margin="4,0">
                     <TextBlock Text="1" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
-                <Button Style="{StaticResource IconButton}">
+                <Button Style="{StaticResource IconButton}" ToolTip="Next page">
                     <Path Data="{StaticResource IconChevronRight}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextMutedBrush}"/>
                 </Button>
             </StackPanel>

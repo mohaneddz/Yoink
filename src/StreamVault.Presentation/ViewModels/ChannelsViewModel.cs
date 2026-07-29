@@ -30,6 +30,14 @@ public partial class ChannelsViewModel : ObservableObject
     [RelayCommand]
     private void SelectChannel(SavedChannel channel) => SelectedChannel = channel;
 
+    partial void OnSelectedChannelChanged(SavedChannel? value)
+    {
+        foreach (var c in Channels)
+        {
+            c.IsSelected = c == value;
+        }
+    }
+
     public int SelectedUploadCount => Uploads.Count(u => u.IsSelected);
 
     [RelayCommand] private void AddChannel() { }

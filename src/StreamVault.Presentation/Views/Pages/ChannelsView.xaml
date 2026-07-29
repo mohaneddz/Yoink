@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:shared="clr-namespace:StreamVault.Presentation.Views.Shared"
              xmlns:conv="clr-namespace:StreamVault.Presentation.Converters"
+             xmlns:controls="clr-namespace:StreamVault.Presentation.Controls"
              xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:ChannelsViewModel}">
 
@@ -19,7 +20,52 @@
             <Setter Property="Padding" Value="14"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}"/>
+                </Trigger>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource RowSelectedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource OrangePrimaryBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
+
+        <Style x:Key="UploadRowItem" TargetType="Border">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Padding" Value="8,12"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Per-upload actions. PlacementTarget.Tag carries the page VM. -->
+        <ContextMenu x:Key="UploadRowMenu">
+            <MenuItem Header="Download"
+                      Command="{Binding PlacementTarget.Tag.DownloadLatestCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Add to queue"
+                      Command="{Binding PlacementTarget.Tag.AddSelectedToQueueCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Open channel"
+                      Command="{Binding PlacementTarget.Tag.OpenChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconExternalLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
     </UserControl.Resources>
 
     <Grid Margin="40,0,40,24">
@@ -174,7 +220,9 @@
                     <ItemsControl ItemsSource="{Binding DataContext.Uploads, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,0,0,1" Padding="0,12">
+                                <Border Style="{StaticResource UploadRowItem}"
+                                        Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        ContextMenu="{StaticResource UploadRowMenu}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -199,7 +247,10 @@
                                                 <TextBlock Text="{Binding Type, Converter={StaticResource UploadTypeConverter}, ConverterParameter=label}" FontSize="10" FontWeight="Bold"
                                                            Foreground="{Binding Type, Converter={StaticResource UploadTypeConverter}, ConverterParameter=fg}"/>
                                             </Border>
-                                            <Button Style="{StaticResource IconButton}" Width="26" Height="26">
+                                            <Button Style="{StaticResource IconButton}" Width="26" Height="26" ToolTip="More actions"
+                                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    ContextMenu="{StaticResource UploadRowMenu}"
+                                                    controls:ButtonBehaviors.OpensContextMenu="True">
                                                 <Path Data="{StaticResource IconMoreVertical}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextMutedBrush}"/>
                                             </Button>
                                         </StackPanel>

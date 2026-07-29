@@ -5,6 +5,7 @@ namespace StreamVault.Presentation.ViewModels.Models;
 /// <summary>A saved channel row/detail (spec section 7.4).</summary>
 public partial class SavedChannel : ObservableObject
 {
+    [ObservableProperty] private bool _isSelected;
     [ObservableProperty] private string _avatarHex = "#FFFF4F0A";
     [ObservableProperty] private string _initial = "S";
     [ObservableProperty] private string _name = string.Empty;

@@ -21,6 +21,35 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
         </Style>
+
+        <Style x:Key="LibraryCard" TargetType="Border">
+            <Setter Property="Width" Value="190"/>
+            <Setter Property="Margin" Value="0,0,14,14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}"/>
+                </Trigger>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource OrangePrimaryBrush}"/>
+                    <Setter Property="BorderThickness" Value="1.5"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="LibraryListRow" TargetType="Border">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="40,0,40,24">
@@ -140,7 +169,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Width="190" Margin="0,0,14,14" Cursor="Hand">
+                                <Border Style="{StaticResource LibraryCard}">
                                     <Border.InputBindings>
                                         <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.SelectItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
                                     </Border.InputBindings>
@@ -152,7 +181,7 @@
                                                 <TextBlock Text="{Binding DurationText}" Foreground="White" FontSize="10" FontWeight="SemiBold"/>
                                             </Border>
                                         </Grid>
-                                        <Border Background="White" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1,0,1,1" Padding="10">
+                                        <Border Background="White" BorderBrush="{StaticResource DividerBrush}" BorderThickness="0,1,0,0" Padding="10">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="12.5" TextWrapping="Wrap" Margin="0,0,0,4"/>
                                                 <TextBlock Text="{Binding Channel}" Style="{StaticResource MetaText}" FontSize="11" Margin="0,0,0,6"/>
@@ -176,20 +205,22 @@
                         <ItemsControl ItemsSource="{Binding Playlists}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Margin="16,12" Height="32">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Width="32" Height="32" Background="{StaticResource SurfaceSecondaryBrush}" Margin="0,0,12,0">
-                                            <Path Data="{Binding IconKey, Converter={StaticResource StringToGeometry}}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}"/>
-                                        </Border>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding ItemCountText}" Style="{StaticResource MetaText}" VerticalAlignment="Center" Margin="0,0,24,0"/>
-                                        <TextBlock Grid.Column="3" Text="{Binding UpdatedText}" Style="{StaticResource MetaText}" VerticalAlignment="Center"/>
-                                    </Grid>
+                                    <Border Style="{StaticResource LibraryListRow}">
+                                        <Grid Height="32">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Width="32" Height="32" Background="{StaticResource SurfaceSecondaryBrush}" Margin="0,0,12,0">
+                                                <Path Data="{Binding IconKey, Converter={StaticResource StringToGeometry}}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ItemCountText}" Style="{StaticResource MetaText}" VerticalAlignment="Center" Margin="0,0,24,0"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding UpdatedText}" Style="{StaticResource MetaText}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -202,18 +233,20 @@
                         <ItemsControl ItemsSource="{Binding Channels}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Margin="16,12" Height="32">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Ellipse Grid.Column="0" Width="32" Height="32" Fill="{StaticResource OrangePrimaryBrush}" Margin="0,0,12,0"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding ItemCountText}" Style="{StaticResource MetaText}" VerticalAlignment="Center" Margin="0,0,24,0"/>
-                                        <TextBlock Grid.Column="3" Text="{Binding UpdatedText}" Style="{StaticResource MetaText}" VerticalAlignment="Center"/>
-                                    </Grid>
+                                    <Border Style="{StaticResource LibraryListRow}">
+                                        <Grid Height="32">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Ellipse Grid.Column="0" Width="32" Height="32" Fill="{StaticResource OrangePrimaryBrush}" Margin="0,0,12,0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding ItemCountText}" Style="{StaticResource MetaText}" VerticalAlignment="Center" Margin="0,0,24,0"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding UpdatedText}" Style="{StaticResource MetaText}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

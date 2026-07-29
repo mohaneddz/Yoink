@@ -46,7 +46,7 @@
                         <TextBox Grid.Column="1" Text="{Binding SourceUrl, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11" VerticalAlignment="Center"
                                  Tag="Paste a YouTube, Vimeo, or direct media URL..."/>
-                        <Button Grid.Column="2" Style="{StaticResource IconButton}" Command="{Binding ClearSourceCommand}" Margin="0,0,6,0">
+                        <Button Grid.Column="2" Style="{StaticResource IconButton}" Command="{Binding ClearSourceCommand}" Margin="0,0,6,0" ToolTip="Clear">
                             <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextMutedBrush}"/>
                         </Button>
                     </Grid>
@@ -286,7 +286,7 @@
                     <StackPanel>
                         <Grid Margin="18,16">
                             <TextBlock Text="AVAILABLE STREAMS" Style="{StaticResource SectionTitleText}" HorizontalAlignment="Left"/>
-                            <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Command="{Binding RefreshStreamsCommand}">
+                            <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Command="{Binding RefreshStreamsCommand}" ToolTip="Refresh streams">
                                 <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource TextMutedBrush}"/>
                             </Button>
                         </Grid>
