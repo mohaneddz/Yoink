@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:shared="clr-namespace:StreamVault.Presentation.Views.Shared"
              xmlns:conv="clr-namespace:StreamVault.Presentation.Converters"
+             xmlns:controls="clr-namespace:StreamVault.Presentation.Controls"
              xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:HistoryViewModel}">
 
@@ -29,6 +30,41 @@
             <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Right-click menu for history rows. Commands act on the selected record
+             (right-click selects the row via controls:DataGridBehaviors.SelectRowOnRightClick). -->
+        <ContextMenu x:Key="HistoryRowMenu">
+            <MenuItem Header="Retry this download"
+                      Command="{Binding PlacementTarget.Tag.RetrySelectedCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconRotateCcw}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Reuse settings"
+                      Command="{Binding PlacementTarget.Tag.ReuseSettingsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconSliders}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Open output folder"
+                      Command="{Binding PlacementTarget.Tag.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Copy source URL"
+                      Command="{Binding PlacementTarget.Tag.CopySourceUrlCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+
+        <Style x:Key="HistoryRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}">
+            <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+            <Setter Property="ContextMenu" Value="{StaticResource HistoryRowMenu}"/>
         </Style>
     </UserControl.Resources>
 
@@ -143,7 +179,8 @@
         </StackPanel>
 
         <Border Grid.Row="4" Style="{StaticResource Card}" Padding="0">
-            <DataGrid ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord}" Style="{StaticResource FlatDataGrid}" FontSize="11.5">
+            <DataGrid ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord}" Style="{StaticResource FlatDataGrid}"
+                      RowStyle="{StaticResource HistoryRowStyle}" controls:DataGridBehaviors.SelectRowOnRightClick="True" FontSize="11.5">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
                         <Setter Property="FontSize" Value="10"/>

@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:shared="clr-namespace:StreamVault.Presentation.Views.Shared"
              xmlns:conv="clr-namespace:StreamVault.Presentation.Converters"
+             xmlns:controls="clr-namespace:StreamVault.Presentation.Controls"
              xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
              xmlns:models="clr-namespace:StreamVault.Presentation.ViewModels.Models"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:QueueViewModel}">
@@ -25,6 +26,45 @@
         <Style x:Key="ToolbarButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="Padding" Value="16,10"/>
             <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Right-click menu for queue rows. PlacementTarget.Tag carries the page VM;
+             PlacementTarget.DataContext is the QueueJob for this row. -->
+        <ContextMenu x:Key="QueueRowMenu">
+            <MenuItem Header="Resume"
+                      Command="{Binding PlacementTarget.Tag.ResumeJobCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconPlay}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Pause"
+                      Command="{Binding PlacementTarget.Tag.PauseJobCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconPause}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Retry"
+                      Command="{Binding PlacementTarget.Tag.RetryJobCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Remove from queue" Style="{StaticResource DestructiveMenuItem}"
+                      Command="{Binding PlacementTarget.Tag.RemoveJobCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconTrash}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource ErrorBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+
+        <Style x:Key="QueueRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource DataGridRowStyle}">
+            <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+            <Setter Property="ContextMenu" Value="{StaticResource QueueRowMenu}"/>
         </Style>
     </UserControl.Resources>
 
@@ -122,7 +162,8 @@
         <!-- Job table -->
         <Border Grid.Row="3" Style="{StaticResource Card}" Padding="0">
             <DataGrid ItemsSource="{Binding FilteredJobs}" SelectedItem="{Binding SelectedJob}"
-                      Style="{StaticResource FlatDataGrid}" FontSize="11" ColumnHeaderHeight="28">
+                      Style="{StaticResource FlatDataGrid}" RowStyle="{StaticResource QueueRowStyle}"
+                      controls:DataGridBehaviors.SelectRowOnRightClick="True" FontSize="11" ColumnHeaderHeight="28">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
                         <Setter Property="FontSize" Value="9"/>
@@ -194,7 +235,7 @@
                                         <Path Data="{Binding Status, Converter={StaticResource ActionIconConverter}}"
                                               Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextMutedBrush}"/>
                                     </Button>
-                                    <Button Style="{StaticResource IconButton}" Width="22" Height="22">
+                                    <Button Style="{StaticResource IconButton}" Width="22" Height="22" Click="RowMenuButton_Click" ToolTip="More actions">
                                         <Path Data="{StaticResource IconMoreVertical}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextMutedBrush}"/>
                                     </Button>
                                 </StackPanel>

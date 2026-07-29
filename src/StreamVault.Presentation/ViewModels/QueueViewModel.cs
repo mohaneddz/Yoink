@@ -90,6 +90,11 @@ public partial class QueueViewModel : ObservableObject
         RefreshCounts();
     }
 
+    [RelayCommand] private void PauseJob(QueueJob job) { job.Status = QueueJobStatus.Paused; RefreshCounts(); }
+    [RelayCommand] private void ResumeJob(QueueJob job) { job.Status = QueueJobStatus.DownloadingVideo; RefreshCounts(); }
+    [RelayCommand] private void RetryJob(QueueJob job) { job.Status = QueueJobStatus.Retrying; RefreshCounts(); }
+    [RelayCommand] private void RemoveJob(QueueJob job) { Jobs.Remove(job); RefreshCounts(); }
+
     [RelayCommand]
     private void ResumeSelected()
     {

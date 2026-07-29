@@ -8,6 +8,7 @@
         xmlns:nav="clr-namespace:StreamVault.Presentation.Navigation"
         mc:Ignorable="d"
         Title="StreamVault" Height="960" Width="1440" MinHeight="640" MinWidth="1080"
+        Icon="app.ico"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" ResizeMode="CanResize"
         Background="{StaticResource SurfacePrimaryBrush}"

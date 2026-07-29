@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Resource Include="Themes\Fonts\BebasNeue-Regular.ttf" />
+    <Resource Include="app.ico" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -26,6 +27,7 @@
     <AssemblyName>StreamVault</AssemblyName>
     <RootNamespace>StreamVault.Presentation</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
     <Product>StreamVault</Product>
     <Company>StreamVault</Company>
   </PropertyGroup>
