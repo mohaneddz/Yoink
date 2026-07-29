@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Yoink.Domain\Yoink.Domain.csproj" />
+    <ProjectReference Include="..\Yoink.Application\Yoink.Application.csproj" />
+    <ProjectReference Include="..\Yoink.Infrastructure\Yoink.Infrastructure.csproj" />
+    <ProjectReference Include="..\Yoink.Shared\Yoink.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Themes\Fonts\BebasNeue-Regular.ttf" />
+    <Resource Include="app.ico" />
+    <!-- Compiled into the app and referenced from XAML -->
+    <Resource Include="Assets\yoink_wordmark.png" />
+    <Resource Include="Assets\yoink_sidebar_icon.png" />
+    <!-- Source master art (not compiled): app-icon tiles feed app.ico; full wordmark feeds the trimmed wordmark -->
+    <None Include="Assets\yoink_app_icon_dark.png" />
+    <None Include="Assets\yoink_app_icon_light.png" />
+    <None Include="Assets\yoink_title_logo.png" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Yoink</AssemblyName>
+    <RootNamespace>Yoink.Presentation</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Product>Yoink</Product>
+    <Company>Yoink</Company>
+    <Authors>Yoink</Authors>
+    <Description>A modern desktop media downloader powered by yt-dlp and FFmpeg.</Description>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Copyright>Copyright © 2026 Yoink</Copyright>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+</Project>

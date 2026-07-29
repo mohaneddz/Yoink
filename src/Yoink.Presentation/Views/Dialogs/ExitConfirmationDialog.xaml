@@ -1,0 +1,37 @@
+<Window x:Class="Yoink.Presentation.Views.Dialogs.ExitConfirmationDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Yoink" Height="290" Width="460"
+        WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource SurfacePrimaryBrush}"
+        FontFamily="{StaticResource InterfaceFont}">
+    <Border BorderBrush="{StaticResource DividerBrush}" BorderThickness="1">
+        <Grid Margin="28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" x:Name="HeadlineText" Text="DOWNLOADS ARE STILL ACTIVE"
+                       FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                       TextWrapping="Wrap" Margin="0,0,0,10"/>
+            <TextBlock Grid.Row="1" Text="Closing now will stop them. Choose how you'd like to proceed."
+                       FontSize="13" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap"/>
+
+            <StackPanel Grid.Row="3">
+                <Button Style="{StaticResource PrimaryButton}" Padding="18,13" Margin="0,0,0,10"
+                        Click="PauseAndExit_Click" Content="PAUSE AND EXIT"/>
+                <Button Style="{StaticResource DestructiveButton}" Padding="18,12" Margin="0,0,0,10"
+                        Click="CancelDownloadsAndExit_Click" Content="CANCEL DOWNLOADS AND EXIT"/>
+                <Button Style="{StaticResource SecondaryButton}" Padding="18,12"
+                        Click="Return_Click" Content="RETURN" IsCancel="True"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
