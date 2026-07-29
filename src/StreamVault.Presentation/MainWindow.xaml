@@ -129,7 +129,7 @@
         <Border Grid.Row="2" Background="{StaticResource AppShellBrush}" BorderBrush="#FF1A1A1A" BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" Margin="24,0">
 
-                <Button Style="{StaticResource IconButton}" Height="64" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Queue}">
+                <Button Style="{StaticResource PlainHoverButton}" Height="64" Padding="0" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Queue}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextMutedBrush}"/>
                         <StackPanel Margin="10,0,0,0">
@@ -151,7 +151,7 @@
 
                 <Border Width="1" Background="#FF1A1A1A" Margin="24,18"/>
 
-                <Button Style="{StaticResource IconButton}" Height="64" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Queue}">
+                <Button Style="{StaticResource PlainHoverButton}" Height="64" Padding="0" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Queue}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextMutedBrush}"/>
                         <StackPanel Margin="10,0,0,0">
@@ -163,7 +163,7 @@
 
                 <Border Width="1" Background="#FF1A1A1A" Margin="24,18"/>
 
-                <Button Style="{StaticResource IconButton}" Height="64" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Settings}">
+                <Button Style="{StaticResource PlainHoverButton}" Height="64" Padding="0" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Settings}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconHardDrive}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextMutedBrush}"/>
                         <StackPanel Margin="10,0,0,0">

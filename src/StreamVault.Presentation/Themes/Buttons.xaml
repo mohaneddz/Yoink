@@ -45,12 +45,33 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="Bg" Background="{TemplateBinding Background}"
-                            BorderBrush="{StaticResource DividerColor}" BorderThickness="1" SnapsToDevicePixels="True">
+                            BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bg" Property="Background" Value="{StaticResource SurfaceSecondaryBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Plain hover-highlight button that sizes to its content, e.g. clickable status-strip clusters -->
+    <Style x:Key="PlainHoverButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bg" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="#FF141414"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -129,7 +150,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Border x:Name="Bg" Background="{TemplateBinding Background}"
-                            BorderBrush="{StaticResource DividerColor}" BorderThickness="1">
+                            BorderBrush="{StaticResource DividerBrush}" BorderThickness="1">
                         <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>

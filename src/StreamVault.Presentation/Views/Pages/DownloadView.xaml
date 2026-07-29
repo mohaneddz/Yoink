@@ -1,0 +1,358 @@
+<UserControl x:Class="StreamVault.Presentation.Views.Pages.DownloadView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:shared="clr-namespace:StreamVault.Presentation.Views.Shared"
+             xmlns:conv="clr-namespace:StreamVault.Presentation.Converters"
+             xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:DownloadViewModel}">
+
+    <UserControl.Resources>
+        <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
+        <conv:EnumEqualsToVisibilityConverter x:Key="EnumEqualsToVisibilityConverter"/>
+        <conv:BoolToOnOffConverter x:Key="OnOffConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+        <Style x:Key="FieldStack" TargetType="StackPanel">
+            <Setter Property="Margin" Value="0,0,16,16"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,0,40,24">
+        <StackPanel>
+
+            <shared:PageHeaderView HeaderTitle="DOWNLOAD" HeaderTagline="PASTE. INSPECT. DOWNLOAD."/>
+
+            <!-- Source bar -->
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="130"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="230"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="#FFE8281E" Width="22" Height="16" Margin="12,0,10,0" VerticalAlignment="Center">
+                            <Path Data="{StaticResource IconPlay}" Fill="White" Width="9" Height="9" Stretch="Uniform"/>
+                        </Border>
+                        <TextBox Grid.Column="1" Text="{Binding SourceUrl, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11" VerticalAlignment="Center"/>
+                        <Button Grid.Column="2" Style="{StaticResource IconButton}" Command="{Binding ClearSourceCommand}" Margin="0,0,6,0">
+                            <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextMutedBrush}"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
+                        <TextBlock Text="PASTE"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Command="{Binding InspectCommand}" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="INSPECT" FontWeight="Bold"/>
+                    </StackPanel>
+                </Button>
+
+                <Border Grid.Column="3" Style="{StaticResource Card}" Padding="14,8">
+                    <StackPanel>
+                        <TextBlock Text="TYPE DETECTED" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Background="#FFE8281E" Width="18" Height="13" Margin="0,0,8,0">
+                                <Path Data="{StaticResource IconPlay}" Fill="White" Width="7" Height="7" Stretch="Uniform"/>
+                            </Border>
+                            <TextBlock Text="{Binding DetectedType}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="15" Height="15"
+                                  Stroke="{StaticResource SuccessBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Media preview -->
+            <Border Style="{StaticResource Card}" Padding="20" Margin="0,0,0,20" Visibility="{Binding HasInspectedMedia, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="240"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="180"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Margin="0,0,20,0" Height="150" VerticalAlignment="Top">
+                        <Border Background="#FF2B3542"/>
+                        <Ellipse Width="46" Height="46" Fill="#55FFFFFF"/>
+                        <Path Data="{StaticResource IconPlay}" Fill="White" Width="16" Height="16" Stretch="Uniform"/>
+                        <Border Background="#CC000000" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
+                            <TextBlock Text="{Binding DurationText}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,20,0">
+                        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <Ellipse Width="22" Height="22" Fill="{StaticResource OrangePrimaryBrush}"/>
+                            <TextBlock Text="{Binding ChannelName}" Foreground="{StaticResource OrangePrimaryBrush}" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" VerticalAlignment="Center"
+                                  Visibility="{Binding ChannelVerified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Text="{Binding DurationText}" Style="{StaticResource MetaText}"/>
+                            <TextBlock Text=" • " Style="{StaticResource MetaText}"/>
+                            <TextBlock Text="{Binding ViewCountText}" Style="{StaticResource MetaText}"/>
+                            <TextBlock Text=" • " Style="{StaticResource MetaText}"/>
+                            <TextBlock Text="{Binding UploadedAgoText}" Style="{StaticResource MetaText}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding DescriptionPreview}" Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource Badge}" Margin="0,0,8,0"><TextBlock Text="VIDEO" Style="{StaticResource BadgeText}"/></Border>
+                            <Border Background="#FFE8281E" Padding="8,3" Margin="0,0,8,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconPlay}" Fill="White" Width="8" Height="8" Stretch="Uniform" Margin="0,0,5,0"/>
+                                    <TextBlock Text="YOUTUBE" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Badge}" Margin="0,0,8,0"><TextBlock Text="4K" Style="{StaticResource BadgeText}"/></Border>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Path Data="{StaticResource IconSubtitles}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Text="{Binding SubtitleAvailabilityText}" Style="{StaticResource MetaText}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="CHANNEL" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding ChannelName}" Foreground="{StaticResource OrangePrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,14"/>
+                        <TextBlock Text="UPLOAD DATE" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding UploadDateText}" FontWeight="SemiBold" Margin="0,0,0,14"/>
+                        <TextBlock Text="VIEWS" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding ViewCountFullText}" FontWeight="SemiBold" Margin="0,0,0,14"/>
+                        <TextBlock Text="LIKES" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding LikeCountText}" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Mode tabs -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="Mode" Margin="0,0,28,0"
+                             Command="{Binding SelectModeCommand}" CommandParameter="{x:Static vm:DownloadMode.Video}"
+                             IsChecked="{Binding SelectedMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Video, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconPlay}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
+                        <TextBlock Text="VIDEO"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="Mode" Margin="0,0,28,0"
+                             Command="{Binding SelectModeCommand}" CommandParameter="{x:Static vm:DownloadMode.Audio}"
+                             IsChecked="{Binding SelectedMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Audio, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconMusic}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
+                        <TextBlock Text="AUDIO"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="Mode" Margin="0,0,28,0"
+                             Command="{Binding SelectModeCommand}" CommandParameter="{x:Static vm:DownloadMode.Subtitles}"
+                             IsChecked="{Binding SelectedMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Subtitles, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconSubtitles}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
+                        <TextBlock Text="SUBTITLES"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="Mode"
+                             Command="{Binding SelectModeCommand}" CommandParameter="{x:Static vm:DownloadMode.Thumbnail}"
+                             IsChecked="{Binding SelectedMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Thumbnail, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconImage}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
+                        <TextBlock Text="THUMBNAIL"/>
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+            <Border Height="1" Background="{StaticResource DividerBrush}" Margin="0,0,0,20"/>
+
+            <!-- Controls + streams -->
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="500"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource Card}" Padding="20" VerticalAlignment="Top"
+                        Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Video}">
+                    <StackPanel>
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="200">
+                                <TextBlock Text="QUALITY" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding Quality}" IsEditable="True" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="150">
+                                <TextBlock Text="CONTAINER" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding Container}" IsEditable="True" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="170">
+                                <TextBlock Text="VIDEO CODEC" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding VideoCodec}" IsEditable="True" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="150">
+                                <TextBlock Text="AUDIO QUALITY" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding AudioQuality}" IsEditable="True" IsReadOnly="True"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="200">
+                                <TextBlock Text="SUBTITLES" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding SubtitleLanguage}" IsEditable="True" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="140">
+                                <TextBlock Text="EMBED SUBTITLES" Style="{StaticResource FieldLabel}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedSubtitles}"/>
+                                    <TextBlock Text="{Binding EmbedSubtitles, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="140">
+                                <TextBlock Text="EMBED METADATA" Style="{StaticResource FieldLabel}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedMetadata}"/>
+                                    <TextBlock Text="{Binding EmbedMetadata, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="140">
+                                <TextBlock Text="EMBED THUMBNAIL" Style="{StaticResource FieldLabel}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedThumbnail}"/>
+                                    <TextBlock Text="{Binding EmbedThumbnail, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="CHAPTERS" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding Chapters}" IsEditable="True" IsReadOnly="True"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="OUTPUT FOLDER" Style="{StaticResource FieldLabel}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding OutputFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
+                                    <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="16,11">
+                                        <TextBlock Text="BROWSE" FontWeight="Bold" FontSize="12"/>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel>
+                            <TextBlock Text="FILE NAME TEMPLATE" Style="{StaticResource FieldLabel}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding FileNameTemplate}" Style="{StaticResource FieldTextBox}"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="13,11">
+                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource Card}" Padding="0" VerticalAlignment="Top">
+                    <StackPanel>
+                        <Grid Margin="18,16">
+                            <TextBlock Text="AVAILABLE STREAMS" Style="{StaticResource SectionTitleText}" HorizontalAlignment="Left"/>
+                            <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Command="{Binding RefreshStreamsCommand}">
+                                <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource TextMutedBrush}"/>
+                            </Button>
+                        </Grid>
+                        <Border Height="1" Background="{StaticResource DividerBrush}"/>
+
+                        <DataGrid ItemsSource="{Binding Streams}" SelectedItem="{Binding SelectedStream}"
+                                  Style="{StaticResource FlatDataGrid}" MaxHeight="360" Margin="2,0"
+                                  ColumnHeaderHeight="30" FontSize="12">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
+                                    <Setter Property="FontSize" Value="10"/>
+                                    <Setter Property="Padding" Value="4,8"/>
+                                </Style>
+                                <Style TargetType="DataGridCell" BasedOn="{StaticResource DataGridCellStyle}">
+                                    <Setter Property="Padding" Value="4,0"/>
+                                </Style>
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="26">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <RadioButton Style="{StaticResource TableRadioButton}" GroupName="Stream"
+                                                         IsChecked="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="RESOLUTION" Binding="{Binding Resolution}" Width="92" FontWeight="SemiBold"/>
+                                <DataGridTextColumn Header="FORMAT" Binding="{Binding Format}" Width="56"/>
+                                <DataGridTextColumn Header="VIDEO" Binding="{Binding VideoCodec}" Width="56"/>
+                                <DataGridTextColumn Header="AUDIO" Binding="{Binding AudioCodec}" Width="70"/>
+                                <DataGridTextColumn Header="FPS" Binding="{Binding Fps}" Width="36"/>
+                                <DataGridTextColumn Header="SIZE" Binding="{Binding Size}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Border Height="1" Background="{StaticResource DividerBrush}" Margin="0,8,0,0"/>
+                        <Grid Margin="18,12">
+                            <TextBlock Text="{Binding StreamCountText}" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
+                            <TextBlock Text="{Binding SelectedStreamText}" Style="{StaticResource MetaText}" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Primary actions -->
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding StartDownloadCommand}" Padding="24,14" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="White" Margin="0,0,10,0"/>
+                        <TextBlock Text="START DOWNLOAD"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource SecondaryButton}" Command="{Binding AddToQueueCommand}" Padding="24,13">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,10,0"/>
+                        <TextBlock Text="ADD TO QUEUE" FontWeight="Bold"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
