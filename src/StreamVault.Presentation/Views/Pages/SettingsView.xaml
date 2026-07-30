@@ -117,15 +117,6 @@
                                 <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Command="{Binding BrowseCommand}" Padding="14,11" FontSize="12" Content="BROWSE"/>
                             </Grid>
 
-                            <Grid Margin="0,0,0,6">
-                                <TextBlock Text="Simultaneous downloads" Style="{StaticResource SettingTitle}"/>
-                            </Grid>
-                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SimultaneousOptions}" SelectedItem="{Binding SimultaneousDownloads}" Margin="0,0,0,16"/>
-
-                            <TextBlock Text="Download speed limit" Style="{StaticResource SettingTitle}" Margin="0,0,0,6"/>
-                            <TextBlock Text="Throttle total download speed (0 = unlimited)." Style="{StaticResource SettingHint}" Margin="0,-4,0,6"/>
-                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SpeedLimitOptions}" SelectedItem="{Binding DownloadSpeedLimit}" Margin="0,0,0,20"/>
-
                             <TextBlock Text="NOTIFICATIONS" Style="{StaticResource CardSectionTitle}"/>
                             <Grid Margin="0,0,0,14">
                                 <StackPanel HorizontalAlignment="Left">
@@ -141,7 +132,31 @@
                                 </StackPanel>
                                 <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding SoundNotifications}" HorizontalAlignment="Right"/>
                             </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
 
+                <!-- DOWNLOADS -->
+                <StackPanel Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Downloads}">
+                    <Border Style="{StaticResource Card}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="DOWNLOAD BEHAVIOR" Style="{StaticResource CardSectionTitle}"/>
+
+                            <TextBlock Text="Simultaneous downloads" Style="{StaticResource SettingTitle}"/>
+                            <TextBlock Text="Maximum number of parallel downloads." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SimultaneousOptions}" SelectedItem="{Binding SimultaneousDownloads}" Margin="0,0,0,18"/>
+
+                            <TextBlock Text="Download speed limit" Style="{StaticResource SettingTitle}"/>
+                            <TextBlock Text="Throttle total download speed (0 = unlimited)." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SpeedLimitOptions}" SelectedItem="{Binding DownloadSpeedLimit}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- FORMATS -->
+                <StackPanel Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Formats}">
+                    <Border Style="{StaticResource Card}" Padding="20">
+                        <StackPanel>
                             <TextBlock Text="PREFERRED CONTAINERS" Style="{StaticResource CardSectionTitle}"/>
                             <Grid Margin="0,0,0,20">
                                 <Grid.ColumnDefinitions>
@@ -149,11 +164,18 @@
                                     <ColumnDefinition Width="16"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoContainerOptions}" SelectedItem="{Binding PreferredVideoContainer}"/>
-                                <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioContainerOptions}" SelectedItem="{Binding PreferredAudioContainer}"/>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="VIDEO CONTAINER" Style="{StaticResource FieldLabel}"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoContainerOptions}" SelectedItem="{Binding PreferredVideoContainer}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="AUDIO CONTAINER" Style="{StaticResource FieldLabel}"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioContainerOptions}" SelectedItem="{Binding PreferredAudioContainer}"/>
+                                </StackPanel>
                             </Grid>
 
-                            <Grid Margin="0,0,0,16">
+                            <TextBlock Text="QUALITY &amp; SUBTITLES" Style="{StaticResource CardSectionTitle}"/>
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="16"/>
@@ -174,10 +196,17 @@
                                     <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding DefaultSubtitles}"/>
                                 </StackPanel>
                             </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
 
-                            <TextBlock Text="FILENAME TEMPLATE" Style="{StaticResource SettingTitle}"/>
-                            <TextBlock Text="Customize how downloaded files are named." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
-                            <Grid Margin="0,0,0,20">
+                <!-- NAMING -->
+                <StackPanel Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Naming}">
+                    <Border Style="{StaticResource Card}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="FILENAME TEMPLATE" Style="{StaticResource CardSectionTitle}"/>
+                            <TextBlock Text="Customize how downloaded files are named. Use the + button to insert yt-dlp template variables." Style="{StaticResource SettingHint}" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                            <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="8"/>
@@ -189,15 +218,23 @@
                                     <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}"/>
                                 </Button>
                             </Grid>
+                            <TextBlock Text="Example: %(title)s [%(id)s].%(ext)s" Style="{StaticResource SettingHint}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
 
-                            <TextBlock Text="TOOLS &amp; PATHS" Style="{StaticResource CardSectionTitle}"/>
+                <!-- NETWORK -->
+                <StackPanel Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Network}">
+                    <Border Style="{StaticResource Card}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="NETWORK" Style="{StaticResource CardSectionTitle}"/>
                             <TextBlock Text="Proxy (optional)" Style="{StaticResource SettingTitle}"/>
                             <TextBlock Text="Leave blank to use system proxy settings." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding Proxy}" Style="{StaticResource FieldTextBox}" Margin="0,0,0,16" Tag="http://user:pass@proxy.example.com:8080"/>
+                            <TextBox Text="{Binding Proxy}" Style="{StaticResource FieldTextBox}" Margin="0,0,0,18" Tag="http://user:pass@proxy.example.com:8080"/>
 
                             <TextBlock Text="Cookies file (optional)" Style="{StaticResource SettingTitle}"/>
-                            <TextBlock Text="Use cookies for age-restricted content." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
-                            <Grid Margin="0,0,0,16">
+                            <TextBlock Text="Use cookies for age-restricted or members-only content." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="8"/>
@@ -206,10 +243,20 @@
                                 <TextBox Grid.Column="0" Text="{Binding CookiesFile}" Style="{StaticResource FieldTextBox}"/>
                                 <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE" Command="{Binding BrowseCookiesCommand}"/>
                             </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- INTEGRATIONS -->
+                <StackPanel Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Integrations}">
+                    <Border Style="{StaticResource Card}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="TOOLS &amp; PATHS" Style="{StaticResource CardSectionTitle}"/>
+                            <TextBlock Text="Leave paths blank to let StreamVault auto-provision and manage these tools." Style="{StaticResource SettingHint}" Margin="0,0,0,14" TextWrapping="Wrap"/>
 
                             <TextBlock Text="yt-dlp path" Style="{StaticResource SettingTitle}"/>
-                            <TextBlock Text="Path to yt-dlp executable." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
-                            <Grid Margin="0,0,0,16">
+                            <TextBlock Text="Path to the yt-dlp executable." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <Grid Margin="0,0,0,18">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="8"/>
@@ -220,7 +267,7 @@
                             </Grid>
 
                             <TextBlock Text="FFmpeg path" Style="{StaticResource SettingTitle}"/>
-                            <TextBlock Text="Path to FFmpeg executable." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <TextBlock Text="Path to the FFmpeg executable." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -234,35 +281,54 @@
                     </Border>
                 </StackPanel>
 
-                <!-- Other sections: not yet detailed in the mockup; shown as a lightweight placeholder until wired to real settings storage. -->
-                <Border Style="{StaticResource Card}" Padding="30"
-                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Downloads}">
-                    <TextBlock Text="Downloads settings coming soon." Style="{StaticResource MetaText}"/>
-                </Border>
-                <Border Style="{StaticResource Card}" Padding="30"
-                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Formats}">
-                    <TextBlock Text="Formats settings coming soon." Style="{StaticResource MetaText}"/>
-                </Border>
-                <Border Style="{StaticResource Card}" Padding="30"
-                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Naming}">
-                    <TextBlock Text="Naming settings coming soon." Style="{StaticResource MetaText}"/>
-                </Border>
-                <Border Style="{StaticResource Card}" Padding="30"
-                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Network}">
-                    <TextBlock Text="Network settings coming soon." Style="{StaticResource MetaText}"/>
-                </Border>
-                <Border Style="{StaticResource Card}" Padding="30"
-                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Integrations}">
-                    <TextBlock Text="Integrations settings coming soon." Style="{StaticResource MetaText}"/>
-                </Border>
-                <Border Style="{StaticResource Card}" Padding="30"
-                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Appearance}">
-                    <TextBlock Text="Appearance settings coming soon." Style="{StaticResource MetaText}"/>
-                </Border>
-                <Border Style="{StaticResource Card}" Padding="30"
-                        Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Advanced}">
-                    <TextBlock Text="Advanced settings coming soon." Style="{StaticResource MetaText}"/>
-                </Border>
+                <!-- APPEARANCE -->
+                <StackPanel Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Appearance}">
+                    <Border Style="{StaticResource Card}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="APPEARANCE" Style="{StaticResource CardSectionTitle}"/>
+                            <TextBlock Text="Theme" Style="{StaticResource SettingTitle}" Margin="0,0,0,8"/>
+                            <UniformGrid Columns="3" Margin="0,0,0,18">
+                                <RadioButton Style="{StaticResource SegmentButton}" GroupName="ThemeMain" Content="LIGHT" Command="{Binding SetThemeCommand}" CommandParameter="Light" IsChecked="{Binding Theme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Light, Mode=OneWay}"/>
+                                <RadioButton Style="{StaticResource SegmentButton}" GroupName="ThemeMain" Content="DARK" Command="{Binding SetThemeCommand}" CommandParameter="Dark" IsChecked="{Binding Theme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Dark, Mode=OneWay}"/>
+                                <RadioButton Style="{StaticResource SegmentButton}" GroupName="ThemeMain" Content="SYSTEM" Command="{Binding SetThemeCommand}" CommandParameter="System" IsChecked="{Binding Theme, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=System, Mode=OneWay}"/>
+                            </UniformGrid>
+                            <TextBlock Text="Density" Style="{StaticResource SettingTitle}" Margin="0,0,0,8"/>
+                            <UniformGrid Columns="2">
+                                <RadioButton Style="{StaticResource SegmentButton}" GroupName="DensityMain" Content="COMFORTABLE" Command="{Binding SetDensityCommand}" CommandParameter="Comfortable" IsChecked="{Binding Density, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Comfortable, Mode=OneWay}"/>
+                                <RadioButton Style="{StaticResource SegmentButton}" GroupName="DensityMain" Content="COMPACT" Command="{Binding SetDensityCommand}" CommandParameter="Compact" IsChecked="{Binding Density, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Compact, Mode=OneWay}"/>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ADVANCED -->
+                <StackPanel Visibility="{Binding SelectedSection, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Advanced}">
+                    <Border Style="{StaticResource Card}" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="ADVANCED" Style="{StaticResource CardSectionTitle}"/>
+                            <Grid Margin="0,0,0,16">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="Diagnostic logging" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Collect detailed logs for troubleshooting." Style="{StaticResource SettingHint}"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding DiagnosticLogging}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,18">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="Verbose output" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Show detailed process output in logs." Style="{StaticResource SettingHint}"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding VerboseOutput}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
+                            <Button Style="{StaticResource SecondaryButton}" Padding="12,11" HorizontalAlignment="Left" Command="{Binding ViewLogsCommand}">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="VIEW LOGS" FontWeight="Bold" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
               </Grid>
             </ScrollViewer>
 
