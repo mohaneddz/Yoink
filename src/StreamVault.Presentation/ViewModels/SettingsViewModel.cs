@@ -138,6 +138,7 @@ public partial class SettingsViewModel : ObservableObject
     private async Task SaveChanges()
     {
         await _settings.SaveAsync(BuildSettings());
+        AppLog.Verbose = DiagnosticLogging || VerboseOutput;
         StatusMessage = "Settings saved.";
         DownloadsPath = DefaultDownloadFolder;
     }
@@ -176,8 +177,8 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void ViewLogs()
     {
-        var dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StreamVault");
-        _system.OpenFolder(dataDir);
+        Directory.CreateDirectory(AppLog.LogDirectory);
+        _system.OpenFolder(AppLog.LogDirectory);
     }
 
     [RelayCommand] private void SetTheme(string theme) => Theme = theme;

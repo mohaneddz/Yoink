@@ -17,24 +17,62 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
-        _host = Host.CreateDefaultBuilder()
-            .ConfigureServices(ConfigureServices)
-            .Build();
+        RegisterGlobalExceptionHandlers();
 
-        _host.Start();
+        try
+        {
+            _host = Host.CreateDefaultBuilder()
+                .ConfigureServices(ConfigureServices)
+                .Build();
 
-        var services = _host.Services;
+            _host.Start();
 
-        // Load settings and prepare the database before any page binds to data.
-        await services.GetRequiredService<ISettingsService>().LoadAsync();
-        await services.InitializeStreamVaultDatabaseAsync();
+            var services = _host.Services;
 
-        var mainWindow = services.GetRequiredService<MainWindow>();
-        services.GetRequiredService<ShellViewModel>().Initialize();
-        mainWindow.Show();
+            // Load settings and prepare the database before any page binds to data.
+            var settings = services.GetRequiredService<ISettingsService>();
+            await settings.LoadAsync();
+            AppLog.Verbose = settings.Current.DiagnosticLogging || settings.Current.VerboseOutput;
+            await services.InitializeStreamVaultDatabaseAsync();
 
-        // Provision yt-dlp/ffmpeg in the background so first launch isn't blocked.
-        _ = ProvisionToolsAsync(services);
+            var mainWindow = services.GetRequiredService<MainWindow>();
+            services.GetRequiredService<ShellViewModel>().Initialize();
+            mainWindow.Show();
+
+            AppLog.Info("StreamVault started.");
+
+            // Provision yt-dlp/ffmpeg in the background so first launch isn't blocked.
+            _ = ProvisionToolsAsync(services);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Fatal error during startup.", ex);
+            MessageBox.Show(
+                $"StreamVault failed to start.\n\n{ex.Message}\n\nA log was written to:\n{AppLog.LogDirectory}",
+                "StreamVault", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown(1);
+        }
+    }
+
+    private void RegisterGlobalExceptionHandlers()
+    {
+        DispatcherUnhandledException += (_, args) =>
+        {
+            AppLog.Error("Unhandled UI exception.", args.Exception);
+            MessageBox.Show(
+                $"An unexpected error occurred:\n\n{args.Exception.Message}\n\nThe error was logged to:\n{AppLog.LogDirectory}",
+                "StreamVault", MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true; // keep the app alive; the operation is aborted but the window survives
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            AppLog.Error("Unhandled non-UI exception.", args.ExceptionObject as Exception);
+
+        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            AppLog.Error("Unobserved task exception.", args.Exception);
+            args.SetObserved();
+        };
     }
 
     private static async Task ProvisionToolsAsync(IServiceProvider services)
