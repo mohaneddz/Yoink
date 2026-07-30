@@ -98,6 +98,7 @@ public partial class App : System.Windows.Application
         });
 
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<INavigationService>(sp => sp.GetRequiredService<ShellViewModel>());
         services.AddSingleton<MainWindow>();
     }
 }

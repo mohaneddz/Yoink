@@ -95,6 +95,9 @@ public sealed class DownloadCoordinator
         return job;
     }
 
+    /// <summary>Re-evaluate the queue (e.g. after the concurrency limit changed).</summary>
+    public void Refresh() => Pump();
+
     public void StartAll()
     {
         foreach (var job in Jobs)

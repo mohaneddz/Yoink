@@ -1,39 +1,50 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StreamVault.Application.Abstractions;
+using StreamVault.Presentation.Services;
 using StreamVault.Presentation.ViewModels.Models;
 
 namespace StreamVault.Presentation.ViewModels;
 
-/// <summary>Backs the Queue page (spec section 7.2): monitor, control, and prioritize active jobs.</summary>
+/// <summary>Backs the Queue page: monitor, control, and prioritize jobs owned by the coordinator.</summary>
 public partial class QueueViewModel : ObservableObject
 {
     private readonly InspectorViewModel _inspector;
+    private readonly DownloadCoordinator _coordinator;
+    private readonly ISettingsService _settings;
     private readonly ICollectionView _filteredJobs;
 
-    public QueueViewModel(InspectorViewModel inspector)
+    public QueueViewModel(InspectorViewModel inspector, DownloadCoordinator coordinator, ISettingsService settings)
     {
         _inspector = inspector;
-        LoadSampleJobs();
+        _coordinator = coordinator;
+        _settings = settings;
+        _maxConcurrent = settings.Current.SimultaneousDownloads;
 
-        _filteredJobs = CollectionViewSource.GetDefaultView(Jobs);
+        _filteredJobs = CollectionViewSource.GetDefaultView(coordinator.Jobs);
         _filteredJobs.Filter = FilterJob;
+
+        coordinator.Jobs.CollectionChanged += OnJobsCollectionChanged;
+        coordinator.JobsChanged += (_, _) => RefreshCounts();
+        foreach (var job in coordinator.Jobs)
+        {
+            job.PropertyChanged += OnJobPropertyChanged;
+        }
     }
 
-    public ObservableCollection<QueueJob> Jobs { get; } = new();
+    public ObservableCollection<QueueJob> Jobs => _coordinator.Jobs;
 
     public ICollectionView FilteredJobs => _filteredJobs;
 
-    [ObservableProperty]
-    private QueueFilter _selectedFilter = QueueFilter.Active;
+    [ObservableProperty] private QueueFilter _selectedFilter = QueueFilter.Active;
+    [ObservableProperty] private int _maxConcurrent;
+    [ObservableProperty] private QueueJob? _selectedJob;
 
-    [ObservableProperty]
-    private int _maxConcurrent = 3;
-
-    [ObservableProperty]
-    private QueueJob? _selectedJob;
+    public ObservableCollection<int> ConcurrencyOptions { get; } = new() { 1, 2, 3, 4, 5, 6, 8 };
 
     public int ActiveCount => Jobs.Count(IsActive);
     public int QueuedCount => Jobs.Count(j => j.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting);
@@ -44,6 +55,35 @@ public partial class QueueViewModel : ObservableObject
     private static bool IsActive(QueueJob j) => j.Status is QueueJobStatus.DownloadingVideo or QueueJobStatus.DownloadingAudio
         or QueueJobStatus.DownloadingSubtitles or QueueJobStatus.Merging or QueueJobStatus.Converting
         or QueueJobStatus.WritingMetadata or QueueJobStatus.Retrying;
+
+    private void OnJobsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (QueueJob job in e.OldItems)
+            {
+                job.PropertyChanged -= OnJobPropertyChanged;
+            }
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (QueueJob job in e.NewItems)
+            {
+                job.PropertyChanged += OnJobPropertyChanged;
+            }
+        }
+
+        RefreshCounts();
+    }
+
+    private void OnJobPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(QueueJob.Status))
+        {
+            RefreshCounts();
+        }
+    }
 
     private bool FilterJob(object obj)
     {
@@ -63,12 +103,22 @@ public partial class QueueViewModel : ObservableObject
         };
     }
 
-    [RelayCommand]
-    private void SelectFilter(QueueFilter filter)
+    partial void OnSelectedFilterChanged(QueueFilter value) => _filteredJobs.Refresh();
+
+    partial void OnMaxConcurrentChanged(int value)
     {
-        SelectedFilter = filter;
-        _filteredJobs.Refresh();
+        if (value <= 0)
+        {
+            return;
+        }
+
+        _settings.Current.SimultaneousDownloads = value;
+        _ = _settings.SaveAsync(_settings.Current);
+        _coordinator.Refresh();
     }
+
+    [RelayCommand]
+    private void SelectFilter(QueueFilter filter) => SelectedFilter = filter;
 
     partial void OnSelectedJobChanged(QueueJob? value)
     {
@@ -78,35 +128,23 @@ public partial class QueueViewModel : ObservableObject
         }
     }
 
-    [RelayCommand] private void StartAll() { foreach (var j in Jobs.Where(j => j.Status is QueueJobStatus.Queued or QueueJobStatus.Paused)) j.Status = QueueJobStatus.DownloadingVideo; RefreshCounts(); }
-    [RelayCommand] private void PauseAll() { foreach (var j in Jobs.Where(IsActive)) j.Status = QueueJobStatus.Paused; RefreshCounts(); }
-    [RelayCommand] private void ClearCompleted() { foreach (var j in Jobs.Where(j => j.Status == QueueJobStatus.Completed).ToList()) Jobs.Remove(j); RefreshCounts(); }
-    [RelayCommand] private void RetryFailed() { foreach (var j in Jobs.Where(j => j.Status == QueueJobStatus.Failed)) j.Status = QueueJobStatus.Retrying; RefreshCounts(); }
-
-    [RelayCommand]
-    private void ToggleJob(QueueJob job)
-    {
-        job.Status = IsActive(job) ? QueueJobStatus.Paused : job.Status == QueueJobStatus.Failed ? QueueJobStatus.Retrying : QueueJobStatus.DownloadingVideo;
-        RefreshCounts();
-    }
-
-    [RelayCommand] private void PauseJob(QueueJob job) { job.Status = QueueJobStatus.Paused; RefreshCounts(); }
-    [RelayCommand] private void ResumeJob(QueueJob job) { job.Status = QueueJobStatus.DownloadingVideo; RefreshCounts(); }
-    [RelayCommand] private void RetryJob(QueueJob job) { job.Status = QueueJobStatus.Retrying; RefreshCounts(); }
-    [RelayCommand] private void RemoveJob(QueueJob job) { Jobs.Remove(job); RefreshCounts(); }
+    [RelayCommand] private void StartAll() => _coordinator.StartAll();
+    [RelayCommand] private void PauseAll() => _coordinator.PauseAll();
+    [RelayCommand] private void ClearCompleted() => _coordinator.ClearCompleted();
+    [RelayCommand] private void RetryFailed() => _coordinator.RetryFailed();
+    [RelayCommand] private void ToggleJob(QueueJob job) => _coordinator.ToggleJob(job);
+    [RelayCommand] private void PauseJob(QueueJob job) => _coordinator.PauseJob(job);
+    [RelayCommand] private void ResumeJob(QueueJob job) => _coordinator.ResumeJob(job);
+    [RelayCommand] private void RetryJob(QueueJob job) => _coordinator.RetryJob(job);
+    [RelayCommand] private void RemoveJob(QueueJob job) => _coordinator.RemoveJob(job);
 
     [RelayCommand]
     private void ResumeSelected()
     {
-        if (SelectedJob is null)
+        if (SelectedJob is not null)
         {
-            return;
+            _coordinator.ResumeJob(SelectedJob);
         }
-
-        SelectedJob.Status = QueueJobStatus.DownloadingVideo;
-        SelectedJob.StatusDetailText = "Resumed by user";
-        SelectedJob.LogLines.Add($"{DateTime.Now:HH:mm:ss}  Resumed by user");
-        RefreshCounts();
     }
 
     private void RefreshCounts()
@@ -117,35 +155,5 @@ public partial class QueueViewModel : ObservableObject
         OnPropertyChanged(nameof(CompletedCount));
         OnPropertyChanged(nameof(FailedCount));
         _filteredJobs.Refresh();
-    }
-
-    private void LoadSampleJobs()
-    {
-        Jobs.Add(new QueueJob { Order = 1, Title = "Switzerland 4K \u2013 Scenic Relaxation Film with Calming Music", Channel = "Scenic Relaxation", Quality = "2160p (4K)", SizeText = "1.72 GB", Progress = 73, SpeedText = "18.7 MB/s", EtaText = "02:14", Destination = @"C:\Videos\Travel", Status = QueueJobStatus.DownloadingVideo, SourceUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ", SelectedFormatText = "2160p (4K) MP4 (H.264 / AAC 320k)", OutputFolder = @"C:\Videos\Travel", FileSizeText = "1.72 GB", DownloadedText = "1.26 GB (73%)", AddedAtText = "May 22, 2025 14:24:10", LastUpdateText = "May 22, 2025 14:29:03" });
-        Jobs.Add(new QueueJob { Order = 2, Title = "The Alps in 8K HDR", Channel = "Scenic Relaxation", Quality = "1440p (2K)", SizeText = "853 MB", Progress = 41, SpeedText = "12.3 MB/s", EtaText = "04:37", Destination = @"C:\Videos\8K", Status = QueueJobStatus.DownloadingVideo, SourceUrl = "https://www.youtube.com/watch?v=alps8k", SelectedFormatText = "1440p (2K) MP4 (H.264 / AAC 192k)", OutputFolder = @"C:\Videos\8K", FileSizeText = "853 MB", DownloadedText = "350 MB (41%)", AddedAtText = "May 22, 2025 14:20:02", LastUpdateText = "May 22, 2025 14:29:01" });
-        Jobs.Add(new QueueJob { Order = 3, Title = "Night City Timelapse", Channel = "Timelapse World", Quality = "1080p (FHD)", SizeText = "476 MB", Progress = 0, SpeedText = "\u2014", EtaText = "\u2014", Destination = @"C:\Videos\Timelapse", Status = QueueJobStatus.Queued, SourceUrl = "https://www.youtube.com/watch?v=nightcity", SelectedFormatText = "1080p (FHD) MP4 (H.264 / AAC 192k)", OutputFolder = @"C:\Videos\Timelapse", FileSizeText = "476 MB", DownloadedText = "0 B (0%)", AddedAtText = "May 22, 2025 14:24:11" });
-        Jobs.Add(new QueueJob { Order = 4, Title = "Ocean Waves \u2013 4K", Channel = "Nature Relaxation", Quality = "720p (HD)", SizeText = "281 MB", Progress = 0, SpeedText = "\u2014", EtaText = "\u2014", Destination = @"C:\Videos\Nature", Status = QueueJobStatus.Queued, SourceUrl = "https://www.youtube.com/watch?v=oceanwaves", SelectedFormatText = "720p (HD) MP4 (H.264 / AAC 128k)", OutputFolder = @"C:\Videos\Nature", FileSizeText = "281 MB", DownloadedText = "0 B (0%)", AddedAtText = "May 22, 2025 14:24:12" });
-        Jobs.Add(new QueueJob
-        {
-            Order = 5, Title = "Documentary: The Future of Wildlife", Channel = "Nature Docs", Quality = "480p (SD)", SizeText = "153 MB",
-            Progress = 0, SpeedText = "\u2014", EtaText = "\u2014", Destination = @"C:\Videos\Docs", Status = QueueJobStatus.Paused,
-            SourceUrl = "https://www.youtube.com/watch?v=dQw4w9WgXc-wildlife", SelectedFormatText = "480p (SD) MP4 (H.264 / AAC 96k)",
-            OutputFolder = @"C:\Videos\Docs", FileSizeText = "153 MB", DownloadedText = "0 B (0%)", StatusDetailText = "Paused by user",
-            AddedAtText = "May 22, 2025 14:24:10", LastUpdateText = "May 22, 2025 14:29:03"
-        });
-        Jobs[4].LogLines.Add("14:24:10  Added to queue");
-        Jobs[4].LogLines.Add("14:24:11  Validating URL");
-        Jobs[4].LogLines.Add("14:24:11  URL is valid");
-        Jobs[4].LogLines.Add("14:24:12  Fetching stream info");
-        Jobs[4].LogLines.Add("14:24:12  Stream info retrieved");
-        Jobs[4].LogLines.Add("14:24:13  Selected format: 480p (MP4)");
-        Jobs[4].LogLines.Add("14:24:13  Output: C:\\Videos\\Docs");
-        Jobs[4].LogLines.Add("14:24:14  Paused by user");
-
-        Jobs.Add(new QueueJob { Order = 6, Title = "Waterfalls of the World \u2013 4K", Channel = "Scenic Relaxation", Quality = "1080p (FHD)", SizeText = "512 MB", Progress = 100, SpeedText = "\u2014", EtaText = "\u2014", Destination = @"C:\Videos\Travel", Status = QueueJobStatus.Completed, SourceUrl = "https://www.youtube.com/watch?v=waterfalls", SelectedFormatText = "1080p (FHD) MP4 (H.264 / AAC 192k)", OutputFolder = @"C:\Videos\Travel", FileSizeText = "512 MB", DownloadedText = "512 MB (100%)", AddedAtText = "May 22, 2025 13:50:00", LastUpdateText = "May 22, 2025 14:02:00" });
-        Jobs.Add(new QueueJob { Order = 7, Title = "Desert Landscapes in 4K", Channel = "Scenic Relaxation", Quality = "1080p (FHD)", SizeText = "627 MB", Progress = 0, SpeedText = "\u2014", EtaText = "\u2014", Destination = @"C:\Videos\Travel", Status = QueueJobStatus.Failed, SourceUrl = "https://www.youtube.com/watch?v=desert4k", SelectedFormatText = "1080p (FHD) MP4 (H.264 / AAC 192k)", OutputFolder = @"C:\Videos\Travel", FileSizeText = "627 MB", DownloadedText = "0 B (0%)", StatusDetailText = "Network error while fetching stream", RetryCount = 2, AddedAtText = "May 22, 2025 13:40:00", LastUpdateText = "May 22, 2025 13:41:12" });
-        Jobs.Add(new QueueJob { Order = 8, Title = "Rainforest Ambience with Birdsong", Channel = "Nature Relaxation", Quality = "360p (SD)", SizeText = "98 MB", Progress = 0, SpeedText = "\u2014", EtaText = "\u2014", Destination = @"C:\Videos\Nature", Status = QueueJobStatus.Queued, SourceUrl = "https://www.youtube.com/watch?v=rainforest", SelectedFormatText = "360p (SD) MP4 (H.264 / AAC 96k)", OutputFolder = @"C:\Videos\Nature", FileSizeText = "98 MB", DownloadedText = "0 B (0%)", AddedAtText = "May 22, 2025 14:24:15" });
-
-        SelectedJob = Jobs[4];
     }
 }

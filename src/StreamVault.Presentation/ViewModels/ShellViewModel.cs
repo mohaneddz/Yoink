@@ -8,8 +8,10 @@ namespace StreamVault.Presentation.ViewModels;
 /// Top-level view model for the application shell: the four persistent regions (title bar,
 /// sidebar, main surface, status strip) described in spec section 4.5.
 /// </summary>
-public partial class ShellViewModel : ObservableObject
+public partial class ShellViewModel : ObservableObject, INavigationService
 {
+    void INavigationService.Navigate(AppPage page) => NavigateTo(page);
+
     private readonly Func<AppPage, object> _pageResolver;
     private readonly Dictionary<AppPage, object> _pageCache = new();
 

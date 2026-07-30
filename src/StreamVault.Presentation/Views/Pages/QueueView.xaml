@@ -155,7 +155,7 @@
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <TextBlock Text="MAX CONCURRENT" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding MaxConcurrent}" IsEditable="True" IsReadOnly="True" Width="70"/>
+                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ConcurrencyOptions}" SelectedItem="{Binding MaxConcurrent}" Width="70"/>
             </StackPanel>
         </Grid>
 

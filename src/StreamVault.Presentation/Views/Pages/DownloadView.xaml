@@ -52,7 +52,7 @@
                     </Grid>
                 </Border>
 
-                <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0">
+                <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Command="{Binding PasteCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
                         <TextBlock Text="PASTE"/>
@@ -195,26 +195,26 @@
                         <WrapPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="200">
                                 <TextBlock Text="QUALITY" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding Quality}" IsEditable="True" IsReadOnly="True"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding Quality}"/>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="150">
                                 <TextBlock Text="CONTAINER" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding Container}" IsEditable="True" IsReadOnly="True"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ContainerOptions}" SelectedItem="{Binding Container}"/>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="170">
                                 <TextBlock Text="VIDEO CODEC" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding VideoCodec}" IsEditable="True" IsReadOnly="True"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoCodecOptions}" SelectedItem="{Binding VideoCodec}"/>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="150">
                                 <TextBlock Text="AUDIO QUALITY" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding AudioQuality}" IsEditable="True" IsReadOnly="True"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding AudioQuality}"/>
                             </StackPanel>
                         </WrapPanel>
 
                         <WrapPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="200">
                                 <TextBlock Text="SUBTITLES" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding SubtitleLanguage}" IsEditable="True" IsReadOnly="True"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}"/>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="140">
                                 <TextBlock Text="EMBED SUBTITLES" Style="{StaticResource FieldLabel}"/>
@@ -247,7 +247,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="CHAPTERS" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding Chapters}" IsEditable="True" IsReadOnly="True"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ChapterOptions}" SelectedItem="{Binding Chapters}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="OUTPUT FOLDER" Style="{StaticResource FieldLabel}"/>
@@ -258,7 +258,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBox Grid.Column="0" Text="{Binding OutputFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
-                                    <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="16,11">
+                                    <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="16,11" Command="{Binding BrowseOutputFolderCommand}">
                                         <TextBlock Text="BROWSE" FontWeight="Bold" FontSize="12"/>
                                     </Button>
                                 </Grid>
