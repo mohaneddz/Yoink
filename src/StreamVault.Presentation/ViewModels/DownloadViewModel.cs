@@ -205,6 +205,9 @@ public partial class DownloadViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private void InsertTemplateVariable(string token) => FileNameTemplate += token;
+
     private bool TryBuildRequest(out DownloadRequest? request, out EnqueueInfo? info)
     {
         request = null;

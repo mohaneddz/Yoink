@@ -39,6 +39,7 @@ public sealed class DownloadCoordinator
     private readonly ILibraryRepository _library;
     private readonly IFfmpegService _ffmpeg;
     private readonly ISettingsService _settings;
+    private readonly ISystemAccess _system;
     private readonly ConcurrentDictionary<QueueJob, JobRuntime> _runtimes = new();
     private readonly ConcurrentDictionary<QueueJob, double> _speeds = new();
 
@@ -49,13 +50,15 @@ public sealed class DownloadCoordinator
         IHistoryRepository history,
         ILibraryRepository library,
         IFfmpegService ffmpeg,
-        ISettingsService settings)
+        ISettingsService settings,
+        ISystemAccess system)
     {
         _engine = engine;
         _history = history;
         _library = library;
         _ffmpeg = ffmpeg;
         _settings = settings;
+        _system = system;
     }
 
     /// <summary>The live queue, bound directly by the Queue page. Mutated on the UI thread.</summary>
@@ -92,6 +95,8 @@ public sealed class DownloadCoordinator
             AddedAtText = Formatting.ShortDate(DateTimeOffset.Now)
         };
         job.LogLines.Add($"{DateTime.Now:HH:mm:ss}  Queued: {info.Title}");
+        job.ResumeAction = () => ResumeJob(job);
+        job.OpenFolderAction = () => OpenJobFolder(job);
 
         _runtimes[job] = new JobRuntime { Request = request, Kind = request.Kind };
         Jobs.Add(job);
@@ -107,6 +112,17 @@ public sealed class DownloadCoordinator
 
     /// <summary>Re-evaluate the queue (e.g. after the concurrency limit changed).</summary>
     public void Refresh() => Pump();
+
+    private void OpenJobFolder(QueueJob job)
+    {
+        var target = !string.IsNullOrWhiteSpace(job.Destination) && File.Exists(job.Destination)
+            ? Path.GetDirectoryName(job.Destination)
+            : job.OutputFolder;
+        if (!string.IsNullOrWhiteSpace(target))
+        {
+            _system.OpenFolder(target);
+        }
+    }
 
     public void StartAll()
     {

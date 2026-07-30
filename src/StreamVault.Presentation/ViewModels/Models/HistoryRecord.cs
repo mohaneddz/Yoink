@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace StreamVault.Presentation.ViewModels.Models;
 
@@ -30,4 +31,13 @@ public partial class HistoryRecord : ObservableObject
     [ObservableProperty] private string _completedText = string.Empty;
     [ObservableProperty] private string _exitCodeText = "0 (OK)";
     public System.Collections.ObjectModel.ObservableCollection<string> LogLines { get; } = new();
+
+    /// <summary>Injected by the History view model so the inspector's actions reuse its logic.</summary>
+    public Action? RetryAction { get; set; }
+    public Action? CopyUrlAction { get; set; }
+    public Action? OpenFolderAction { get; set; }
+
+    [RelayCommand] private void Retry() => RetryAction?.Invoke();
+    [RelayCommand] private void CopyUrl() => CopyUrlAction?.Invoke();
+    [RelayCommand] private void OpenFolder() => OpenFolderAction?.Invoke();
 }

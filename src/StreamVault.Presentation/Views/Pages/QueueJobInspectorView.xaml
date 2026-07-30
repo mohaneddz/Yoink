@@ -89,7 +89,8 @@
                         <Border Grid.Column="0" Style="{StaticResource ReadonlyField}">
                             <TextBlock Text="{Binding OutputFolder}" FontSize="12" TextTrimming="CharacterEllipsis"/>
                         </Border>
-                        <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="12,9" FontSize="11" Content="BROWSE"/>
+                        <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="12,9" FontSize="11" Content="OPEN"
+                                Command="{Binding OpenFolderCommand}" ToolTip="Open output folder"/>
                     </Grid>
 
                     <Grid Margin="0,0,0,14">

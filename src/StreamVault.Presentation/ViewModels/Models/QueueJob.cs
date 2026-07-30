@@ -35,13 +35,15 @@ public partial class QueueJob : ObservableObject
 
     public ObservableCollection<string> LogLines { get; } = new();
 
+    /// <summary>Injected by the coordinator so inspector actions route through the real queue engine.</summary>
+    public Action? ResumeAction { get; set; }
+    public Action? OpenFolderAction { get; set; }
+
     [RelayCommand]
-    private void Resume()
-    {
-        Status = QueueJobStatus.DownloadingVideo;
-        StatusDetailText = "Resumed by user";
-        LogLines.Add($"{DateTime.Now:HH:mm:ss}  Resumed by user");
-    }
+    private void Resume() => ResumeAction?.Invoke();
+
+    [RelayCommand]
+    private void OpenFolder() => OpenFolderAction?.Invoke();
 
     [RelayCommand]
     private void SelectTab(string tab) => SelectedInspectorTab = tab;

@@ -76,7 +76,11 @@ public partial class HistoryViewModel : ObservableObject
         var i = 1;
         foreach (var e in entries)
         {
-            _all.Add(Map(e, i++));
+            var record = Map(e, i++);
+            record.RetryAction = () => { SelectedRecord = record; RetrySelected(); };
+            record.CopyUrlAction = () => { SelectedRecord = record; CopySourceUrl(); };
+            record.OpenFolderAction = () => { SelectedRecord = record; OpenFolder(); };
+            _all.Add(record);
         }
 
         FormatOptions.Clear();

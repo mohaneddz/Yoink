@@ -81,6 +81,21 @@
         </Setter>
     </Style>
 
+    <!-- Shared filename-template variable inserter. Host button's DataContext must expose
+         InsertTemplateVariableCommand(string). -->
+    <ContextMenu x:Key="TemplateVariableMenu">
+        <MenuItem Header="Title  —  %(title)s" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(title)s"/>
+        <MenuItem Header="Video ID  —  %(id)s" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(id)s"/>
+        <MenuItem Header="Uploader  —  %(uploader)s" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(uploader)s"/>
+        <MenuItem Header="Channel  —  %(channel)s" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(channel)s"/>
+        <MenuItem Header="Upload date  —  %(upload_date)s" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(upload_date)s"/>
+        <MenuItem Header="Resolution  —  %(resolution)s" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(resolution)s"/>
+        <MenuItem Header="Extension  —  %(ext)s" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(ext)s"/>
+        <Separator/>
+        <MenuItem Header="Playlist name  —  %(playlist)s" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(playlist)s"/>
+        <MenuItem Header="Playlist index  —  %(playlist_index)02d" Command="{Binding PlacementTarget.DataContext.InsertTemplateVariableCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="%(playlist_index)02d"/>
+    </ContextMenu>
+
     <!-- ==================== TOOLTIPS ==================== -->
     <Style TargetType="ToolTip">
         <Setter Property="Background" Value="{StaticResource AppShellBrush}"/>

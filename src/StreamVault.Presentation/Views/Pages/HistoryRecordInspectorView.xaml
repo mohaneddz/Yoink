@@ -4,11 +4,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:conv="clr-namespace:StreamVault.Presentation.Converters"
+             xmlns:controls="clr-namespace:StreamVault.Presentation.Controls"
              xmlns:models="clr-namespace:StreamVault.Presentation.ViewModels.Models"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance models:HistoryRecord}">
 
     <UserControl.Resources>
         <conv:HistoryResultToBrushConverter x:Key="ResultBrushConverter"/>
+        <ContextMenu x:Key="HistoryInspectorMenu">
+            <MenuItem Header="Copy source URL"
+                      Command="{Binding PlacementTarget.DataContext.CopyUrlCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Open output folder"
+                      Command="{Binding PlacementTarget.DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
     </UserControl.Resources>
 
     <DockPanel>
@@ -73,13 +88,14 @@
                         <ColumnDefinition Width="8"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Style="{StaticResource PrimaryButton}" Padding="14,12">
+                    <Button Grid.Column="0" Style="{StaticResource PrimaryButton}" Padding="14,12" Command="{Binding RetryCommand}">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="White" Margin="0,0,8,0"/>
                             <TextBlock Text="RETRY THIS DOWNLOAD" FontSize="12"/>
                         </StackPanel>
                     </Button>
-                    <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Padding="12,12">
+                    <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Padding="12,12" ToolTip="More actions"
+                            ContextMenu="{StaticResource HistoryInspectorMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
                         <Path Data="{StaticResource IconChevronDown}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="White"/>
                     </Button>
                 </Grid>

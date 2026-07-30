@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:shared="clr-namespace:StreamVault.Presentation.Views.Shared"
              xmlns:conv="clr-namespace:StreamVault.Presentation.Converters"
+             xmlns:controls="clr-namespace:StreamVault.Presentation.Controls"
              xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
              xmlns:models="clr-namespace:StreamVault.Presentation.ViewModels.Models"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:LibraryViewModel}">
@@ -21,6 +22,16 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
         </Style>
+
+        <ContextMenu x:Key="LibraryFilterMenu">
+            <MenuItem Header="Videos" Command="{Binding PlacementTarget.DataContext.SelectMediaFilterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{x:Static models:LibraryMediaFilter.Video}"/>
+            <MenuItem Header="Audio" Command="{Binding PlacementTarget.DataContext.SelectMediaFilterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{x:Static models:LibraryMediaFilter.Audio}"/>
+            <MenuItem Header="Subtitles" Command="{Binding PlacementTarget.DataContext.SelectMediaFilterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{x:Static models:LibraryMediaFilter.Subtitles}"/>
+            <MenuItem Header="Thumbnails" Command="{Binding PlacementTarget.DataContext.SelectMediaFilterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{x:Static models:LibraryMediaFilter.Thumbnails}"/>
+            <Separator/>
+            <MenuItem Header="Clear search" Command="{Binding PlacementTarget.DataContext.ClearSearchCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="Rescan library" Command="{Binding PlacementTarget.DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        </ContextMenu>
 
         <Style x:Key="LibraryCard" TargetType="Border">
             <Setter Property="Width" Value="190"/>
@@ -81,7 +92,8 @@
                              Tag="Search by title, channel, or tag..."/>
                 </Grid>
             </Border>
-            <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0">
+            <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" ToolTip="Filter library"
+                    ContextMenu="{StaticResource LibraryFilterMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
                 <StackPanel Orientation="Horizontal">
                     <Path Data="{StaticResource IconFilter}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                     <TextBlock Text="FILTERS" FontWeight="Bold" FontSize="12"/>
@@ -303,17 +315,17 @@
 
                         <TextBlock Text="ACTIONS" Style="{StaticResource SectionTitleText}" FontSize="12" Margin="0,0,0,10"/>
                         <Button Style="{StaticResource SecondaryButton}" Content="PLAY" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
-                                Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                                Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource SecondaryButton}" Content="OPEN FILE" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
-                                Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                                Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource SecondaryButton}" Content="REVEAL IN FOLDER" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
-                                Command="{Binding DataContext.RevealInFolderCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                                Command="{Binding DataContext.RevealInFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource SecondaryButton}" Content="COPY SOURCE URL" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
-                                Command="{Binding DataContext.CopySourceUrlCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                                Command="{Binding DataContext.CopySourceUrlCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource SecondaryButton}" Content="CONVERT VIDEO" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
-                                Command="{Binding DataContext.ConvertVideoCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                                Command="{Binding DataContext.ConvertVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource DestructiveButton}" Content="REMOVE FROM LIBRARY" Padding="12,10" HorizontalContentAlignment="Left"
-                                Command="{Binding DataContext.RemoveFromLibraryCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                                Command="{Binding DataContext.RemoveFromLibraryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>

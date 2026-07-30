@@ -64,6 +64,13 @@ public partial class ShellViewModel : ObservableObject, INavigationService
             _pageCache[page] = vm;
         }
 
+        // Close the shared inspector when switching pages (unless the user pinned it).
+        if (!Inspector.IsPinned && page != CurrentPage)
+        {
+            Inspector.IsOpen = false;
+            Inspector.Content = null;
+        }
+
         CurrentPage = page;
         CurrentPageViewModel = vm;
     }

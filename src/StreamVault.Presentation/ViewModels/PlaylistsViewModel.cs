@@ -212,6 +212,9 @@ public partial class PlaylistsViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private void InsertTemplateVariable(string token) => NamingTemplate += token;
+
     private async Task EnqueueSelected(bool start)
     {
         var selected = Entries.Where(e => e.IsSelected).ToList();

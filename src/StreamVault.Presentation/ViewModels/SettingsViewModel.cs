@@ -184,6 +184,9 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand] private void SetDensity(string density) => Density = density;
 
     [RelayCommand]
+    private void InsertTemplateVariable(string token) => FilenameTemplate += token;
+
+    [RelayCommand]
     private void Browse()
     {
         var picked = _system.PickFolder(DefaultDownloadFolder);

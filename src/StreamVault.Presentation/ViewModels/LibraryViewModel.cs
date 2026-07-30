@@ -49,6 +49,8 @@ public partial class LibraryViewModel : ObservableObject
     [RelayCommand] private void SelectMediaFilter(LibraryMediaFilter filter) => SelectedFilter = filter;
     [RelayCommand] private void SetViewMode(LibraryViewMode mode) => ViewMode = mode;
     [RelayCommand] private void SelectItem(LibraryItem item) => SelectedItem = item;
+    [RelayCommand] private void ClearSearch() => SearchText = string.Empty;
+    [RelayCommand] private async Task Refresh() => await LoadAsync();
 
     public async Task LoadAsync()
     {

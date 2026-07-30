@@ -186,11 +186,16 @@
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,14">
                     <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="RECENT UPLOADS" Margin="0,0,22,0" Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Recent Uploads"
                                  IsChecked="{Binding DataContext.SelectedTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource EnumEqualsConverter}, ConverterParameter='Recent Uploads', Mode=OneWay}"/>
-                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="VIDEOS" Margin="0,0,22,0"/>
-                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="SHORTS" Margin="0,0,22,0"/>
-                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="LIVESTREAMS" Margin="0,0,22,0"/>
-                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="PLAYLISTS" Margin="0,0,22,0"/>
-                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="ABOUT"/>
+                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="VIDEOS" Margin="0,0,22,0" Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Videos"
+                                 IsChecked="{Binding DataContext.SelectedTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource EnumEqualsConverter}, ConverterParameter='Videos', Mode=OneWay}"/>
+                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="SHORTS" Margin="0,0,22,0" Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Shorts"
+                                 IsChecked="{Binding DataContext.SelectedTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource EnumEqualsConverter}, ConverterParameter='Shorts', Mode=OneWay}"/>
+                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="LIVESTREAMS" Margin="0,0,22,0" Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Livestreams"
+                                 IsChecked="{Binding DataContext.SelectedTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource EnumEqualsConverter}, ConverterParameter='Livestreams', Mode=OneWay}"/>
+                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="PLAYLISTS" Margin="0,0,22,0" Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="Playlists"
+                                 IsChecked="{Binding DataContext.SelectedTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource EnumEqualsConverter}, ConverterParameter='Playlists', Mode=OneWay}"/>
+                    <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="ABOUT" Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="About"
+                                 IsChecked="{Binding DataContext.SelectedTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource EnumEqualsConverter}, ConverterParameter='About', Mode=OneWay}"/>
                 </StackPanel>
                 <Border DockPanel.Dock="Top" Height="1" Background="{StaticResource DividerBrush}" Margin="0,-14,0,16"/>
 
@@ -212,12 +217,15 @@
                 </Grid>
 
                 <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                    <TextBlock Text="Showing 1–25 of 842 items" Style="{StaticResource MetaText}" VerticalAlignment="Center"/>
-                    <Button Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Padding="16,9" FontSize="12" Content="LOAD MORE" FontWeight="Bold"/>
+                    <TextBlock VerticalAlignment="Center" Style="{StaticResource MetaText}">
+                        <Run Text="Showing "/><Run Text="{Binding Uploads.Count, Mode=OneWay}"/><Run Text=" uploads"/>
+                    </TextBlock>
+                    <Button Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" Padding="16,9" FontSize="12" Content="LOAD MORE" FontWeight="Bold"
+                            Command="{Binding DataContext.LoadMoreCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                 </Grid>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding DataContext.Uploads, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                    <ItemsControl ItemsSource="{Binding DataContext.UploadsView, RelativeSource={RelativeSource AncestorType=UserControl}}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Style="{StaticResource UploadRowItem}"
@@ -276,7 +284,7 @@
                             <TextBlock Text="{Binding Handle}" Style="{StaticResource MetaText}"/>
                         </StackPanel>
                     </StackPanel>
-                    <Button Style="{StaticResource PlainHoverButton}" Command="{Binding DataContext.OpenChannelCommand, RelativeSource={RelativeSource AncestorType=Border}}" Margin="0,0,0,16">
+                    <Button Style="{StaticResource PlainHoverButton}" Command="{Binding DataContext.OpenChannelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" Margin="0,0,0,16">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Open Channel" Foreground="{StaticResource OrangePrimaryBrush}" FontWeight="SemiBold" FontSize="12"/>
                             <Path Data="{StaticResource IconExternalLink}" Style="{StaticResource Icon}" Width="11" Height="11" Stroke="{StaticResource OrangePrimaryBrush}" Margin="6,0,0,0"/>
@@ -306,13 +314,13 @@
 
                     <TextBlock Text="ACTIONS" Style="{StaticResource SectionTitleText}" FontSize="12" Margin="0,0,0,10"/>
                     <Button Style="{StaticResource SecondaryButton}" Content="OPEN CHANNEL" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
-                            Command="{Binding DataContext.OpenChannelCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                            Command="{Binding DataContext.OpenChannelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                     <Button Style="{StaticResource SecondaryButton}" Content="DOWNLOAD LATEST" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
-                            Command="{Binding DataContext.DownloadLatestCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                            Command="{Binding DataContext.DownloadLatestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                     <Button Style="{StaticResource SecondaryButton}" Content="MARK ALL AS SEEN" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
-                            Command="{Binding DataContext.MarkAllAsSeenCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                            Command="{Binding DataContext.MarkAllAsSeenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                     <Button Style="{StaticResource DestructiveButton}" Content="UNFOLLOW CHANNEL" Padding="12,10" HorizontalContentAlignment="Left"
-                            Command="{Binding DataContext.UnfollowChannelCommand, RelativeSource={RelativeSource AncestorType=Border}}"/>
+                            Command="{Binding DataContext.UnfollowChannelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                 </StackPanel>
             </Border>
         </Grid>

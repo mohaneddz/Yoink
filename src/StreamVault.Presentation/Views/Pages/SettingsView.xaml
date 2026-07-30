@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:shared="clr-namespace:StreamVault.Presentation.Views.Shared"
              xmlns:conv="clr-namespace:StreamVault.Presentation.Converters"
+             xmlns:controls="clr-namespace:StreamVault.Presentation.Controls"
              xmlns:vm="clr-namespace:StreamVault.Presentation.ViewModels"
              xmlns:models="clr-namespace:StreamVault.Presentation.ViewModels.Models"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:SettingsViewModel}">
@@ -183,7 +184,8 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding FilenameTemplate}" Style="{StaticResource FieldTextBox}"/>
-                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="13,11">
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="13,11" ToolTip="Insert variable"
+                                        ContextMenu="{StaticResource TemplateVariableMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
                                     <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}"/>
                                 </Button>
                             </Grid>

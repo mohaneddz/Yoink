@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StreamVault.Application.Abstractions;
@@ -36,6 +38,8 @@ public partial class ChannelsViewModel : ObservableObject
         _settings = settings;
         _system = system;
         _navigation = navigation;
+        _uploadsView = CollectionViewSource.GetDefaultView(Uploads);
+        _uploadsView.Filter = FilterUpload;
         _ = LoadAsync();
     }
 
@@ -43,8 +47,12 @@ public partial class ChannelsViewModel : ObservableObject
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isBusy;
 
+    private readonly ICollectionView _uploadsView;
+    private int _uploadLimit = 50;
+
     public ObservableCollection<SavedChannel> Channels { get; } = new();
     public ObservableCollection<ChannelUpload> Uploads { get; } = new();
+    public ICollectionView UploadsView => _uploadsView;
 
     [ObservableProperty] private SavedChannel? _selectedChannel;
     [ObservableProperty] private string _selectedTab = "Recent Uploads";
@@ -53,6 +61,35 @@ public partial class ChannelsViewModel : ObservableObject
 
     [RelayCommand]
     private void SelectTab(string tab) => SelectedTab = tab;
+
+    partial void OnSelectedTabChanged(string value) => _uploadsView.Refresh();
+
+    private bool FilterUpload(object obj)
+    {
+        if (obj is not ChannelUpload upload)
+        {
+            return false;
+        }
+
+        return SelectedTab?.ToLowerInvariant() switch
+        {
+            "videos" => upload.Type == ChannelUploadType.Video,
+            "shorts" => upload.Type == ChannelUploadType.Short,
+            "livestreams" => upload.Type == ChannelUploadType.Live,
+            "playlists" => upload.Type == ChannelUploadType.Playlist,
+            _ => true
+        };
+    }
+
+    [RelayCommand]
+    private async Task LoadMore()
+    {
+        if (SelectedChannel is not null)
+        {
+            _uploadLimit += 50;
+            await LoadUploadsAsync(SelectedChannel);
+        }
+    }
 
     [RelayCommand]
     private async Task SelectChannel(SavedChannel channel)
@@ -150,7 +187,7 @@ public partial class ChannelsViewModel : ObservableObject
         StatusMessage = "Loading uploads…";
         try
         {
-            var result = await _inspector.InspectPlaylistAsync(channel.ChannelUrl, limit: 50);
+            var result = await _inspector.InspectPlaylistAsync(channel.ChannelUrl, limit: _uploadLimit);
             if (result.IsFailure)
             {
                 StatusMessage = result.Error ?? "Could not load uploads.";
