@@ -370,6 +370,7 @@
 
         <!-- Bottom actions -->
         <Grid Grid.Row="2" Margin="0,16,0,0">
+            <TextBlock Style="{StaticResource StatusMessageText}" Text="{Binding StatusMessage}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal">
                 <Button Style="{StaticResource PrimaryButton}" Padding="22,13" Command="{Binding SaveChangesCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">

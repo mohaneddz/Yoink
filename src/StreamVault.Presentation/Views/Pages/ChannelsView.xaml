@@ -116,6 +116,7 @@
                 <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitleText}" Margin="0,0,0,12">
                     <Run Text="SAVED CHANNELS ("/><Run Text="{Binding Channels.Count, Mode=OneWay}"/><Run Text=")"/>
                 </TextBlock>
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource StatusMessageText}" Text="{Binding StatusMessage}" Margin="0,0,0,10"/>
                 <Button DockPanel.Dock="Bottom" Style="{StaticResource SecondaryButton}" Command="{Binding AddChannelCommand}" Padding="12,12">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>

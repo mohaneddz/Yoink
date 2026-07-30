@@ -110,6 +110,15 @@ public partial class DownloadViewModel : ObservableObject
 
     partial void OnSelectedStreamChanged(StreamOption? value) => OnPropertyChanged(nameof(SelectedStreamText));
 
+    // Choosing a quality preset clears any explicit stream pick so the height-based selector applies.
+    partial void OnQualityChanged(string value)
+    {
+        if (SelectedStream is not null && SelectedStream.Resolution != value)
+        {
+            SelectedStream = null;
+        }
+    }
+
     [RelayCommand]
     private async Task Inspect()
     {

@@ -326,6 +326,8 @@
                                 Command="{Binding DataContext.ConvertVideoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource DestructiveButton}" Content="REMOVE FROM LIBRARY" Padding="12,10" HorizontalContentAlignment="Left"
                                 Command="{Binding DataContext.RemoveFromLibraryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <TextBlock Style="{StaticResource StatusMessageText}"
+                                   Text="{Binding DataContext.StatusMessage, RelativeSource={RelativeSource AncestorType=UserControl}}" Margin="0,10,0,0"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>

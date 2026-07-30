@@ -94,6 +94,20 @@
         </Setter>
     </Style>
 
+    <!-- Inline status/feedback line (inspection progress, errors, confirmations). Hidden when empty. -->
+    <Style x:Key="StatusMessageText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
+        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{StaticResource OrangePrimaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Style.Triggers>
+            <Trigger Property="Text" Value="">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- Uppercase muted field label used above inputs across all pages -->
     <Style x:Key="FieldLabel" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>

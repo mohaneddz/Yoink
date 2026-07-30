@@ -41,6 +41,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,0,40,24">
         <StackPanel>
             <shared:PageHeaderView HeaderTitle="PLAYLISTS" HeaderTagline="BATCH. ORGANIZE. DOWNLOAD."/>
+            <TextBlock Style="{StaticResource StatusMessageText}" Text="{Binding StatusMessage}" Margin="0,0,0,14"/>
 
             <!-- Source bar -->
             <Grid Margin="0,0,0,20">
