@@ -127,9 +127,9 @@
                 <ColumnDefinition Width="16"/>
                 <ColumnDefinition Width="180"/>
             </Grid.ColumnDefinitions>
-            <ComboBox Grid.Column="0" Style="{StaticResource FieldComboBox}" Text="{Binding ResultFilter}" IsEditable="True" IsReadOnly="True"/>
-            <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" Text="{Binding SourceTypeFilter}" IsEditable="True" IsReadOnly="True"/>
-            <ComboBox Grid.Column="4" Style="{StaticResource FieldComboBox}" Text="{Binding FormatFilter}" IsEditable="True" IsReadOnly="True"/>
+            <ComboBox Grid.Column="0" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ResultFilterOptions}" SelectedItem="{Binding ResultFilter}"/>
+            <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SourceTypeOptions}" SelectedItem="{Binding SourceTypeFilter}"/>
+            <ComboBox Grid.Column="4" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding FormatOptions}" SelectedItem="{Binding FormatFilter}"/>
             <Button Grid.Column="6" Style="{StaticResource SecondaryButton}" Command="{Binding ClearFiltersCommand}">
                 <StackPanel Orientation="Horizontal">
                     <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>

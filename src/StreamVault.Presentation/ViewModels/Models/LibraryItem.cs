@@ -6,6 +6,8 @@ namespace StreamVault.Presentation.ViewModels.Models;
 public partial class LibraryItem : ObservableObject
 {
     [ObservableProperty] private bool _isSelected;
+    [ObservableProperty] private int _entryId;
+    [ObservableProperty] private StreamVault.Shared.DownloadKind _kind;
     [ObservableProperty] private string _thumbnailHex = "#FF2B3542";
     [ObservableProperty] private string _durationText = string.Empty;
     [ObservableProperty] private string _title = string.Empty;
