@@ -63,13 +63,13 @@
                                  Tag="Paste a playlist or channel URL..."/>
                     </Grid>
                 </Border>
-                <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0">
+                <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Command="{Binding PasteCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
                         <TextBlock Text="PASTE"/>
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0">
+                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Command="{Binding InspectCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                         <TextBlock Text="INSPECT" FontWeight="Bold"/>
@@ -248,18 +248,18 @@
                             <TextBlock Text="BATCH SETTINGS" Style="{StaticResource SectionTitleText}" Margin="0,0,0,14"/>
 
                             <TextBlock Text="COMMON FORMAT" Style="{StaticResource FieldLabel}"/>
-                            <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding CommonFormat}" IsEditable="True" IsReadOnly="True" Margin="0,0,0,12"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding FormatOptions}" SelectedItem="{Binding CommonFormat}" Margin="0,0,0,12"/>
 
                             <TextBlock Text="VIDEO QUALITY" Style="{StaticResource FieldLabel}"/>
-                            <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding VideoQuality}" IsEditable="True" IsReadOnly="True" Margin="0,0,0,12"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoQualityOptions}" SelectedItem="{Binding VideoQuality}" Margin="0,0,0,12"/>
 
                             <TextBlock Text="AUDIO QUALITY" Style="{StaticResource FieldLabel}"/>
-                            <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding AudioQuality}" IsEditable="True" IsReadOnly="True" Margin="0,0,0,12"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding AudioQuality}" Margin="0,0,0,12"/>
 
                             <Grid Margin="0,0,0,12">
                                 <StackPanel>
                                     <TextBlock Text="SUBTITLES" Style="{StaticResource FieldLabel}"/>
-                                    <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding SubtitleLanguage}" IsEditable="True" IsReadOnly="True" Width="200" HorizontalAlignment="Left"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}" Width="200" HorizontalAlignment="Left"/>
                                 </StackPanel>
                                 <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
                                     <StackPanel Orientation="Horizontal">
@@ -290,7 +290,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding OutputFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
-                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="12,10" FontSize="11" Content="BROWSE"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="12,10" FontSize="11" Content="BROWSE" Command="{Binding BrowseOutputFolderCommand}"/>
                             </Grid>
 
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -299,7 +299,7 @@
                             </StackPanel>
 
                             <TextBlock Text="NUMBERING PATTERN" Style="{StaticResource FieldLabel}"/>
-                            <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding NumberingPattern}" IsEditable="True" IsReadOnly="True"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding NumberingOptions}" SelectedItem="{Binding NumberingPattern}"/>
                         </StackPanel>
                     </Border>
 

@@ -13,6 +13,7 @@ public enum PlaylistEntryAvailability
 public partial class PlaylistEntry : ObservableObject
 {
     [ObservableProperty] private bool _isSelected;
+    [ObservableProperty] private string _url = string.Empty;
     [ObservableProperty] private int _index;
     [ObservableProperty] private string _thumbnailHex = "#FF2B3542";
     [ObservableProperty] private string _title = string.Empty;
