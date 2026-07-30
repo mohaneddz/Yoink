@@ -103,5 +103,5 @@ public static class Formatting
         date?.ToString("MMM d, yyyy", CultureInfo.InvariantCulture) ?? "—";
 
     public static string ShortDate(DateTimeOffset? when) =>
-        when?.ToString("MMM d, yyyy • HH:mm", CultureInfo.InvariantCulture) ?? "—";
+        when?.ToLocalTime().ToString("MMM d, yyyy • HH:mm", CultureInfo.InvariantCulture) ?? "—";
 }
