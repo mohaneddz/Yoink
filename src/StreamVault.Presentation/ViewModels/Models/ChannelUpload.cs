@@ -14,6 +14,7 @@ public enum ChannelUploadType
 public partial class ChannelUpload : ObservableObject
 {
     [ObservableProperty] private bool _isSelected;
+    [ObservableProperty] private string _url = string.Empty;
     [ObservableProperty] private string _thumbnailHex = "#FF2B3542";
     [ObservableProperty] private string _title = string.Empty;
     [ObservableProperty] private string _dateText = string.Empty;

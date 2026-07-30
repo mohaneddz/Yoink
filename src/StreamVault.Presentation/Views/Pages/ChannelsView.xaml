@@ -94,7 +94,7 @@
                     <TextBlock Text="ADD CHANNEL"/>
                 </StackPanel>
             </Button>
-            <Button Grid.Column="2" Style="{StaticResource SecondaryButton}">
+            <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Command="{Binding AddChannelCommand}">
                 <StackPanel Orientation="Horizontal">
                     <Path Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                     <TextBlock Text="INSPECT" FontWeight="Bold"/>
