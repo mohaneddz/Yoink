@@ -30,6 +30,13 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
     <Product>StreamVault</Product>
     <Company>StreamVault</Company>
+    <Authors>StreamVault</Authors>
+    <Description>A modern desktop media downloader powered by yt-dlp and FFmpeg.</Description>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Copyright>Copyright © 2026 StreamVault</Copyright>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
 </Project>
