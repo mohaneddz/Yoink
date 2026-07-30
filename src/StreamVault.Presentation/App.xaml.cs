@@ -1,7 +1,10 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using StreamVault.Application.Abstractions;
+using StreamVault.Infrastructure;
 using StreamVault.Presentation.Navigation;
+using StreamVault.Presentation.Services;
 using StreamVault.Presentation.ViewModels;
 
 namespace StreamVault.Presentation;
@@ -10,7 +13,7 @@ public partial class App : System.Windows.Application
 {
     private IHost? _host;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
@@ -20,8 +23,41 @@ public partial class App : System.Windows.Application
 
         _host.Start();
 
-        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+        var services = _host.Services;
+
+        // Load settings and prepare the database before any page binds to data.
+        await services.GetRequiredService<ISettingsService>().LoadAsync();
+        await services.InitializeStreamVaultDatabaseAsync();
+
+        var mainWindow = services.GetRequiredService<MainWindow>();
         mainWindow.Show();
+
+        // Provision yt-dlp/ffmpeg in the background so first launch isn't blocked.
+        _ = ProvisionToolsAsync(services);
+    }
+
+    private static async Task ProvisionToolsAsync(IServiceProvider services)
+    {
+        var status = services.GetRequiredService<SystemStatusViewModel>();
+        var tools = services.GetRequiredService<IToolProvisioner>();
+
+        status.State = SystemHealthState.Degraded;
+        status.Detail = "Preparing yt-dlp and ffmpeg…";
+
+        var log = new Progress<string>(msg => status.Detail = msg);
+        var result = await tools.EnsureAsync(log);
+
+        if (result.IsFailure)
+        {
+            status.State = SystemHealthState.MissingYtDlp;
+            status.Detail = result.Error ?? "Tools unavailable";
+            return;
+        }
+
+        var statuses = await tools.GetStatusAsync();
+        var ytdlp = statuses.FirstOrDefault(s => s.Name == "yt-dlp");
+        status.State = SystemHealthState.Operational;
+        status.Detail = ytdlp?.Version is { } v ? $"yt-dlp {v} · ffmpeg ready" : "All systems normal";
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -33,15 +69,12 @@ public partial class App : System.Windows.Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
+        services.AddStreamVaultInfrastructure();
+        services.AddSingleton<ISystemAccess, SystemAccess>();
+        services.AddSingleton<DownloadCoordinator>();
+
         services.AddSingleton<SystemStatusViewModel>();
-        services.AddSingleton<StatusStripViewModel>(_ => new StatusStripViewModel
-        {
-            ActiveDownloads = 2,
-            TotalSpeedMbps = 31.0,
-            FilesInQueue = 5,
-            StorageFreeTb = 1.23,
-            Network = NetworkState.Stable
-        });
+        services.AddSingleton<StatusStripViewModel>();
         services.AddSingleton<InspectorViewModel>();
 
         services.AddTransient<DownloadViewModel>();
