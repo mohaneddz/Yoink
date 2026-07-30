@@ -30,6 +30,7 @@ public partial class App : System.Windows.Application
         await services.InitializeStreamVaultDatabaseAsync();
 
         var mainWindow = services.GetRequiredService<MainWindow>();
+        services.GetRequiredService<ShellViewModel>().Initialize();
         mainWindow.Show();
 
         // Provision yt-dlp/ffmpeg in the background so first launch isn't blocked.

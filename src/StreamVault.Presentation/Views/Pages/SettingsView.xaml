@@ -119,11 +119,11 @@
                             <Grid Margin="0,0,0,6">
                                 <TextBlock Text="Simultaneous downloads" Style="{StaticResource SettingTitle}"/>
                             </Grid>
-                            <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding SimultaneousDownloads}" IsEditable="True" IsReadOnly="True" Margin="0,0,0,16"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SimultaneousOptions}" SelectedItem="{Binding SimultaneousDownloads}" Margin="0,0,0,16"/>
 
                             <TextBlock Text="Download speed limit" Style="{StaticResource SettingTitle}" Margin="0,0,0,6"/>
                             <TextBlock Text="Throttle total download speed (0 = unlimited)." Style="{StaticResource SettingHint}" Margin="0,-4,0,6"/>
-                            <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding DownloadSpeedLimit}" IsEditable="True" IsReadOnly="True" Margin="0,0,0,20"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SpeedLimitOptions}" SelectedItem="{Binding DownloadSpeedLimit}" Margin="0,0,0,20"/>
 
                             <TextBlock Text="NOTIFICATIONS" Style="{StaticResource CardSectionTitle}"/>
                             <Grid Margin="0,0,0,14">
@@ -148,8 +148,8 @@
                                     <ColumnDefinition Width="16"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <ComboBox Grid.Column="0" Style="{StaticResource FieldComboBox}" Text="{Binding PreferredVideoContainer}" IsEditable="True" IsReadOnly="True"/>
-                                <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" Text="{Binding PreferredAudioContainer}" IsEditable="True" IsReadOnly="True"/>
+                                <ComboBox Grid.Column="0" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoContainerOptions}" SelectedItem="{Binding PreferredVideoContainer}"/>
+                                <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioContainerOptions}" SelectedItem="{Binding PreferredAudioContainer}"/>
                             </Grid>
 
                             <Grid Margin="0,0,0,16">
@@ -162,15 +162,15 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="PREFERRED VIDEO QUALITY" Style="{StaticResource FieldLabel}"/>
-                                    <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding PreferredVideoQuality}" IsEditable="True" IsReadOnly="True"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoQualityOptions}" SelectedItem="{Binding PreferredVideoQuality}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="PREFERRED AUDIO QUALITY" Style="{StaticResource FieldLabel}"/>
-                                    <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding PreferredAudioQuality}" IsEditable="True" IsReadOnly="True"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding PreferredAudioQuality}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="4">
                                     <TextBlock Text="DEFAULT SUBTITLES" Style="{StaticResource FieldLabel}"/>
-                                    <ComboBox Style="{StaticResource FieldComboBox}" Text="{Binding DefaultSubtitles}" IsEditable="True" IsReadOnly="True"/>
+                                    <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding DefaultSubtitles}"/>
                                 </StackPanel>
                             </Grid>
 
@@ -202,7 +202,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding CookiesFile}" Style="{StaticResource FieldTextBox}"/>
-                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE" Command="{Binding BrowseCookiesCommand}"/>
                             </Grid>
 
                             <TextBlock Text="yt-dlp path" Style="{StaticResource SettingTitle}"/>
@@ -214,7 +214,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding YtDlpPath}" Style="{StaticResource FieldTextBox}"/>
-                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE" Command="{Binding BrowseYtDlpCommand}"/>
                             </Grid>
 
                             <TextBlock Text="FFmpeg path" Style="{StaticResource SettingTitle}"/>
@@ -226,7 +226,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding FfmpegPath}" Style="{StaticResource FieldTextBox}"/>
-                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="14,11" FontSize="12" Content="BROWSE" Command="{Binding BrowseFfmpegCommand}"/>
                             </Grid>
                         </StackPanel>
                     </Border>

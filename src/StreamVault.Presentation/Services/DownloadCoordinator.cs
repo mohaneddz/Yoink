@@ -40,6 +40,7 @@ public sealed class DownloadCoordinator
     private readonly IFfmpegService _ffmpeg;
     private readonly ISettingsService _settings;
     private readonly ConcurrentDictionary<QueueJob, JobRuntime> _runtimes = new();
+    private readonly ConcurrentDictionary<QueueJob, double> _speeds = new();
 
     private int _orderCounter;
 
@@ -61,6 +62,15 @@ public sealed class DownloadCoordinator
     public ObservableCollection<QueueJob> Jobs { get; } = new();
 
     public event EventHandler? JobsChanged;
+
+    /// <summary>Combined download speed of all currently-active jobs, in bytes/second.</summary>
+    public double AggregateBytesPerSecond => _speeds.Sum(kv => kv.Value);
+
+    public int ActiveJobCount => Jobs.Count(j => j.Status is QueueJobStatus.DownloadingVideo or QueueJobStatus.DownloadingAudio
+        or QueueJobStatus.DownloadingSubtitles or QueueJobStatus.Merging or QueueJobStatus.Converting
+        or QueueJobStatus.WritingMetadata or QueueJobStatus.Retrying);
+
+    public int PendingJobCount => Jobs.Count(j => j.Status is not (QueueJobStatus.Completed or QueueJobStatus.Cancelled));
 
     public QueueJob Enqueue(DownloadRequest request, EnqueueInfo info, bool startImmediately)
     {
@@ -287,6 +297,7 @@ public sealed class DownloadCoordinator
         if (p.SpeedBytesPerSecond is not null)
         {
             job.SpeedText = Formatting.Speed(p.SpeedBytesPerSecond);
+            _speeds[job] = p.SpeedBytesPerSecond.Value;
         }
 
         if (p.EtaSeconds is not null)
@@ -317,6 +328,7 @@ public sealed class DownloadCoordinator
         rt.Running = false;
         rt.Cts?.Dispose();
         rt.Cts = null;
+        _speeds.TryRemove(job, out _);
 
         switch (result.Outcome)
         {
