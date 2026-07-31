@@ -16,6 +16,10 @@
   <ItemGroup>
     <Resource Include="Themes\Fonts\BebasNeue-Regular.ttf" />
     <Resource Include="app.ico" />
+    <Resource Include="Assets\yoink_wordmark.png" />
+    <Resource Include="Assets\yoink_sidebar_icon.png" />
+    <Resource Include="Assets\yoink_app_icon_dark.png" />
+    <Resource Include="Assets\yoink_app_icon_light.png" />
   </ItemGroup>
 
   <PropertyGroup>

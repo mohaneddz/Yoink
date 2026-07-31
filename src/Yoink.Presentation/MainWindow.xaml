@@ -41,12 +41,10 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                    <Border Background="{StaticResource OrangePrimaryBrush}" Width="26" Height="26">
-                        <TextBlock Text="S" Foreground="White" FontWeight="Bold" FontSize="15"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <TextBlock Text="Yoink" Foreground="White" FontWeight="Bold" FontSize="15"
-                               Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    <Image Source="Assets/yoink_sidebar_icon.png" Width="28" Height="28"
+                           VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Image Source="Assets/yoink_wordmark.png" Height="20" Margin="9,1,0,0"
+                           VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
