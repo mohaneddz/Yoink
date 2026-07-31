@@ -13,6 +13,7 @@
         <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
         <conv:ChannelUploadTypeConverter x:Key="UploadTypeConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <conv:CountToVisibilityConverter x:Key="CountToVisibility"/>
 
         <Style x:Key="ChannelListItem" TargetType="Border">
             <Setter Property="Background" Value="White"/>
@@ -124,7 +125,13 @@
                         <TextBlock Text="ADD CHANNEL" FontWeight="Bold" FontSize="12"/>
                     </StackPanel>
                 </Button>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+                <Grid Margin="0,0,0,12">
+                  <shared:EmptyStateView IconData="{StaticResource IconUsers}"
+                                         Title="No channels followed"
+                                         Subtitle="Add a channel to track its uploads."
+                                         Visibility="{Binding Channels.Count, Converter={StaticResource CountToVisibility}}"/>
+                  <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                Visibility="{Binding Channels.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}">
                     <ItemsControl ItemsSource="{Binding Channels}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -157,7 +164,8 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </ScrollViewer>
+                  </ScrollViewer>
+                </Grid>
             </DockPanel>
 
             <!-- Selected channel uploads -->

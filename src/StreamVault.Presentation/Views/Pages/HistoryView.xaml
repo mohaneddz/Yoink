@@ -11,6 +11,7 @@
 
     <UserControl.Resources>
         <conv:HistoryResultToBrushConverter x:Key="ResultBrushConverter"/>
+        <conv:CountToVisibilityConverter x:Key="CountToVisibility"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style x:Key="ToolbarLink" TargetType="Button">
@@ -185,7 +186,13 @@
         </StackPanel>
 
         <Border Grid.Row="4" Style="{StaticResource Card}" Padding="0">
-            <DataGrid ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord}" Style="{StaticResource FlatDataGrid}"
+          <Grid>
+            <shared:EmptyStateView IconData="{StaticResource IconClock}"
+                                   Title="No download history yet"
+                                   Subtitle="Completed and failed downloads will be recorded here."
+                                   Visibility="{Binding Records.Count, Converter={StaticResource CountToVisibility}}"/>
+            <DataGrid Visibility="{Binding Records.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}"
+                      ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord}" Style="{StaticResource FlatDataGrid}"
                       RowStyle="{StaticResource HistoryRowStyle}" controls:DataGridBehaviors.SelectRowOnRightClick="True" FontSize="11.5">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
@@ -237,6 +244,7 @@
                     <DataGridTextColumn Header="DUR." Binding="{Binding DurationText}" Width="0.55*"/>
                 </DataGrid.Columns>
             </DataGrid>
+          </Grid>
         </Border>
     </Grid>
 </UserControl>

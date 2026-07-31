@@ -16,6 +16,7 @@
         <conv:QueueJobStatusToBrushConverter x:Key="StatusBrushConverter"/>
         <conv:ProgressToStarWidthConverter x:Key="ProgressStarConverter"/>
         <conv:QueueJobStatusToActionIconConverter x:Key="ActionIconConverter"/>
+        <conv:CountToVisibilityConverter x:Key="CountToVisibility"/>
 
         <Style x:Key="FilterCount" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
@@ -161,7 +162,13 @@
 
         <!-- Job table -->
         <Border Grid.Row="3" Style="{StaticResource Card}" Padding="0">
-            <DataGrid ItemsSource="{Binding FilteredJobs}" SelectedItem="{Binding SelectedJob}"
+          <Grid>
+            <shared:EmptyStateView IconData="{StaticResource IconInbox}"
+                                   Title="Your queue is empty"
+                                   Subtitle="Downloads you start from the Download page will appear here."
+                                   Visibility="{Binding Jobs.Count, Converter={StaticResource CountToVisibility}}"/>
+            <DataGrid Visibility="{Binding Jobs.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}"
+                      ItemsSource="{Binding FilteredJobs}" SelectedItem="{Binding SelectedJob}"
                       Style="{StaticResource FlatDataGrid}" RowStyle="{StaticResource QueueRowStyle}"
                       controls:DataGridBehaviors.SelectRowOnRightClick="True" FontSize="11" ColumnHeaderHeight="28">
                 <DataGrid.Resources>
@@ -244,6 +251,7 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
+          </Grid>
         </Border>
 
         <!-- Pagination footer -->

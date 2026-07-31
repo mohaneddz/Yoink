@@ -14,6 +14,7 @@
         <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
         <conv:EnumEqualsToVisibilityConverter x:Key="EnumEqualsToVisibility"/>
         <conv:StringToGeometryConverter x:Key="StringToGeometry"/>
+        <conv:CountToVisibilityConverter x:Key="CountToVisibility"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style x:Key="GroupHeader" TargetType="TextBlock">
@@ -168,7 +169,12 @@
                 <ColumnDefinition Width="360"/>
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <shared:EmptyStateView Grid.Column="0" IconData="{StaticResource IconArchive}"
+                                   Title="Your library is empty"
+                                   Subtitle="Downloaded media will be organized here once you complete a download."
+                                   Visibility="{Binding RecentDownloads.Count, Converter={StaticResource CountToVisibility}}"/>
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding RecentDownloads.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}">
                 <StackPanel>
                     <TextBlock Style="{StaticResource GroupHeader}">
                         <Run Text="Recent Downloads ("/><Run Text="{Binding RecentDownloads.Count, Mode=OneWay}"/><Run Text=")"/>
