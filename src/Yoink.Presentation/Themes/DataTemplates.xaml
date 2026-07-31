@@ -1,0 +1,45 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:Yoink.Presentation.ViewModels"
+                    xmlns:models="clr-namespace:Yoink.Presentation.ViewModels.Models"
+                    xmlns:pages="clr-namespace:Yoink.Presentation.Views.Pages">
+
+    <!-- Maps each page view model to its view for the shell's ViewModel-first navigation. -->
+    <DataTemplate DataType="{x:Type vm:DownloadViewModel}">
+        <pages:DownloadView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:QueueViewModel}">
+        <pages:QueueView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:PlaylistsViewModel}">
+        <pages:PlaylistsView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ChannelsViewModel}">
+        <pages:ChannelsView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:LibraryViewModel}">
+        <pages:LibraryView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:HistoryViewModel}">
+        <pages:HistoryView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type models:HistoryRecord}">
+        <pages:HistoryRecordInspectorView/>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+        <pages:SettingsView/>
+    </DataTemplate>
+
+    <!-- Inspector content template: shown in the shell's right panel when a queue job is selected. -->
+    <DataTemplate DataType="{x:Type models:QueueJob}">
+        <pages:QueueJobInspectorView/>
+    </DataTemplate>
+
+</ResourceDictionary>

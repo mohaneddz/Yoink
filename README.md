@@ -1,8 +1,8 @@
-# StreamVault
+# Yoink
 
 A modern Windows desktop media downloader built on **yt-dlp** and **FFmpeg**, with a clean WPF interface for downloading, organizing, and managing video and audio from thousands of sites.
 
-StreamVault provisions its own copies of yt-dlp and FFmpeg on first launch, so there is nothing to install separately — download the app and go.
+Yoink provisions its own copies of yt-dlp and FFmpeg on first launch, so there is nothing to install separately — download the app and go.
 
 ## Features
 
@@ -16,7 +16,7 @@ StreamVault provisions its own copies of yt-dlp and FFmpeg on first launch, so t
   filename templates, proxy, cookies, tool paths, appearance, and diagnostics.
 
 Data (settings, the SQLite database, provisioned tools, and logs) is stored under
-`%LocalAppData%\StreamVault`.
+`%LocalAppData%\Yoink`.
 
 ## Requirements
 
@@ -32,11 +32,11 @@ Clean-architecture layering:
 
 | Project | Responsibility |
 |---|---|
-| `StreamVault.Domain` | Entities, media/settings models (no dependencies) |
-| `StreamVault.Application` | Abstractions and use-case contracts |
-| `StreamVault.Infrastructure` | yt-dlp/FFmpeg integration, SQLite persistence, settings, tool provisioning |
-| `StreamVault.Presentation` | WPF UI (MVVM via CommunityToolkit.Mvvm) |
-| `StreamVault.Shared` | Cross-cutting primitives (e.g. `Result`) |
+| `Yoink.Domain` | Entities, media/settings models (no dependencies) |
+| `Yoink.Application` | Abstractions and use-case contracts |
+| `Yoink.Infrastructure` | yt-dlp/FFmpeg integration, SQLite persistence, settings, tool provisioning |
+| `Yoink.Presentation` | WPF UI (MVVM via CommunityToolkit.Mvvm) |
+| `Yoink.Shared` | Cross-cutting primitives (e.g. `Result`) |
 
 ## Building & running (from source)
 
@@ -51,41 +51,41 @@ run.bat
 Or with the .NET CLI directly:
 
 ```bat
-dotnet build StreamVault.slnx
-dotnet run --project src/StreamVault.Presentation/StreamVault.Presentation.csproj
+dotnet build Yoink.slnx
+dotnet run --project src/Yoink.Presentation/Yoink.Presentation.csproj
 ```
 
 ## Tests
 
 ```bat
-dotnet test StreamVault.slnx
+dotnet test Yoink.slnx
 ```
 
 ## Publishing a release build
 
-Produces a single self-contained `StreamVault.exe` (no external dependencies):
+Produces a single self-contained `Yoink.exe` (no external dependencies):
 
 ```bat
 publish.bat
 ```
 
-Output: `src\StreamVault.Presentation\bin\Release\net8.0-windows\win-x64\publish\StreamVault.exe`
+Output: `src\Yoink.Presentation\bin\Release\net8.0-windows\win-x64\publish\Yoink.exe`
 
 The same profile can be invoked via the CLI:
 
 ```bat
-dotnet publish src/StreamVault.Presentation/StreamVault.Presentation.csproj -p:PublishProfile=win-x64
+dotnet publish src/Yoink.Presentation/Yoink.Presentation.csproj -p:PublishProfile=win-x64
 ```
 
-To distribute, ship that single `StreamVault.exe`. On first launch it creates its data folder,
-initializes the database, and downloads yt-dlp/FFmpeg into `%LocalAppData%\StreamVault\tools`.
+To distribute, ship that single `Yoink.exe`. On first launch it creates its data folder,
+initializes the database, and downloads yt-dlp/FFmpeg into `%LocalAppData%\Yoink\tools`.
 
 ## Troubleshooting
 
-- **"Tools unavailable" on startup** — StreamVault couldn't download yt-dlp/FFmpeg. Check your
+- **"Tools unavailable" on startup** — Yoink couldn't download yt-dlp/FFmpeg. Check your
   internet connection, or set explicit executable paths in **Settings → Integrations**.
 - **Logs** — open **Settings → Advanced → View Logs** (or browse to
-  `%LocalAppData%\StreamVault\logs`). Enable **Diagnostic logging** for verbose output.
+  `%LocalAppData%\Yoink\logs`). Enable **Diagnostic logging** for verbose output.
 
 ## License
 

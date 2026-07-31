@@ -4,11 +4,11 @@ setlocal
 cd /d "%~dp0"
 
 echo Restoring packages...
-dotnet restore StreamVault.slnx
+dotnet restore Yoink.slnx
 if errorlevel 1 goto :failed
 
-echo Building StreamVault...
-dotnet build StreamVault.slnx --configuration Debug --no-restore
+echo Building Yoink...
+dotnet build Yoink.slnx --configuration Debug --no-restore
 if errorlevel 1 goto :failed
 
 echo.

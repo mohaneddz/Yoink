@@ -1,0 +1,105 @@
+<UserControl x:Class="Yoink.Presentation.Views.Pages.HistoryRecordInspectorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:conv="clr-namespace:Yoink.Presentation.Converters"
+             xmlns:controls="clr-namespace:Yoink.Presentation.Controls"
+             xmlns:models="clr-namespace:Yoink.Presentation.ViewModels.Models"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance models:HistoryRecord}">
+
+    <UserControl.Resources>
+        <conv:HistoryResultToBrushConverter x:Key="ResultBrushConverter"/>
+        <ContextMenu x:Key="HistoryInspectorMenu">
+            <MenuItem Header="Copy source URL"
+                      Command="{Binding PlacementTarget.DataContext.CopyUrlCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Open output folder"
+                      Command="{Binding PlacementTarget.DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <Grid DockPanel.Dock="Top" Margin="20,20,20,16">
+            <TextBlock VerticalAlignment="Top">
+                <Run Text="SELECTED: 1 ITEM" FontSize="11" FontWeight="Bold" Foreground="#FF6D6D68"/>
+            </TextBlock>
+            <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Command="{Binding DataContext.Inspector.CloseCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}"/>
+            </Button>
+        </Grid>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,0,20,20">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <Border Background="{Binding ThumbnailHex}" Width="60" Height="42" Margin="0,0,12,0"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" MaxWidth="200"/>
+                        <TextBlock Text="{Binding Channel}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock Text="SOURCE URL" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Text="{Binding SourceUrl}" FontSize="11" Foreground="{StaticResource OrangePrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,16"/>
+
+                <TextBlock Text="SELECTED STREAM" Style="{StaticResource SectionTitleText}" FontSize="12" Margin="0,0,0,10"/>
+                <Grid Margin="0,0,0,8"><TextBlock Text="Resolution" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding ResolutionText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                <Grid Margin="0,0,0,8"><TextBlock Text="Video" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding VideoCodecText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                <Grid Margin="0,0,0,8"><TextBlock Text="Audio" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding AudioCodecText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                <Grid Margin="0,0,0,8"><TextBlock Text="FPS" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding Fps}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                <Grid Margin="0,0,0,16"><TextBlock Text="Size (Estimated)" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding FileSizeText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+
+                <TextBlock Text="RESULT" Style="{StaticResource SectionTitleText}" FontSize="12" Margin="0,0,0,10"/>
+                <Grid Margin="0,0,0,8">
+                    <TextBlock Text="Status" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding Result}" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" Foreground="{Binding Result, Converter={StaticResource ResultBrushConverter}}"/>
+                </Grid>
+                <Grid Margin="0,0,0,8"><TextBlock Text="Completed" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding CompletedText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                <Grid Margin="0,0,0,8"><TextBlock Text="Duration" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding DurationText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                <Grid Margin="0,0,0,8"><TextBlock Text="File Size" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding FileSizeText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                <Grid Margin="0,0,0,8"><TextBlock Text="Output" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding Output}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                <Grid Margin="0,0,0,16"><TextBlock Text="Exit Code" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding ExitCodeText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+
+                <TextBlock Text="LOG PREVIEW" Style="{StaticResource FieldLabel}"/>
+                <Border Background="{StaticResource LogPanelBrush}" Padding="12" Height="130" Margin="0,4,0,8">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding LogLines}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontFamily="{StaticResource MonoFont}" FontSize="10.5" Foreground="#FFB8B8B8" TextWrapping="Wrap" Margin="0,1"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+                <TextBlock Text="VIEW FULL LOG" Foreground="{StaticResource OrangePrimaryBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,16"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Style="{StaticResource PrimaryButton}" Padding="14,12" Command="{Binding RetryCommand}">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="White" Margin="0,0,8,0"/>
+                            <TextBlock Text="RETRY THIS DOWNLOAD" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Padding="12,12" ToolTip="More actions"
+                            ContextMenu="{StaticResource HistoryInspectorMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
+                        <Path Data="{StaticResource IconChevronDown}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="White"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>
