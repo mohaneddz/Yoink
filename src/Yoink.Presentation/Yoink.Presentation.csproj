@@ -16,10 +16,13 @@
   <ItemGroup>
     <Resource Include="Themes\Fonts\BebasNeue-Regular.ttf" />
     <Resource Include="app.ico" />
+    <!-- Compiled into the app and referenced from XAML -->
     <Resource Include="Assets\yoink_wordmark.png" />
     <Resource Include="Assets\yoink_sidebar_icon.png" />
-    <Resource Include="Assets\yoink_app_icon_dark.png" />
-    <Resource Include="Assets\yoink_app_icon_light.png" />
+    <!-- Source master art (not compiled): app-icon tiles feed app.ico; full wordmark feeds the trimmed wordmark -->
+    <None Include="Assets\yoink_app_icon_dark.png" />
+    <None Include="Assets\yoink_app_icon_light.png" />
+    <None Include="Assets\yoink_title_logo.png" />
   </ItemGroup>
 
   <PropertyGroup>
