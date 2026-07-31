@@ -49,7 +49,7 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="Padding" Value="12,11"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
@@ -64,7 +64,7 @@
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
                                         <Path Data="M0,0 L6,6 L12,0" Stroke="{StaticResource TextMutedBrush}" StrokeThickness="1.6"
-                                              HorizontalAlignment="Right" Margin="0,0,12,0"/>
+                                              HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     </Border>
                                 </ControlTemplate>
                             </ToggleButton.Template>

@@ -142,7 +142,7 @@
 
                 <Border Width="1" Background="#FF1A1A1A" Margin="24,18"/>
 
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Path Data="{StaticResource IconActivity}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextMutedBrush}"/>
                     <StackPanel Margin="10,0,0,0">
                         <TextBlock Text="TOTAL SPEED" Style="{StaticResource StatusLabelText}"/>
@@ -176,7 +176,7 @@
 
                 <Border Width="1" Background="#FF1A1A1A" Margin="24,18"/>
 
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Path Data="{StaticResource IconWifi}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SuccessBrush}"/>
                     <StackPanel Margin="10,0,0,0">
                         <TextBlock Text="NETWORK" Style="{StaticResource StatusLabelText}"/>

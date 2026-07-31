@@ -228,7 +228,20 @@
                                     <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
                                     <TextBlock><Run Text="DOWNLOAD SELECTED ("/><Run Text="{Binding SelectedCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
                                 </StackPanel>
-                                <TextBlock Text="{Binding EstimatedDurationText}" FontSize="10" Opacity="0.85" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding EstimatedDurationText}" FontSize="10" Opacity="0.85" HorizontalAlignment="Center" Margin="0,2,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <Trigger Property="Text" Value="—">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </Trigger>
+                                                <Trigger Property="Text" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource SecondaryButton}" Padding="20,13" Command="{Binding AddSelectedToQueueCommand}" Margin="0,0,12,0">

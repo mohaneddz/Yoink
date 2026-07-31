@@ -12,6 +12,7 @@
     <UserControl.Resources>
         <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
         <conv:ChannelUploadTypeConverter x:Key="UploadTypeConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style x:Key="ChannelListItem" TargetType="Border">
             <Setter Property="Background" Value="White"/>
@@ -137,14 +138,12 @@
                                             <StackPanel Margin="10,0,0,0">
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"/>
-                                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="11" Height="11" Stroke="{StaticResource SuccessBrush}" Margin="5,0,0,0"/>
+                                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="11" Height="11" Stroke="{StaticResource SuccessBrush}" Margin="5,0,0,0" Visibility="{Binding Verified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                                 </StackPanel>
                                                 <TextBlock Text="{Binding Handle}" Style="{StaticResource MetaText}" FontSize="11"/>
                                             </StackPanel>
                                         </StackPanel>
-                                        <TextBlock Style="{StaticResource MetaText}" FontSize="11">
-                                            <Run Text="{Binding SubscriberCountText, Mode=OneWay}"/><Run Text=" subscribers"/>
-                                        </TextBlock>
+                                        <TextBlock Text="{Binding SubscribersText}" Style="{StaticResource MetaText}" FontSize="11"/>
                                         <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                                             <Path Data="{StaticResource IconPlay}" Style="{StaticResource Icon}" Width="10" Height="10" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,4,0"/>
                                             <TextBlock Text="{Binding VideoCountText}" Style="{StaticResource MetaText}" FontSize="11" Margin="0,0,10,0"/>
@@ -170,11 +169,9 @@
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="17"/>
-                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0"/>
+                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" Visibility="{Binding Verified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 </StackPanel>
-                                <TextBlock Style="{StaticResource MetaText}">
-                                    <Run Text="{Binding Handle, Mode=OneWay}"/><Run Text=" • "/><Run Text="{Binding SubscriberCountText, Mode=OneWay}"/><Run Text=" subscribers"/>
-                                </TextBlock>
+                                <TextBlock Text="{Binding HandleMeta}" Style="{StaticResource MetaText}"/>
                             </StackPanel>
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Right">
@@ -280,7 +277,7 @@
                         <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15"/>
-                                <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource SuccessBrush}" Margin="5,0,0,0"/>
+                                <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource SuccessBrush}" Margin="5,0,0,0" Visibility="{Binding Verified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             </StackPanel>
                             <TextBlock Text="{Binding Handle}" Style="{StaticResource MetaText}"/>
                         </StackPanel>

@@ -26,4 +26,27 @@ public partial class SavedChannel : ObservableObject
     [ObservableProperty] private string _languageText = string.Empty;
     [ObservableProperty] private string _totalViewsText = string.Empty;
     [ObservableProperty] private string _description = string.Empty;
+
+    /// <summary>"1.2M subscribers", or empty when the count is unknown (avoids a dangling "— subscribers").</summary>
+    public string SubscribersText =>
+        string.IsNullOrWhiteSpace(SubscriberCountText) || SubscriberCountText == "—"
+            ? string.Empty
+            : $"{SubscriberCountText} subscribers";
+
+    /// <summary>Handle joined with the subscriber count by a bullet, dropping either part when it is absent.</summary>
+    public string HandleMeta => (Handle, SubscribersText) switch
+    {
+        ({ Length: > 0 } h, { Length: > 0 } s) => $"{h} • {s}",
+        ({ Length: > 0 } h, _) => h,
+        (_, { Length: > 0 } s) => s,
+        _ => string.Empty
+    };
+
+    partial void OnSubscriberCountTextChanged(string value)
+    {
+        OnPropertyChanged(nameof(SubscribersText));
+        OnPropertyChanged(nameof(HandleMeta));
+    }
+
+    partial void OnHandleChanged(string value) => OnPropertyChanged(nameof(HandleMeta));
 }

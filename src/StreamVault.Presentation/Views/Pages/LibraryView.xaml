@@ -107,7 +107,7 @@
                         <Style TargetType="RadioButton" BasedOn="{StaticResource ChipToggleButton}"/>
                     </RadioButton.Style>
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconGrid}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,6,0"/>
+                        <Path Data="{StaticResource IconGrid}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
                         <TextBlock Text="GRID"/>
                     </StackPanel>
                 </RadioButton>
@@ -117,7 +117,7 @@
                         <Style TargetType="RadioButton" BasedOn="{StaticResource ChipToggleButton}"/>
                     </RadioButton.Style>
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,6,0"/>
+                        <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
                         <TextBlock Text="LIST"/>
                     </StackPanel>
                 </RadioButton>
