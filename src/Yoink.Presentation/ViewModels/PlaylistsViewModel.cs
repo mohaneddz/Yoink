@@ -11,6 +11,7 @@ using Yoink.Presentation.Navigation;
 using Yoink.Presentation.Services;
 using Yoink.Presentation.ViewModels.Models;
 using Yoink.Shared;
+using Yoink.Shared.Validation;
 using PlaylistEntry = Yoink.Presentation.ViewModels.Models.PlaylistEntry;
 
 namespace Yoink.Presentation.ViewModels;
@@ -236,7 +237,7 @@ public partial class PlaylistsViewModel : ObservableObject
         var folder = OutputFolder;
         if (CreateSubfolder && PlaylistTitle is not ("No playlist loaded" or ""))
         {
-            folder = Path.Combine(OutputFolder, Sanitize(PlaylistTitle));
+            folder = Path.Combine(OutputFolder, FileNaming.SanitizeSegment(PlaylistTitle));
         }
 
         var enqueued = 0;
@@ -346,14 +347,4 @@ public partial class PlaylistsViewModel : ObservableObject
     private static string MapLang(string label) => label == "English" ? "en" : label;
 
     private static string Capitalize(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
-
-    private static string Sanitize(string name)
-    {
-        foreach (var c in Path.GetInvalidFileNameChars())
-        {
-            name = name.Replace(c, '_');
-        }
-
-        return name.Trim();
-    }
 }
