@@ -23,3 +23,7 @@ logs/
 ## OS
 Thumbs.db
 .DS_Store
+
+# rewrite cleanup
+.env*
+plan.md
