@@ -1,20 +1,53 @@
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Yoink.Presentation.Services;
 using Yoink.Presentation.ViewModels;
+using Yoink.Presentation.Views.Dialogs;
 
 namespace Yoink.Presentation;
 
 public partial class MainWindow : Window
 {
-    public MainWindow(ShellViewModel shellViewModel)
+    private readonly DownloadCoordinator _coordinator;
+
+    public MainWindow(ShellViewModel shellViewModel, DownloadCoordinator coordinator)
     {
         InitializeComponent();
         DataContext = shellViewModel;
+        _coordinator = coordinator;
         StateChanged += OnStateChanged;
         SourceInitialized += OnSourceInitialized;
+        Closing += OnClosing;
+    }
+
+    /// <summary>Spec §8.7: confirm before closing over active downloads (they'll be interrupted otherwise).</summary>
+    private void OnClosing(object? sender, CancelEventArgs e)
+    {
+        var active = _coordinator.ActiveJobCount;
+        if (active == 0)
+        {
+            return;
+        }
+
+        var dialog = new ExitConfirmationDialog(active) { Owner = this };
+        dialog.ShowDialog();
+
+        switch (dialog.Choice)
+        {
+            case ExitChoice.Return:
+                e.Cancel = true;
+                break;
+            case ExitChoice.PauseAndExit:
+                _coordinator.PauseAll();
+                break;
+            case ExitChoice.CancelDownloadsAndExit:
+                _coordinator.CancelActiveJobs();
+                break;
+        }
     }
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;

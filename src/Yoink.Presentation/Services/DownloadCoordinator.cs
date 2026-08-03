@@ -223,6 +223,17 @@ public sealed class DownloadCoordinator
         }
     }
 
+    /// <summary>Cancels every running process and discards those jobs entirely (used by "Cancel Downloads and Exit").</summary>
+    public void CancelActiveJobs()
+    {
+        // RemoveJob() cancels the job's CancellationTokenSource before removing it, so this both
+        // stops the underlying yt-dlp process and drops the (now-discarded) job from the queue.
+        foreach (var job in Jobs.Where(j => IsActive(j.Status)).ToList())
+        {
+            RemoveJob(job);
+        }
+    }
+
     public void StartJob(QueueJob job)
     {
         if (job.Status is not (QueueJobStatus.Completed or QueueJobStatus.DownloadingVideo))
