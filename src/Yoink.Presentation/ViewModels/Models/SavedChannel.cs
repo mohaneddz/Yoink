@@ -19,7 +19,9 @@ public partial class SavedChannel : ObservableObject
     [ObservableProperty] private string _liveCountText = string.Empty;
     [ObservableProperty] private string _playlistCountText = string.Empty;
     [ObservableProperty] private string _lastCheckedText = string.Empty;
+    public DateTimeOffset? LastCheckedAtRaw { get; set; }
     [ObservableProperty] private string _nextCheckText = string.Empty;
+    [ObservableProperty] private int _checkFrequencyHours = 6;
     [ObservableProperty] private string _checkFrequencyText = "6 hours";
     [ObservableProperty] private string _joinedText = string.Empty;
     [ObservableProperty] private string _countryText = string.Empty;

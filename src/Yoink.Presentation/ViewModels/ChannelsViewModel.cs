@@ -324,25 +324,72 @@ public partial class ChannelsViewModel : ObservableObject
         }
     }
 
-    private static SavedChannel Map(SavedChannelEntry e) => new()
+    public ObservableCollection<int> CheckFrequencyOptions { get; } = new() { 1, 3, 6, 12, 24 };
+
+    [RelayCommand]
+    private async Task SetCheckFrequency(int hours)
     {
-        EntryId = e.Id,
-        ChannelUrl = e.ChannelUrl,
-        Name = e.Name,
-        Handle = e.Handle,
-        Initial = string.IsNullOrEmpty(e.Name) ? "?" : e.Name[..1].ToUpperInvariant(),
-        Verified = e.Verified,
-        SubscriberCountText = e.SubscriberCount > 0 ? Formatting.Count(e.SubscriberCount) : "—",
-        VideoCountText = e.VideoCount > 0 ? e.VideoCount.ToString() : "—",
-        ShortCountText = "—",
-        LiveCountText = "—",
-        PlaylistCountText = "—",
-        TotalViewsText = "—",
-        Description = e.Description,
-        CountryText = string.IsNullOrWhiteSpace(e.Country) ? "—" : e.Country,
-        LanguageText = "—",
-        JoinedText = "—",
-        LastCheckedText = Formatting.ShortDate(e.LastCheckedAt),
-        NextCheckText = "—"
+        if (SelectedChannel is null || hours <= 0)
+        {
+            return;
+        }
+
+        SelectedChannel.CheckFrequencyHours = hours;
+        ApplyCheckFrequency(SelectedChannel);
+
+        if (SelectedChannel.EntryId > 0)
+        {
+            var entries = await _repository.GetAllAsync();
+            var entry = entries.FirstOrDefault(x => x.Id == SelectedChannel.EntryId);
+            if (entry is not null)
+            {
+                entry.CheckFrequencyHours = hours;
+                await _repository.UpdateAsync(entry);
+            }
+        }
+    }
+
+    private static void ApplyCheckFrequency(SavedChannel channel)
+    {
+        channel.CheckFrequencyText = FormatFrequency(channel.CheckFrequencyHours);
+        channel.NextCheckText = ComputeNextCheck(channel);
+    }
+
+    internal static string FormatFrequency(int hours) => hours switch
+    {
+        1 => "1 hour",
+        24 => "24 hours (daily)",
+        _ => $"{hours} hours"
     };
+
+    private static string ComputeNextCheck(SavedChannel channel) =>
+        channel.LastCheckedAtRaw is { } last ? Formatting.ShortDate(last.AddHours(channel.CheckFrequencyHours)) : "Pending";
+
+    private static SavedChannel Map(SavedChannelEntry e)
+    {
+        var channel = new SavedChannel
+        {
+            EntryId = e.Id,
+            ChannelUrl = e.ChannelUrl,
+            Name = e.Name,
+            Handle = e.Handle,
+            Initial = string.IsNullOrEmpty(e.Name) ? "?" : e.Name[..1].ToUpperInvariant(),
+            Verified = e.Verified,
+            SubscriberCountText = e.SubscriberCount > 0 ? Formatting.Count(e.SubscriberCount) : "—",
+            VideoCountText = e.VideoCount > 0 ? e.VideoCount.ToString() : "—",
+            ShortCountText = "—",
+            LiveCountText = "—",
+            PlaylistCountText = "—",
+            TotalViewsText = "—",
+            Description = e.Description,
+            CountryText = string.IsNullOrWhiteSpace(e.Country) ? "—" : e.Country,
+            LanguageText = "—",
+            JoinedText = "—",
+            LastCheckedAtRaw = e.LastCheckedAt,
+            LastCheckedText = Formatting.ShortDate(e.LastCheckedAt),
+            CheckFrequencyHours = e.CheckFrequencyHours <= 0 ? 6 : e.CheckFrequencyHours
+        };
+        ApplyCheckFrequency(channel);
+        return channel;
+    }
 }

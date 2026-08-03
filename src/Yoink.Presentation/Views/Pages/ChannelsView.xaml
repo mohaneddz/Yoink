@@ -12,6 +12,7 @@
     <UserControl.Resources>
         <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
         <conv:ChannelUploadTypeConverter x:Key="UploadTypeConverter"/>
+        <conv:FrequencyLabelConverter x:Key="FrequencyLabelConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:CountToVisibilityConverter x:Key="CountToVisibility"/>
 
@@ -316,7 +317,19 @@
                     <Grid Margin="0,0,0,8"><TextBlock Text="Country" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding CountryText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
                     <Grid Margin="0,0,0,8"><TextBlock Text="Language" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding LanguageText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
                     <Grid Margin="0,0,0,8"><TextBlock Text="Last Checked" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding LastCheckedText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
-                    <Grid Margin="0,0,0,16"><TextBlock Text="Check Frequency" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding CheckFrequencyText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                    <Grid Margin="0,0,0,8"><TextBlock Text="Next Check" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding NextCheckText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
+                    <Grid Margin="0,0,0,16">
+                        <TextBlock Text="Check Frequency" Style="{StaticResource MetaText}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CheckFrequencyCombo" Style="{StaticResource FieldComboBox}" HorizontalAlignment="Right" Width="140" Padding="10,6"
+                                  ItemsSource="{Binding DataContext.CheckFrequencyOptions, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                  SelectedItem="{Binding CheckFrequencyHours, Mode=OneWay}" SelectionChanged="CheckFrequencyCombo_SelectionChanged">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource FrequencyLabelConverter}}" FontSize="12"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
 
                     <TextBlock Text="ACTIONS" Style="{StaticResource SectionTitleText}" FontSize="12" Margin="0,0,0,10"/>
                     <Button Style="{StaticResource SecondaryButton}" Content="OPEN CHANNEL" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"

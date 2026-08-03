@@ -44,6 +44,9 @@ public partial class App : System.Windows.Application
 
             // Provision yt-dlp/ffmpeg in the background so first launch isn't blocked.
             _ = ProvisionToolsAsync(services);
+
+            // Periodic saved-channel re-checks (spec §7.4) run for the app's lifetime.
+            services.GetRequiredService<ChannelWatcherService>().Start();
         }
         catch (Exception ex)
         {
@@ -112,6 +115,7 @@ public partial class App : System.Windows.Application
         services.AddYoinkInfrastructure();
         services.AddSingleton<ISystemAccess, SystemAccess>();
         services.AddSingleton<DownloadCoordinator>();
+        services.AddSingleton<ChannelWatcherService>();
 
         services.AddSingleton<SystemStatusViewModel>();
         services.AddSingleton<StatusStripViewModel>();
