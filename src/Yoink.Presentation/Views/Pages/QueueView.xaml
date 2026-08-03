@@ -171,6 +171,12 @@
                       ItemsSource="{Binding FilteredJobs}" SelectedItem="{Binding SelectedJob}"
                       Style="{StaticResource FlatDataGrid}" RowStyle="{StaticResource QueueRowStyle}"
                       controls:DataGridBehaviors.SelectRowOnRightClick="True" FontSize="11" ColumnHeaderHeight="28">
+                <!-- Scoped to the grid (not the Window) so Space/Delete only act on the queue
+                     selection when the list itself has focus, not while typing in a text field. -->
+                <DataGrid.InputBindings>
+                    <KeyBinding Key="Space" Command="{Binding ToggleJobCommand}" CommandParameter="{Binding SelectedJob}"/>
+                    <KeyBinding Key="Delete" Command="{Binding RemoveJobCommand}" CommandParameter="{Binding SelectedJob}"/>
+                </DataGrid.InputBindings>
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
                         <Setter Property="FontSize" Value="9"/>

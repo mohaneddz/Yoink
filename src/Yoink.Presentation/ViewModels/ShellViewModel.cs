@@ -56,6 +56,20 @@ public partial class ShellViewModel : ObservableObject, INavigationService
     public InspectorViewModel Inspector { get; }
 
     [RelayCommand]
+    private void ToggleInspector()
+    {
+        if (Inspector.IsOpen)
+        {
+            Inspector.IsPinned = false;
+            Inspector.IsOpen = false;
+        }
+        else if (Inspector.Content is not null)
+        {
+            Inspector.IsOpen = true;
+        }
+    }
+
+    [RelayCommand]
     private void NavigateTo(AppPage page)
     {
         if (!_pageCache.TryGetValue(page, out var vm))

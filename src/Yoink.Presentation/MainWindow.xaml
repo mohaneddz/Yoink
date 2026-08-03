@@ -24,6 +24,24 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
 
+    <!-- Keyboard shortcuts (spec section 10). Contextual bindings (Ctrl+D/Q/R/O) resolve against
+         whichever page view model is current and simply no-op when that page has no matching
+         command — WPF leaves a Binding unresolved rather than throwing. Space/Delete for the Queue
+         list live on QueueView itself so they don't fire while typing in an unrelated text field. -->
+    <Window.InputBindings>
+        <KeyBinding Key="D2" Modifiers="Control" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Queue}"/>
+        <KeyBinding Key="D3" Modifiers="Control" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Playlists}"/>
+        <KeyBinding Key="D4" Modifiers="Control" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Channels}"/>
+        <KeyBinding Key="D5" Modifiers="Control" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Library}"/>
+        <KeyBinding Key="D6" Modifiers="Control" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.History}"/>
+        <KeyBinding Key="OemComma" Modifiers="Control" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Settings}"/>
+        <KeyBinding Key="I" Modifiers="Control" Command="{Binding ToggleInspectorCommand}"/>
+        <KeyBinding Key="D" Modifiers="Control" Command="{Binding CurrentPageViewModel.StartDownloadCommand}"/>
+        <KeyBinding Key="Q" Modifiers="Control" Command="{Binding CurrentPageViewModel.AddToQueueCommand}"/>
+        <KeyBinding Key="R" Modifiers="Control" Command="{Binding CurrentPageViewModel.RetryJobCommand}" CommandParameter="{Binding CurrentPageViewModel.SelectedJob}"/>
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding CurrentPageViewModel.SelectedJob.OpenFolderCommand}"/>
+    </Window.InputBindings>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="52"/>
