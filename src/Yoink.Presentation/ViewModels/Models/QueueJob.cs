@@ -33,6 +33,9 @@ public partial class QueueJob : ObservableObject
     [ObservableProperty] private string _statusDetailText = string.Empty;
     [ObservableProperty] private string _selectedInspectorTab = "Details";
 
+    /// <summary>Row id in the Queue table once persisted (0 = not yet saved).</summary>
+    public int PersistedId { get; set; }
+
     public ObservableCollection<string> LogLines { get; } = new();
 
     /// <summary>Injected by the coordinator so inspector actions route through the real queue engine.</summary>

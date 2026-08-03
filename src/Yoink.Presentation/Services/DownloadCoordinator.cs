@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using Yoink.Application.Abstractions;
 using Yoink.Application.Downloads;
@@ -37,6 +38,7 @@ public sealed class DownloadCoordinator
     private readonly IDownloadEngine _engine;
     private readonly IHistoryRepository _history;
     private readonly ILibraryRepository _library;
+    private readonly IQueueRepository _queue;
     private readonly IFfmpegService _ffmpeg;
     private readonly ISettingsService _settings;
     private readonly ISystemAccess _system;
@@ -49,6 +51,7 @@ public sealed class DownloadCoordinator
         IDownloadEngine engine,
         IHistoryRepository history,
         ILibraryRepository library,
+        IQueueRepository queue,
         IFfmpegService ffmpeg,
         ISettingsService settings,
         ISystemAccess system)
@@ -56,9 +59,80 @@ public sealed class DownloadCoordinator
         _engine = engine;
         _history = history;
         _library = library;
+        _queue = queue;
         _ffmpeg = ffmpeg;
         _settings = settings;
         _system = system;
+    }
+
+    /// <summary>
+    /// Loads persisted queue rows from a previous session. Call once at startup, before the Queue
+    /// page can be shown. Jobs that were actively running when the app last closed are restored as
+    /// Paused (the process itself did not survive) so the user can resume them explicitly.
+    /// </summary>
+    public async Task RestoreAsync()
+    {
+        IReadOnlyList<QueueJobEntity> saved;
+        try
+        {
+            saved = await _queue.GetAllAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Failed to load persisted queue.", ex);
+            return;
+        }
+
+        foreach (var entity in saved)
+        {
+            DownloadRequest request;
+            try
+            {
+                request = JsonSerializer.Deserialize<DownloadRequest>(entity.RequestJson)
+                    ?? throw new InvalidOperationException("Empty request payload.");
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error($"Skipped unrestorable queue row #{entity.Id} ({entity.Title}).", ex);
+                continue;
+            }
+
+            var wasActive = IsActive(MapPersistedStatus(entity.Status));
+            var job = new QueueJob
+            {
+                Order = entity.Order,
+                Title = entity.Title,
+                Channel = entity.Channel,
+                Format = entity.Format,
+                Quality = entity.Quality,
+                SizeText = entity.SizeText,
+                Destination = entity.Destination,
+                OutputFolder = entity.OutputFolder,
+                SelectedFormatText = entity.SelectedFormatText,
+                ThumbnailHex = string.IsNullOrEmpty(entity.ThumbnailHex) ? ColorFromKey(entity.Title) : entity.ThumbnailHex,
+                SourceUrl = entity.SourceUrl,
+                FileSizeText = entity.FileSizeText,
+                DownloadedText = entity.DownloadedText,
+                Notes = entity.Notes,
+                Progress = entity.Progress,
+                RetryCount = entity.RetryCount,
+                Status = wasActive ? QueueJobStatus.Paused : MapPersistedStatus(entity.Status),
+                StatusDetailText = wasActive ? "Paused — interrupted by app restart" : entity.StatusDetailText,
+                AddedAtText = Formatting.ShortDate(entity.AddedAt),
+                LastUpdateText = entity.LastUpdateAt is { } lu ? Formatting.ShortDate(lu) : string.Empty,
+                PersistedId = entity.Id
+            };
+            job.LogLines.Add($"{DateTime.Now:HH:mm:ss}  Restored from previous session");
+            job.ResumeAction = () => ResumeJob(job);
+            job.OpenFolderAction = () => OpenJobFolder(job);
+
+            _runtimes[job] = new JobRuntime { Request = request, Kind = entity.Kind };
+            Jobs.Add(job);
+            _orderCounter = Math.Max(_orderCounter, entity.Order);
+        }
+
+        JobsChanged?.Invoke(this, EventArgs.Empty);
+        Pump();
     }
 
     /// <summary>The live queue, bound directly by the Queue page. Mutated on the UI thread.</summary>
@@ -101,6 +175,7 @@ public sealed class DownloadCoordinator
         _runtimes[job] = new JobRuntime { Request = request, Kind = request.Kind };
         Jobs.Add(job);
         JobsChanged?.Invoke(this, EventArgs.Empty);
+        Persist(job, request, request.Kind);
 
         if (startImmediately)
         {
@@ -171,12 +246,15 @@ public sealed class DownloadCoordinator
         {
             job.Status = QueueJobStatus.Paused;
         }
+
+        PersistExisting(job);
     }
 
     public void ResumeJob(QueueJob job)
     {
         job.Status = QueueJobStatus.Queued;
         job.StatusDetailText = "Resuming…";
+        PersistExisting(job);
         Pump();
     }
 
@@ -198,6 +276,7 @@ public sealed class DownloadCoordinator
         job.Progress = 0;
         job.Status = QueueJobStatus.Queued;
         job.StatusDetailText = "Retrying…";
+        PersistExisting(job);
         Pump();
     }
 
@@ -210,6 +289,7 @@ public sealed class DownloadCoordinator
 
         Jobs.Remove(job);
         JobsChanged?.Invoke(this, EventArgs.Empty);
+        DeletePersisted(job);
     }
 
     public void ClearCompleted()
@@ -218,6 +298,7 @@ public sealed class DownloadCoordinator
         {
             _runtimes.TryRemove(job, out _);
             Jobs.Remove(job);
+            DeletePersisted(job);
         }
 
         JobsChanged?.Invoke(this, EventArgs.Empty);
@@ -265,6 +346,7 @@ public sealed class DownloadCoordinator
         job.Status = QueueJobStatus.DownloadingVideo;
         job.StatusDetailText = "Starting…";
         job.LogLines.Add($"{DateTime.Now:HH:mm:ss}  Starting download");
+        PersistExisting(job);
 
         var dispatcher = System.Windows.Application.Current.Dispatcher;
         var progress = new Progress<DownloadProgress>(p => ApplyProgress(job, p));
@@ -383,6 +465,7 @@ public sealed class DownloadCoordinator
                 break;
         }
 
+        PersistExisting(job);
         JobsChanged?.Invoke(this, EventArgs.Empty);
         Pump();
     }
@@ -477,6 +560,90 @@ public sealed class DownloadCoordinator
         DownloadStage.Error => QueueJobStatus.Failed,
         _ => QueueJobStatus.DownloadingVideo
     };
+
+    /// <summary>Fire-and-forget insert for a freshly-enqueued job (we already have its request/kind to hand).</summary>
+    private void Persist(QueueJob job, DownloadRequest request, DownloadKind kind)
+    {
+        var entity = BuildEntity(job, request, kind);
+        _ = PersistAsync(job, entity);
+    }
+
+    /// <summary>Fire-and-forget update for a job already tracked in <see cref="_runtimes"/>.</summary>
+    private void PersistExisting(QueueJob job)
+    {
+        if (!_runtimes.TryGetValue(job, out var rt))
+        {
+            return;
+        }
+
+        var entity = BuildEntity(job, rt.Request, rt.Kind);
+        _ = PersistAsync(job, entity);
+    }
+
+    private async Task PersistAsync(QueueJob job, QueueJobEntity entity)
+    {
+        try
+        {
+            job.PersistedId = await _queue.UpsertAsync(entity).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error($"Failed to persist queue job '{job.Title}'.", ex);
+        }
+    }
+
+    private void DeletePersisted(QueueJob job)
+    {
+        if (job.PersistedId == 0)
+        {
+            return;
+        }
+
+        var id = job.PersistedId;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _queue.DeleteAsync(id).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error($"Failed to delete persisted queue job #{id}.", ex);
+            }
+        });
+    }
+
+    private static QueueJobEntity BuildEntity(QueueJob job, DownloadRequest request, DownloadKind kind) => new()
+    {
+        Id = job.PersistedId,
+        Order = job.Order,
+        Title = job.Title,
+        Channel = job.Channel,
+        Format = job.Format,
+        Quality = job.Quality,
+        SizeText = job.SizeText,
+        Destination = job.Destination,
+        OutputFolder = job.OutputFolder,
+        SelectedFormatText = job.SelectedFormatText,
+        ThumbnailHex = job.ThumbnailHex,
+        SourceUrl = job.SourceUrl,
+        FileSizeText = job.FileSizeText,
+        DownloadedText = job.DownloadedText,
+        Notes = job.Notes,
+        StatusDetailText = job.StatusDetailText,
+        Progress = job.Progress,
+        RetryCount = job.RetryCount,
+        Status = MapDomainStatus(job.Status),
+        Kind = kind,
+        LastUpdateAt = DateTimeOffset.Now,
+        RequestJson = JsonSerializer.Serialize(request)
+    };
+
+    private static PersistedQueueStatus MapDomainStatus(QueueJobStatus status) =>
+        Enum.Parse<PersistedQueueStatus>(status.ToString());
+
+    private static QueueJobStatus MapPersistedStatus(PersistedQueueStatus status) =>
+        Enum.Parse<QueueJobStatus>(status.ToString());
 
     /// <summary>Deterministic accent color for a job thumbnail placeholder, derived from its title.</summary>
     private static string ColorFromKey(string key)

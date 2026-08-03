@@ -113,3 +113,39 @@ public sealed class SavedChannelRepository : ISavedChannelRepository
         await db.Channels.Where(x => x.Id == id).ExecuteDeleteAsync(ct).ConfigureAwait(false);
     }
 }
+
+/// <summary>EF-backed queue store, so in-progress/queued jobs survive an app restart.</summary>
+public sealed class QueueRepository : IQueueRepository
+{
+    private readonly IDbContextFactory<YoinkDbContext> _factory;
+
+    public QueueRepository(IDbContextFactory<YoinkDbContext> factory) => _factory = factory;
+
+    public async Task<IReadOnlyList<QueueJobEntity>> GetAllAsync(CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct).ConfigureAwait(false);
+        return await db.Queue.AsNoTracking().OrderBy(x => x.Order).ToListAsync(ct).ConfigureAwait(false);
+    }
+
+    public async Task<int> UpsertAsync(QueueJobEntity entry, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct).ConfigureAwait(false);
+        if (entry.Id == 0)
+        {
+            db.Queue.Add(entry);
+        }
+        else
+        {
+            db.Queue.Update(entry);
+        }
+
+        await db.SaveChangesAsync(ct).ConfigureAwait(false);
+        return entry.Id;
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken ct = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(ct).ConfigureAwait(false);
+        await db.Queue.Where(x => x.Id == id).ExecuteDeleteAsync(ct).ConfigureAwait(false);
+    }
+}

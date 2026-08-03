@@ -34,6 +34,7 @@ public partial class App : System.Windows.Application
             await settings.LoadAsync();
             AppLog.Verbose = settings.Current.DiagnosticLogging || settings.Current.VerboseOutput;
             await services.InitializeYoinkDatabaseAsync();
+            await services.GetRequiredService<DownloadCoordinator>().RestoreAsync();
 
             var mainWindow = services.GetRequiredService<MainWindow>();
             services.GetRequiredService<ShellViewModel>().Initialize();

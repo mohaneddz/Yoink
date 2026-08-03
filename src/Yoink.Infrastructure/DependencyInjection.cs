@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddSingleton<IHistoryRepository, HistoryRepository>();
         services.AddSingleton<ILibraryRepository, LibraryRepository>();
         services.AddSingleton<ISavedChannelRepository, SavedChannelRepository>();
+        services.AddSingleton<IQueueRepository, QueueRepository>();
 
         return services;
     }

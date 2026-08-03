@@ -14,6 +14,7 @@ public sealed class YoinkDbContext : DbContext
     public DbSet<DownloadHistoryEntry> History => Set<DownloadHistoryEntry>();
     public DbSet<LibraryEntry> Library => Set<LibraryEntry>();
     public DbSet<SavedChannelEntry> Channels => Set<SavedChannelEntry>();
+    public DbSet<QueueJobEntity> Queue => Set<QueueJobEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +46,14 @@ public sealed class YoinkDbContext : DbContext
             e.Property(x => x.AddedAt).HasConversion(dto);
             e.Property(x => x.LastCheckedAt).HasConversion(dtoNullable);
             e.HasIndex(x => x.ChannelUrl).IsUnique();
+        });
+
+        modelBuilder.Entity<QueueJobEntity>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.AddedAt).HasConversion(dto);
+            e.Property(x => x.LastUpdateAt).HasConversion(dtoNullable);
+            e.HasIndex(x => x.Order);
         });
     }
 }
