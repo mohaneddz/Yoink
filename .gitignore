@@ -23,3 +23,8 @@ logs/
 ## OS
 Thumbs.db
 .DS_Store
+
+## Build & Local
+dist/
+.env*
+plan.md

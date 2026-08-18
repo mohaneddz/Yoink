@@ -77,7 +77,15 @@ The same profile can be invoked via the CLI:
 dotnet publish src/Yoink.Presentation/Yoink.Presentation.csproj -p:PublishProfile=win-x64
 ```
 
-To distribute, ship that single `Yoink.exe`. On first launch it creates its data folder,
+To build the Windows Installer (`YoinkSetup.msi`):
+
+```bat
+make_installer.bat
+```
+
+Output: `dist\YoinkSetup.msi`
+
+To distribute, ship the `YoinkSetup.msi` installer or the standalone `Yoink.exe`. On first launch it creates its data folder,
 initializes the database, and downloads yt-dlp/FFmpeg into `%LocalAppData%\Yoink\tools`.
 
 ## Troubleshooting

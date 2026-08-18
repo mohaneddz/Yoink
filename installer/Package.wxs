@@ -1,0 +1,54 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Yoink"
+           Manufacturer="Yoink"
+           Version="1.0.0.0"
+           UpgradeCode="4F82B9B3-3C71-4E7B-8A3F-2A9C91B86C45"
+           Scope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Yoink is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Yoink" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="Yoink" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="8E31A21D-77A4-4861-8C54-D93F3E8B62A1">
+        <File Id="YoinkEXE" Source="$(var.SourceDir)\Yoink.exe" KeyPath="yes">
+          <Shortcut Id="ApplicationStartMenuShortcut"
+                    Directory="ApplicationProgramsFolder"
+                    Name="Yoink"
+                    Description="A modern desktop media downloader powered by yt-dlp and FFmpeg"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="AppIcon"
+                    Advertise="no" />
+          <Shortcut Id="ApplicationDesktopShortcut"
+                    Directory="DesktopFolder"
+                    Name="Yoink"
+                    Description="A modern desktop media downloader powered by yt-dlp and FFmpeg"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="AppIcon"
+                    Advertise="no" />
+        </File>
+      </Component>
+
+      <Component Id="ProgramMenuFolderComponent" Guid="E6B4A5D1-21B3-4F8C-98A6-11C23A45B6D7">
+        <RemoveFolder Id="CleanUpProgramMenuFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\Yoink" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <Feature Id="MainFeature" Title="Yoink" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <Icon Id="AppIcon" SourceFile="$(var.AppIconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+  </Package>
+</Wix>
