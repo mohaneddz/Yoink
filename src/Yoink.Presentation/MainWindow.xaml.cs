@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Yoink.Application.Abstractions;
 using Yoink.Presentation.Services;
 using Yoink.Presentation.ViewModels;
 using Yoink.Presentation.Views.Dialogs;
@@ -13,20 +14,91 @@ namespace Yoink.Presentation;
 public partial class MainWindow : Window
 {
     private readonly DownloadCoordinator _coordinator;
+    private readonly ISettingsService _settingsService;
 
-    public MainWindow(ShellViewModel shellViewModel, DownloadCoordinator coordinator)
+    public MainWindow(ShellViewModel shellViewModel, DownloadCoordinator coordinator, ISettingsService settingsService)
     {
+        _coordinator = coordinator;
+        _settingsService = settingsService;
         InitializeComponent();
         DataContext = shellViewModel;
-        _coordinator = coordinator;
+        RestoreWindowGeometry();
         StateChanged += OnStateChanged;
         SourceInitialized += OnSourceInitialized;
         Closing += OnClosing;
     }
 
+    private void RestoreWindowGeometry()
+    {
+        var s = _settingsService.Current;
+        if (s.WindowWidth >= MinWidth)
+        {
+            Width = s.WindowWidth;
+        }
+
+        if (s.WindowHeight >= MinHeight)
+        {
+            Height = s.WindowHeight;
+        }
+
+        if (s.WindowLeft.HasValue && s.WindowTop.HasValue)
+        {
+            var virtualLeft = SystemParameters.VirtualScreenLeft;
+            var virtualTop = SystemParameters.VirtualScreenTop;
+            var virtualWidth = SystemParameters.VirtualScreenWidth;
+            var virtualHeight = SystemParameters.VirtualScreenHeight;
+
+            if (s.WindowLeft.Value >= virtualLeft - 100 &&
+                s.WindowLeft.Value < virtualLeft + virtualWidth - 100 &&
+                s.WindowTop.Value >= virtualTop - 100 &&
+                s.WindowTop.Value < virtualTop + virtualHeight - 100)
+            {
+                WindowStartupLocation = WindowStartupLocation.Manual;
+                Left = s.WindowLeft.Value;
+                Top = s.WindowTop.Value;
+            }
+        }
+
+        if (s.IsWindowMaximized)
+        {
+            WindowState = WindowState.Maximized;
+        }
+    }
+
+    private void SaveWindowGeometry()
+    {
+        var s = _settingsService.Current;
+        if (WindowState == WindowState.Maximized)
+        {
+            s.IsWindowMaximized = true;
+            if (RestoreBounds.Width >= MinWidth && RestoreBounds.Height >= MinHeight)
+            {
+                s.WindowWidth = RestoreBounds.Width;
+                s.WindowHeight = RestoreBounds.Height;
+                s.WindowLeft = RestoreBounds.Left;
+                s.WindowTop = RestoreBounds.Top;
+            }
+        }
+        else
+        {
+            s.IsWindowMaximized = false;
+            if (Width >= MinWidth && Height >= MinHeight)
+            {
+                s.WindowWidth = Width;
+                s.WindowHeight = Height;
+                s.WindowLeft = Left;
+                s.WindowTop = Top;
+            }
+        }
+
+        _ = _settingsService.SaveAsync(s);
+    }
+
     /// <summary>Spec §8.7: confirm before closing over active downloads (they'll be interrupted otherwise).</summary>
     private void OnClosing(object? sender, CancelEventArgs e)
     {
+        SaveWindowGeometry();
+
         var active = _coordinator.ActiveJobCount;
         if (active == 0)
         {

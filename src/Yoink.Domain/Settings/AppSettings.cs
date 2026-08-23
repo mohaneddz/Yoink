@@ -31,6 +31,13 @@ public sealed class AppSettings
     public string Theme { get; set; } = "Light";
     public string Density { get; set; } = "Comfortable";
 
+    // Window
+    public double WindowWidth { get; set; } = 1440;
+    public double WindowHeight { get; set; } = 960;
+    public double? WindowLeft { get; set; }
+    public double? WindowTop { get; set; }
+    public bool IsWindowMaximized { get; set; }
+
     // Advanced
     public bool DiagnosticLogging { get; set; }
     public bool VerboseOutput { get; set; }
