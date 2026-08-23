@@ -139,21 +139,21 @@
         <Setter Property="Background" Value="{StaticResource DividerBrush}"/>
     </Style>
 
-    <!-- White card / panel surface -->
+    <!-- Card / panel surface -->
     <Style x:Key="Card" TargetType="Border">
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
     <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="{StaticResource SurfacePrimaryBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfacePrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Padding" Value="8,10"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
     </Style>
@@ -174,22 +174,23 @@
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
 
     <Style x:Key="DataGridRowStyle" TargetType="DataGridRow">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="MinHeight" Value="56"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="{StaticResource RowSelectedBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -205,6 +206,7 @@
         <Setter Property="CanUserDeleteRows" Value="False"/>
         <Setter Property="CanUserReorderColumns" Value="False"/>
         <Setter Property="CanUserResizeRows" Value="False"/>
+        <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="RowStyle" Value="{StaticResource DataGridRowStyle}"/>
         <Setter Property="CellStyle" Value="{StaticResource DataGridCellStyle}"/>
         <Setter Property="ColumnHeaderStyle" Value="{StaticResource DataGridColumnHeaderStyle}"/>
@@ -217,5 +219,14 @@
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
     </Style>
+
+    <Style x:Key="IndeterminateProgress" TargetType="ProgressBar">
+        <Setter Property="Foreground" Value="{DynamicResource OrangePrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceSecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Height" Value="4"/>
+    </Style>
+
+    <Style TargetType="ProgressBar" BasedOn="{StaticResource IndeterminateProgress}"/>
 
 </ResourceDictionary>

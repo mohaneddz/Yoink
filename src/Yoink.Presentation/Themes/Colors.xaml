@@ -19,11 +19,21 @@
     <Color x:Key="SidebarTextMutedColor">#FF7A7A76</Color>
     <Color x:Key="WhiteColor">#FFFFFFFF</Color>
 
+    <Color x:Key="CardBackgroundColor">#FFFFFFFF</Color>
+    <Color x:Key="InputBackgroundColor">#FFFFFFFF</Color>
+    <Color x:Key="SecondaryButtonBackgroundColor">#FFFFFFFF</Color>
+    <Color x:Key="RowHoverColor">#FFF0F0EC</Color>
+    <Color x:Key="RowSelectedColor">#FFFCEEE7</Color>
+    <Color x:Key="LogPanelColor">#FF0C0C0C</Color>
+
     <!-- Brushes -->
     <SolidColorBrush x:Key="AppShellBrush" Color="{StaticResource AppShellColor}"/>
     <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}"/>
     <SolidColorBrush x:Key="SurfacePrimaryBrush" Color="{StaticResource SurfacePrimaryColor}"/>
     <SolidColorBrush x:Key="SurfaceSecondaryBrush" Color="{StaticResource SurfaceSecondaryColor}"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}"/>
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="{StaticResource InputBackgroundColor}"/>
+    <SolidColorBrush x:Key="SecondaryButtonBackgroundBrush" Color="{StaticResource SecondaryButtonBackgroundColor}"/>
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}"/>
     <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource DividerColor}"/>
@@ -38,8 +48,8 @@
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource WhiteColor}"/>
     <SolidColorBrush x:Key="SidebarHoverBrush" Color="#FF141414"/>
     <SolidColorBrush x:Key="SidebarActiveBackgroundBrush" Color="#FF1A1310"/>
-    <SolidColorBrush x:Key="RowHoverBrush" Color="#FFF0F0EC"/>
-    <SolidColorBrush x:Key="RowSelectedBrush" Color="#FFFCEEE7"/>
-    <SolidColorBrush x:Key="LogPanelBrush" Color="#FF0C0C0C"/>
+    <SolidColorBrush x:Key="RowHoverBrush" Color="{StaticResource RowHoverColor}"/>
+    <SolidColorBrush x:Key="RowSelectedBrush" Color="{StaticResource RowSelectedColor}"/>
+    <SolidColorBrush x:Key="LogPanelBrush" Color="{StaticResource LogPanelColor}"/>
 
 </ResourceDictionary>

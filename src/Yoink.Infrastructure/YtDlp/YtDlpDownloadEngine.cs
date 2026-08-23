@@ -37,9 +37,20 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
 
         var stage = DownloadStage.Preparing;
         string? lastDestination = null;
+        string? lastErrorLine = null;
 
         void HandleLine(string line, bool isError)
         {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return;
+            }
+
+            if (isError || line.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase))
+            {
+                lastErrorLine = line.Trim();
+            }
+
             if (line.StartsWith(ProgressPrefix, StringComparison.Ordinal))
             {
                 var p = ParseProgress(line, stage);
@@ -99,7 +110,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
                 ExitCode = exit,
                 OutputPath = finalPath,
                 FileSizeBytes = size,
-                ErrorMessage = $"yt-dlp exited with code {exit}"
+                ErrorMessage = lastErrorLine ?? $"yt-dlp exited with code {exit}"
             };
         }
         catch (OperationCanceledException)
@@ -130,6 +141,9 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             "--no-colors",
             "--windows-filenames",
             "--no-simulate",
+            "--retries", "10",
+            "--fragment-retries", "10",
+            "--file-access-retries", "5",
             "--progress-template",
             $"download:{ProgressPrefix}%(progress.status)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s|%(progress.total_bytes_estimate)s|%(progress.speed)s|%(progress.eta)s",
             "--print-to-file", "after_move:filepath", pathCaptureFile,
@@ -309,7 +323,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
         if (line.Contains("[ExtractAudio]", StringComparison.Ordinal)) return DownloadStage.Converting;
         if (line.Contains("[VideoConvertor]", StringComparison.Ordinal) || line.Contains("[VideoRemuxer]", StringComparison.Ordinal)) return DownloadStage.Converting;
         if (line.Contains("[Metadata]", StringComparison.Ordinal) || line.Contains("[EmbedSubtitle]", StringComparison.Ordinal)) return DownloadStage.WritingMetadata;
-        if (line.Contains("[EmbedThumbnail]", StringComparison.Ordinal) || line.Contains("[ThumbnailsConvertor]", StringComparison.Ordinal)) return DownloadStage.EmbeddingThumbnail;
+        if (line.Contains("[EmbedThumbnail]", StringComparison.Ordinal) || line.Contains("[ThumbnailsConvertor]", StringComparison.Ordinal) || line.Contains("Writing video thumbnail", StringComparison.OrdinalIgnoreCase)) return DownloadStage.EmbeddingThumbnail;
         if (line.Contains("Writing video subtitles", StringComparison.OrdinalIgnoreCase) || line.Contains("[SubtitlesConvertor]", StringComparison.Ordinal)) return DownloadStage.DownloadingSubtitles;
 
         if (line.Contains("[download] Destination:", StringComparison.Ordinal))
@@ -329,6 +343,18 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             return line[(idx + marker.Length)..].Trim();
         }
 
+        const string alreadyDownloaded = "[download] ";
+        const string hasAlready = " has already been downloaded";
+        if (line.StartsWith(alreadyDownloaded, StringComparison.Ordinal) && line.Contains(hasAlready, StringComparison.Ordinal))
+        {
+            var rest = line[alreadyDownloaded.Length..];
+            var end = rest.IndexOf(hasAlready, StringComparison.Ordinal);
+            if (end >= 0)
+            {
+                return rest[..end].Trim();
+            }
+        }
+
         const string merge = "Merging formats into \"";
         idx = line.IndexOf(merge, StringComparison.Ordinal);
         if (idx >= 0)
@@ -336,6 +362,31 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             var rest = line[(idx + merge.Length)..];
             var end = rest.IndexOf('"');
             return end >= 0 ? rest[..end] : rest;
+        }
+
+        const string thumb = "Writing video thumbnail";
+        const string toMarker = " to: ";
+        if (line.Contains(thumb, StringComparison.OrdinalIgnoreCase))
+        {
+            idx = line.IndexOf(toMarker, StringComparison.Ordinal);
+            if (idx >= 0)
+            {
+                return line[(idx + toMarker.Length)..].Trim();
+            }
+        }
+
+        const string subs = "Writing video subtitles to: ";
+        idx = line.IndexOf(subs, StringComparison.OrdinalIgnoreCase);
+        if (idx >= 0)
+        {
+            return line[(idx + subs.Length)..].Trim();
+        }
+
+        const string audioDest = "[ExtractAudio] Destination: ";
+        idx = line.IndexOf(audioDest, StringComparison.Ordinal);
+        if (idx >= 0)
+        {
+            return line[(idx + audioDest.Length)..].Trim();
         }
 
         return null;

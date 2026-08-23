@@ -63,7 +63,8 @@ public sealed partial class YtDlpInspector : IMediaInspector
 
         var args = new List<string>
         {
-            "-J", "--no-warnings", "--no-playlist", "--no-progress", url.Trim()
+            "-J", "--no-warnings", "--no-playlist", "--no-progress",
+            url.Trim()
         };
 
         try
@@ -98,7 +99,8 @@ public sealed partial class YtDlpInspector : IMediaInspector
 
         var args = new List<string>
         {
-            "-J", "--flat-playlist", "--no-warnings", "--no-progress"
+            "-J", "--flat-playlist", "--no-warnings", "--no-progress",
+            "--extractor-args", "youtubetab:approximate_date"
         };
         if (limit is > 0)
         {
@@ -185,7 +187,7 @@ public sealed partial class YtDlpInspector : IMediaInspector
             ViewCount = root.GetLong("view_count"),
             LikeCount = root.GetLong("like_count"),
             UploadDate = root.GetDate("upload_date"),
-            ThumbnailUrl = root.GetStr("thumbnail"),
+            ThumbnailUrl = root.GetStr("thumbnail") ?? ExtractThumbnail(root),
             IsLive = root.GetBool("is_live"),
             WasLive = root.GetBool("was_live"),
             Availability = root.GetStr("availability"),
@@ -212,6 +214,12 @@ public sealed partial class YtDlpInspector : IMediaInspector
 
                 var id = e.GetStr("id") ?? string.Empty;
                 var entryUrl = e.GetStr("url") ?? e.GetStr("webpage_url") ?? id;
+                var thumb = e.GetStr("thumbnail") ?? ExtractThumbnail(e);
+                if (string.IsNullOrEmpty(thumb) && !string.IsNullOrEmpty(id) && !id.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    thumb = $"https://i.ytimg.com/vi/{id}/hqdefault.jpg";
+                }
+
                 entries.Add(new PlaylistEntry
                 {
                     Id = id,
@@ -220,12 +228,14 @@ public sealed partial class YtDlpInspector : IMediaInspector
                     DurationSeconds = e.GetDouble("duration"),
                     Uploader = e.GetStr("uploader") ?? e.GetStr("channel"),
                     ViewCount = e.GetLong("view_count"),
-                    ThumbnailUrl = e.GetStr("thumbnail"),
+                    ThumbnailUrl = thumb,
                     UploadDate = e.GetDate("upload_date"),
                     Availability = e.GetStr("availability") ?? "available"
                 });
             }
         }
+
+        var playlistThumb = root.GetStr("thumbnail") ?? ExtractThumbnail(root) ?? entries.FirstOrDefault(e => !string.IsNullOrEmpty(e.ThumbnailUrl))?.ThumbnailUrl;
 
         return new PlaylistMetadata
         {
@@ -237,8 +247,41 @@ public sealed partial class YtDlpInspector : IMediaInspector
             Description = root.GetStr("description"),
             Availability = root.GetStr("availability"),
             SourceKind = ClassifyMedia(root),
+            ThumbnailUrl = playlistThumb,
+            ChannelUrl = root.GetStr("channel_url") ?? root.GetStr("uploader_url"),
+            SubscriberCount = root.GetLong("channel_follower_count"),
             Entries = entries
         };
+    }
+
+    private static string? ExtractThumbnail(JsonElement el)
+    {
+        if (el.TryGetProperty("thumbnails", out var thumbs) && thumbs.ValueKind == JsonValueKind.Array)
+        {
+            string? bestUrl = null;
+            var maxRes = -1;
+            foreach (var t in thumbs.EnumerateArray())
+            {
+                var url = t.GetStr("url");
+                if (string.IsNullOrWhiteSpace(url))
+                {
+                    continue;
+                }
+
+                var width = t.GetInt("width") ?? 0;
+                var height = t.GetInt("height") ?? 0;
+                var res = width * height;
+                if (res > maxRes || bestUrl is null)
+                {
+                    maxRes = res;
+                    bestUrl = url;
+                }
+            }
+
+            return bestUrl;
+        }
+
+        return null;
     }
 
     private static IReadOnlyList<string> ReadLangKeys(JsonElement root, string prop)

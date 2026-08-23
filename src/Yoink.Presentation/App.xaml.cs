@@ -32,6 +32,7 @@ public partial class App : System.Windows.Application
             // Load settings and prepare the database before any page binds to data.
             var settings = services.GetRequiredService<ISettingsService>();
             await settings.LoadAsync();
+            ThemeManager.ApplyTheme(settings.Current.Theme);
             AppLog.Verbose = settings.Current.DiagnosticLogging || settings.Current.VerboseOutput;
             await services.InitializeYoinkDatabaseAsync();
             await services.GetRequiredService<DownloadCoordinator>().RestoreAsync();
@@ -58,14 +59,21 @@ public partial class App : System.Windows.Application
         }
     }
 
+    private static DateTime _lastErrorDialogTime = DateTime.MinValue;
+
     private void RegisterGlobalExceptionHandlers()
     {
         DispatcherUnhandledException += (_, args) =>
         {
             AppLog.Error("Unhandled UI exception.", args.Exception);
-            MessageBox.Show(
-                $"An unexpected error occurred:\n\n{args.Exception.Message}\n\nThe error was logged to:\n{AppLog.LogDirectory}",
-                "Yoink", MessageBoxButton.OK, MessageBoxImage.Error);
+            var now = DateTime.UtcNow;
+            if ((now - _lastErrorDialogTime).TotalSeconds > 3)
+            {
+                _lastErrorDialogTime = now;
+                MessageBox.Show(
+                    $"An unexpected error occurred:\n\n{args.Exception.Message}\n\nThe error was logged to:\n{AppLog.LogDirectory}",
+                    "Yoink", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
             args.Handled = true; // keep the app alive; the operation is aborted but the window survives
         };
 
@@ -101,6 +109,33 @@ public partial class App : System.Windows.Application
         var ytdlp = statuses.FirstOrDefault(s => s.Name == "yt-dlp");
         status.State = SystemHealthState.Operational;
         status.Detail = ytdlp?.Version is { } v ? $"yt-dlp {v} · ffmpeg ready" : "All systems normal";
+
+        // Check for updates in the background at launch
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var updateInfo = await tools.CheckForUpdatesAsync();
+                if (updateInfo.UpdateAvailable)
+                {
+                    var dispatcher = Current?.Dispatcher;
+                    if (dispatcher is not null)
+                    {
+                        dispatcher.Invoke(() =>
+                        {
+                            status.State = SystemHealthState.UpdateRequired;
+                            status.Detail = updateInfo.YtDlpUpdateAvailable && !string.IsNullOrWhiteSpace(updateInfo.LatestYtDlpVersion)
+                                ? $"Update available: yt-dlp {updateInfo.LatestYtDlpVersion}"
+                                : "Tools update available";
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warn($"Background update check error: {ex.Message}");
+            }
+        });
     }
 
     protected override void OnExit(ExitEventArgs e)

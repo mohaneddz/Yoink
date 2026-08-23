@@ -5,8 +5,8 @@
     <!-- Implicit styles: every ContextMenu / MenuItem / Separator / ToolTip in the app is themed. -->
 
     <Style TargetType="ContextMenu">
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="0,5"/>
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
@@ -28,7 +28,7 @@
     </Style>
 
     <Style TargetType="MenuItem">
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -47,7 +47,7 @@
                             <ContentPresenter x:Name="HeaderHost" Grid.Column="1" ContentSource="Header" VerticalAlignment="Center"
                                               RecognizesAccessKey="True"/>
                             <TextBlock x:Name="GestureText" Grid.Column="2" Text="{TemplateBinding InputGestureText}"
-                                       Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="24,0,0,0" VerticalAlignment="Center"/>
+                                       Foreground="{DynamicResource TextMutedBrush}" FontSize="11" Margin="24,0,0,0" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -55,10 +55,10 @@
                             <Setter TargetName="Icon" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceSecondaryBrush}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceSecondaryBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{StaticResource DisabledBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource DisabledBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -68,14 +68,14 @@
 
     <!-- Destructive menu item (e.g. Remove / Delete) -->
     <Style x:Key="DestructiveMenuItem" TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
-        <Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
     </Style>
 
     <Style TargetType="Separator">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Separator">
-                    <Border Height="1" Background="{StaticResource DividerBrush}" Margin="10,5"/>
+                    <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="10,5"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

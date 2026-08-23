@@ -17,7 +17,7 @@
         <Style x:Key="SectionNavItem" TargetType="RadioButton">
             <Setter Property="Height" Value="42"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
@@ -26,15 +26,15 @@
                                 <ColumnDefinition Width="3"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border x:Name="Bar" Grid.Column="0" Background="{StaticResource OrangePrimaryBrush}" Opacity="0"/>
+                            <Border x:Name="Bar" Grid.Column="0" Background="{DynamicResource OrangePrimaryBrush}" Opacity="0"/>
                             <ContentPresenter Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource OrangePrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource OrangePrimaryBrush}"/>
                                 <Setter TargetName="Bar" Property="Opacity" Value="1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -50,15 +50,17 @@
         <Style x:Key="SettingTitle" TargetType="TextBlock">
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         </Style>
         <Style x:Key="SettingHint" TargetType="TextBlock">
             <Setter Property="FontSize" Value="11.5"/>
-            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
             <Setter Property="Margin" Value="0,2,0,0"/>
         </Style>
         <Style x:Key="CardSectionTitle" TargetType="TextBlock">
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             <Setter Property="Margin" Value="0,0,0,14"/>
         </Style>
     </UserControl.Resources>
@@ -348,24 +350,80 @@
                             <TextBlock Text="yt-dlp Version" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <TextBlock Text="{Binding YtDlpVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
-                                <Border Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2"><TextBlock Text="LATEST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+                                <Border Padding="6,2" CornerRadius="2">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{StaticResource SurfaceSecondaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsYtDlpUpdated}" Value="False">
+                                                    <Setter Property="Background" Value="{StaticResource OrangePrimaryBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding YtDlpBadgeText}" FontSize="9" FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsYtDlpUpdated}" Value="False">
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
                             </StackPanel>
                         </Grid>
                         <Grid Margin="0,0,0,10">
                             <TextBlock Text="FFmpeg" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <TextBlock Text="{Binding FfmpegVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
-                                <Border Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2"><TextBlock Text="OK" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+                                <Border Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2" CornerRadius="2"><TextBlock Text="OK" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
                             </StackPanel>
                         </Grid>
                         <Grid Margin="0,0,0,14">
                             <TextBlock Text="Last Checked" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <TextBlock Text="{Binding LastChecked}" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Right"/>
                         </Grid>
-                        <Button Style="{StaticResource SecondaryButton}" Padding="12,11" Command="{Binding CheckUpdatesCommand}">
+                        <Button Padding="12,11" Command="{Binding CheckUpdatesCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasUpdate}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource OrangePrimaryBrush}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="CHECK UPDATES" FontWeight="Bold" FontSize="12"/>
+                                <Path Data="{StaticResource IconRefresh}" Width="13" Height="13" Margin="0,0,8,0">
+                                    <Path.Style>
+                                        <Style TargetType="Path" BasedOn="{StaticResource Icon}">
+                                            <Setter Property="Stroke" Value="{DynamicResource TextPrimaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasUpdate}" Value="True">
+                                                    <Setter Property="Stroke" Value="White"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Path.Style>
+                                </Path>
+                                <TextBlock Text="{Binding UpdateButtonText}" FontWeight="Bold" FontSize="12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasUpdate}" Value="True">
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -441,7 +499,7 @@
                 <Button Style="{StaticResource PrimaryButton}" Padding="22,13" Command="{Binding SaveChangesCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconCheck}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
-                        <TextBlock Text="SAVE CHANGES"/>
+                        <TextBlock Text="SAVE CHANGES" Foreground="White" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource SecondaryButton}" Padding="22,12" Command="{Binding RevertCommand}">
