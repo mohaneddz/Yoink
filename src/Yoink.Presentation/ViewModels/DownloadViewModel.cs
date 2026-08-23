@@ -8,6 +8,7 @@ using Yoink.Presentation.Navigation;
 using Yoink.Presentation.Services;
 using Yoink.Presentation.ViewModels.Models;
 using Yoink.Shared;
+using Yoink.Shared.Validation;
 
 namespace Yoink.Presentation.ViewModels;
 
@@ -55,10 +56,20 @@ public partial class DownloadViewModel : ObservableObject
     [ObservableProperty] private bool _isInspecting;
     [ObservableProperty] private string _statusMessage = string.Empty;
 
-    partial void OnSourceUrlChanged(string value) => DetectedType = MapKind(_inspector.DetectKind(value));
+    public bool IsDetectedTypeValid => DetectedType != DetectedSourceType.Invalid && !string.IsNullOrWhiteSpace(SourceUrl);
+    public string DetectedTypeDisplay => string.IsNullOrWhiteSpace(SourceUrl) ? "—" : DetectedType.ToString();
+
+    partial void OnDetectedTypeChanged(DetectedSourceType value)
+    {
+        OnPropertyChanged(nameof(IsDetectedTypeValid));
+        OnPropertyChanged(nameof(DetectedTypeDisplay));
+    }
+
+    private Task? _currentInspectTask;
 
     // ---- Media preview ----
     [ObservableProperty] private string _title = string.Empty;
+    [ObservableProperty] private string _thumbnailUrl = string.Empty;
     [ObservableProperty] private string _channelName = string.Empty;
     [ObservableProperty] private bool _channelVerified;
     [ObservableProperty] private string _durationText = "—";
@@ -69,6 +80,7 @@ public partial class DownloadViewModel : ObservableObject
     [ObservableProperty] private string _likeCountText = "—";
     [ObservableProperty] private string _descriptionPreview = string.Empty;
     [ObservableProperty] private string _subtitleAvailabilityText = "—";
+    [ObservableProperty] private string _fetchingDetailsText = "Fetching video information from URL…";
 
     // ---- Download mode ----
     [ObservableProperty] private DownloadMode _selectedMode = DownloadMode.Video;
@@ -81,7 +93,10 @@ public partial class DownloadViewModel : ObservableObject
     [ObservableProperty] private string _container = "MP4";
     [ObservableProperty] private string _videoCodec = "Auto";
     [ObservableProperty] private string _audioQuality = "Best";
+    [ObservableProperty] private string _audioContainer = "MP3";
     [ObservableProperty] private string _subtitleLanguage = "English";
+    [ObservableProperty] private string _subtitleFormat = "SRT";
+    [ObservableProperty] private string _thumbnailFormat = "Best / JPG";
     [ObservableProperty] private bool _embedSubtitles = true;
     [ObservableProperty] private bool _embedMetadata = true;
     [ObservableProperty] private bool _embedThumbnail = true;
@@ -96,7 +111,14 @@ public partial class DownloadViewModel : ObservableObject
         new() { "Auto", "H.264 (AVC)", "H.265 (HEVC)", "VP9", "AV1" };
     public ObservableCollection<string> AudioQualityOptions { get; } =
         new() { "Best", "320 kbps", "256 kbps", "192 kbps", "128 kbps", "96 kbps" };
-    public ObservableCollection<string> SubtitleOptions { get; } = new() { "None", "English" };
+    public ObservableCollection<string> AudioContainerOptions { get; } =
+        new() { "MP3", "M4A", "OPUS", "FLAC", "WAV", "AAC" };
+    public ObservableCollection<string> SubtitleOptions { get; } =
+        new() { "None", "English", "Spanish", "French", "German", "Japanese", "All" };
+    public ObservableCollection<string> SubtitleFormatOptions { get; } =
+        new() { "SRT", "VTT", "ASS" };
+    public ObservableCollection<string> ThumbnailFormatOptions { get; } =
+        new() { "Best / JPG", "PNG", "WEBP" };
     public ObservableCollection<string> ChapterOptions { get; } =
         new() { "Ignore", "Embed as chapters", "Split by chapter" };
 
@@ -119,6 +141,24 @@ public partial class DownloadViewModel : ObservableObject
         }
     }
 
+    partial void OnSourceUrlChanged(string value)
+    {
+        var sanitized = TextSanitizer.TruncateToSingleLine(value);
+        if (sanitized != value)
+        {
+            SourceUrl = sanitized;
+            return;
+        }
+
+        DetectedType = MapKind(_inspector.DetectKind(value));
+        OnPropertyChanged(nameof(IsDetectedTypeValid));
+        OnPropertyChanged(nameof(DetectedTypeDisplay));
+        if (DetectedType != DetectedSourceType.Invalid && !string.IsNullOrWhiteSpace(value) && Uri.TryCreate(value.Trim(), UriKind.Absolute, out _))
+        {
+            _currentInspectTask = Inspect();
+        }
+    }
+
     [RelayCommand]
     private async Task Inspect()
     {
@@ -129,7 +169,7 @@ public partial class DownloadViewModel : ObservableObject
         }
 
         IsInspecting = true;
-        StatusMessage = "Inspecting…";
+        StatusMessage = "Fetching video details…";
         try
         {
             var result = await _inspector.InspectAsync(SourceUrl);
@@ -137,6 +177,7 @@ public partial class DownloadViewModel : ObservableObject
             {
                 StatusMessage = result.Error ?? "Inspection failed.";
                 HasInspectedMedia = false;
+                ThumbnailUrl = string.Empty;
                 return;
             }
 
@@ -155,13 +196,30 @@ public partial class DownloadViewModel : ObservableObject
     {
         if (!string.IsNullOrWhiteSpace(SourceUrl))
         {
-            await Inspect();
+            _currentInspectTask = Inspect();
+            await _currentInspectTask;
         }
     }
 
     [RelayCommand]
-    private void StartDownload()
+    private async Task StartDownload()
     {
+        if (string.IsNullOrWhiteSpace(SourceUrl))
+        {
+            StatusMessage = "Paste a URL first.";
+            return;
+        }
+
+        if (_currentInspectTask is { IsCompleted: false })
+        {
+            await _currentInspectTask;
+        }
+        else if (!HasInspectedMedia && !IsInspecting)
+        {
+            _currentInspectTask = Inspect();
+            await _currentInspectTask;
+        }
+
         if (!TryBuildRequest(out var request, out var info))
         {
             return;
@@ -172,8 +230,24 @@ public partial class DownloadViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void AddToQueue()
+    private async Task AddToQueue()
     {
+        if (string.IsNullOrWhiteSpace(SourceUrl))
+        {
+            StatusMessage = "Paste a URL first.";
+            return;
+        }
+
+        if (_currentInspectTask is { IsCompleted: false })
+        {
+            await _currentInspectTask;
+        }
+        else if (!HasInspectedMedia && !IsInspecting)
+        {
+            _currentInspectTask = Inspect();
+            await _currentInspectTask;
+        }
+
         if (!TryBuildRequest(out var request, out var info))
         {
             return;
@@ -189,7 +263,7 @@ public partial class DownloadViewModel : ObservableObject
         var text = _system.ReadClipboardText();
         if (!string.IsNullOrWhiteSpace(text))
         {
-            SourceUrl = text.Trim();
+            SourceUrl = TextSanitizer.TruncateToSingleLine(text);
         }
     }
 
@@ -197,6 +271,7 @@ public partial class DownloadViewModel : ObservableObject
     private void ClearSource()
     {
         SourceUrl = string.Empty;
+        ThumbnailUrl = string.Empty;
         HasInspectedMedia = false;
         Streams.Clear();
         _metadata = null;
@@ -246,7 +321,7 @@ public partial class DownloadViewModel : ObservableObject
             FormatId = SelectedStream?.FormatId,
             MaxHeight = SelectedStream?.Height > 0 ? SelectedStream.Height : ParseHeight(Quality),
             VideoContainer = Container.ToLowerInvariant(),
-            AudioContainer = settings.PreferredAudioContainer,
+            AudioContainer = string.IsNullOrWhiteSpace(AudioContainer) ? settings.PreferredAudioContainer : AudioContainer.ToLowerInvariant(),
             VideoCodecPreference = VideoCodec == "Auto" ? null : VideoCodec,
             AudioQuality = MapAudioQuality(AudioQuality),
             OutputFolder = string.IsNullOrWhiteSpace(OutputFolder) ? settings.DefaultDownloadFolder : OutputFolder,
@@ -280,6 +355,7 @@ public partial class DownloadViewModel : ObservableObject
     {
         _metadata = m;
         Title = m.Title;
+        ThumbnailUrl = m.ThumbnailUrl ?? string.Empty;
         ChannelName = m.Channel ?? m.Uploader ?? string.Empty;
         ChannelVerified = m.ChannelFollowerCount is > 100_000;
         DurationText = Formatting.Duration(m.DurationSeconds);
@@ -328,7 +404,7 @@ public partial class DownloadViewModel : ObservableObject
             });
         }
 
-        SelectedStream = Streams.FirstOrDefault();
+        SelectedStream = null;
         OnPropertyChanged(nameof(StreamCountText));
     }
 

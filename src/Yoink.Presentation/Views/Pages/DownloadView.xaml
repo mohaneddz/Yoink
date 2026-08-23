@@ -13,6 +13,7 @@
         <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
         <conv:EnumEqualsToVisibilityConverter x:Key="EnumEqualsToVisibilityConverter"/>
         <conv:BoolToOnOffConverter x:Key="OnOffConverter"/>
+        <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style x:Key="FieldStack" TargetType="StackPanel">
@@ -34,7 +35,7 @@
                     <ColumnDefinition Width="230"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0" Height="42">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -53,17 +54,17 @@
                     </Grid>
                 </Border>
 
-                <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Command="{Binding PasteCommand}">
+                <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Command="{Binding PasteCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
-                        <TextBlock Text="PASTE"/>
+                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="PASTE" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
 
-                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Command="{Binding InspectCommand}" Margin="0,0,10,0">
+                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Command="{Binding StartDownloadCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="INSPECT" FontWeight="Bold"/>
+                        <Path Data="{StaticResource IconPlay}" Fill="White" Width="10" Height="10" Stretch="Uniform" Margin="0,0,8,0"/>
+                        <TextBlock Text="START" FontWeight="Bold" Foreground="White"/>
                     </StackPanel>
                 </Button>
 
@@ -71,16 +72,33 @@
                     <StackPanel>
                         <TextBlock Text="TYPE DETECTED" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                         <StackPanel Orientation="Horizontal">
-                            <Border Background="#FFE8281E" Width="18" Height="13" Margin="0,0,8,0">
+                            <Border Background="#FFE8281E" Width="18" Height="13" Margin="0,0,8,0"
+                                    Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Path Data="{StaticResource IconPlay}" Fill="White" Width="7" Height="7" Stretch="Uniform"/>
                             </Border>
-                            <TextBlock Text="{Binding DetectedType}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding DetectedTypeDisplay}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="15" Height="15"
-                                  Stroke="{StaticResource SuccessBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                  Stroke="{StaticResource SuccessBrush}" Margin="10,0,0,0" VerticalAlignment="Center"
+                                  Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
             </Grid>
+
+            <!-- Fetching indicator -->
+            <Border Style="{StaticResource Card}" Padding="20" Margin="0,0,0,20"
+                    Visibility="{Binding IsInspecting, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Border Background="#FFE8281E" Width="22" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
+                            <Path Data="{StaticResource IconPlay}" Fill="White" Width="9" Height="9" Stretch="Uniform"/>
+                        </Border>
+                        <TextBlock Text="FETCHING MEDIA INFORMATION…" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OrangePrimaryBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,8" Style="{StaticResource IndeterminateProgress}"/>
+                    <TextBlock Text="{Binding FetchingDetailsText}" Style="{StaticResource MetaText}"/>
+                </StackPanel>
+            </Border>
 
             <TextBlock Style="{StaticResource StatusMessageText}" Text="{Binding StatusMessage}" Margin="0,0,0,16"/>
 
@@ -93,11 +111,13 @@
                         <ColumnDefinition Width="180"/>
                     </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Column="0" Margin="0,0,20,0" Height="150" VerticalAlignment="Top">
-                        <Border Background="#FF2B3542"/>
-                        <Ellipse Width="46" Height="46" Fill="#55FFFFFF"/>
+                    <Grid Grid.Column="0" Margin="0,0,20,0" Height="150" VerticalAlignment="Top" ClipToBounds="True">
+                        <Border Background="#FF2B3542" CornerRadius="4"/>
+                        <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <Border Background="#22000000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        <Ellipse Width="46" Height="46" Fill="#55000000"/>
                         <Path Data="{StaticResource IconPlay}" Fill="White" Width="16" Height="16" Stretch="Uniform"/>
-                        <Border Background="#CC000000" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
+                        <Border Background="#CC000000" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8" CornerRadius="2">
                             <TextBlock Text="{Binding DurationText}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
                         </Border>
                     </Grid>
@@ -192,50 +212,51 @@
                     <ColumnDefinition Width="500"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource Card}" Padding="20" VerticalAlignment="Top"
+                <!-- VIDEO OPTIONS -->
+                <Border Grid.Column="0" Style="{StaticResource Card}" Padding="20"
                         Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Video}">
                     <StackPanel>
                         <WrapPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="200">
                                 <TextBlock Text="QUALITY" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding Quality}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding Quality}" Height="42"/>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="150">
                                 <TextBlock Text="CONTAINER" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ContainerOptions}" SelectedItem="{Binding Container}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ContainerOptions}" SelectedItem="{Binding Container}" Height="42"/>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="170">
                                 <TextBlock Text="VIDEO CODEC" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoCodecOptions}" SelectedItem="{Binding VideoCodec}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoCodecOptions}" SelectedItem="{Binding VideoCodec}" Height="42"/>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="150">
                                 <TextBlock Text="AUDIO QUALITY" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding AudioQuality}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding AudioQuality}" Height="42"/>
                             </StackPanel>
                         </WrapPanel>
 
                         <WrapPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="200">
                                 <TextBlock Text="SUBTITLES" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}" Height="42"/>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="140">
                                 <TextBlock Text="EMBED SUBTITLES" Style="{StaticResource FieldLabel}"/>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" Height="42" VerticalAlignment="Center">
                                     <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedSubtitles}"/>
                                     <TextBlock Text="{Binding EmbedSubtitles, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="140">
                                 <TextBlock Text="EMBED METADATA" Style="{StaticResource FieldLabel}"/>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" Height="42" VerticalAlignment="Center">
                                     <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedMetadata}"/>
                                     <TextBlock Text="{Binding EmbedMetadata, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="140">
                                 <TextBlock Text="EMBED THUMBNAIL" Style="{StaticResource FieldLabel}"/>
-                                <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Horizontal" Height="42" VerticalAlignment="Center">
                                     <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedThumbnail}"/>
                                     <TextBlock Text="{Binding EmbedThumbnail, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
                                 </StackPanel>
@@ -250,7 +271,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="CHAPTERS" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ChapterOptions}" SelectedItem="{Binding Chapters}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ChapterOptions}" SelectedItem="{Binding Chapters}" Height="42"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="OUTPUT FOLDER" Style="{StaticResource FieldLabel}"/>
@@ -260,8 +281,8 @@
                                         <ColumnDefinition Width="10"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding OutputFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
-                                    <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="16,11" Command="{Binding BrowseOutputFolderCommand}">
+                                    <TextBox Grid.Column="0" Text="{Binding OutputFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True" Height="42"/>
+                                    <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Height="42" Padding="16,0" Command="{Binding BrowseOutputFolderCommand}">
                                         <TextBlock Text="BROWSE" FontWeight="Bold" FontSize="12"/>
                                     </Button>
                                 </Grid>
@@ -276,28 +297,195 @@
                                     <ColumnDefinition Width="10"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{Binding FileNameTemplate}" Style="{StaticResource FieldTextBox}"/>
-                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="13,11" ToolTip="Insert variable"
+                                <TextBox Grid.Column="0" Text="{Binding FileNameTemplate}" Style="{StaticResource FieldTextBox}" Height="42"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Height="42" Padding="13,0" ToolTip="Insert variable"
                                         ContextMenu="{StaticResource TemplateVariableMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
-                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                                 </Button>
                             </Grid>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource Card}" Padding="0" VerticalAlignment="Top">
+                <!-- AUDIO OPTIONS -->
+                <Border Grid.Column="0" Style="{StaticResource Card}" Padding="20"
+                        Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Audio}">
                     <StackPanel>
-                        <Grid Margin="18,16">
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="200">
+                                <TextBlock Text="AUDIO FORMAT" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioContainerOptions}" SelectedItem="{Binding AudioContainer}" Height="42"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="200">
+                                <TextBlock Text="AUDIO QUALITY / BITRATE" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding AudioQuality}" Height="42"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="140">
+                                <TextBlock Text="EMBED METADATA" Style="{StaticResource FieldLabel}"/>
+                                <StackPanel Orientation="Horizontal" Height="42" VerticalAlignment="Center">
+                                    <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedMetadata}"/>
+                                    <TextBlock Text="{Binding EmbedMetadata, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="140">
+                                <TextBlock Text="EMBED COVER ART" Style="{StaticResource FieldLabel}"/>
+                                <StackPanel Orientation="Horizontal" Height="42" VerticalAlignment="Center">
+                                    <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedThumbnail}"/>
+                                    <TextBlock Text="{Binding EmbedThumbnail, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="OUTPUT FOLDER" Style="{StaticResource FieldLabel}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding OutputFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True" Height="42"/>
+                                    <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Height="42" Padding="16,0" Command="{Binding BrowseOutputFolderCommand}">
+                                        <TextBlock Text="BROWSE" FontWeight="Bold" FontSize="12"/>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel>
+                            <TextBlock Text="FILE NAME TEMPLATE" Style="{StaticResource FieldLabel}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding FileNameTemplate}" Style="{StaticResource FieldTextBox}" Height="42"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Height="42" Padding="13,0" ToolTip="Insert variable"
+                                        ContextMenu="{StaticResource TemplateVariableMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
+                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- SUBTITLES OPTIONS -->
+                <Border Grid.Column="0" Style="{StaticResource Card}" Padding="20"
+                        Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Subtitles}">
+                    <StackPanel>
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="220">
+                                <TextBlock Text="SUBTITLE LANGUAGE" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}" Height="42"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="160">
+                                <TextBlock Text="FORMAT" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleFormatOptions}" SelectedItem="{Binding SubtitleFormat}" Height="42"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="OUTPUT FOLDER" Style="{StaticResource FieldLabel}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding OutputFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True" Height="42"/>
+                                    <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Height="42" Padding="16,0" Command="{Binding BrowseOutputFolderCommand}">
+                                        <TextBlock Text="BROWSE" FontWeight="Bold" FontSize="12"/>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel>
+                            <TextBlock Text="FILE NAME TEMPLATE" Style="{StaticResource FieldLabel}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding FileNameTemplate}" Style="{StaticResource FieldTextBox}" Height="42"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Height="42" Padding="13,0" ToolTip="Insert variable"
+                                        ContextMenu="{StaticResource TemplateVariableMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
+                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- THUMBNAIL OPTIONS -->
+                <Border Grid.Column="0" Style="{StaticResource Card}" Padding="20"
+                        Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Thumbnail}">
+                    <StackPanel>
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource FieldStack}" Width="200">
+                                <TextBlock Text="IMAGE FORMAT" Style="{StaticResource FieldLabel}"/>
+                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ThumbnailFormatOptions}" SelectedItem="{Binding ThumbnailFormat}" Height="42"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="OUTPUT FOLDER" Style="{StaticResource FieldLabel}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding OutputFolder}" Style="{StaticResource FieldTextBox}" IsReadOnly="True" Height="42"/>
+                                    <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Height="42" Padding="16,0" Command="{Binding BrowseOutputFolderCommand}">
+                                        <TextBlock Text="BROWSE" FontWeight="Bold" FontSize="12"/>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel>
+                            <TextBlock Text="FILE NAME TEMPLATE" Style="{StaticResource FieldLabel}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding FileNameTemplate}" Style="{StaticResource FieldTextBox}" Height="42"/>
+                                <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Height="42" Padding="13,0" ToolTip="Insert variable"
+                                        ContextMenu="{StaticResource TemplateVariableMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
+                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource Card}" Padding="0">
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" Margin="18,16">
                             <TextBlock Text="AVAILABLE STREAMS" Style="{StaticResource SectionTitleText}" HorizontalAlignment="Left"/>
                             <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Command="{Binding RefreshStreamsCommand}" ToolTip="Refresh streams">
                                 <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource TextMutedBrush}"/>
                             </Button>
                         </Grid>
-                        <Border Height="1" Background="{StaticResource DividerBrush}"/>
+                        <Border DockPanel.Dock="Top" Height="1" Background="{StaticResource DividerBrush}"/>
+
+                        <Border DockPanel.Dock="Bottom" Height="1" Background="{StaticResource DividerBrush}" Margin="0,8,0,0"/>
+                        <Grid DockPanel.Dock="Bottom" Margin="18,12">
+                            <TextBlock Text="{Binding StreamCountText}" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
+                            <TextBlock Text="{Binding SelectedStreamText}" Style="{StaticResource MetaText}" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                        </Grid>
 
                         <DataGrid ItemsSource="{Binding Streams}" SelectedItem="{Binding SelectedStream}"
-                                  Style="{StaticResource FlatDataGrid}" MaxHeight="360" Margin="2,0"
+                                  Style="{StaticResource FlatDataGrid}" Margin="2,0"
+                                  IsReadOnly="True"
                                   ColumnHeaderHeight="30" FontSize="12">
                             <DataGrid.Resources>
                                 <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
@@ -325,13 +513,7 @@
                                 <DataGridTextColumn Header="SIZE" Binding="{Binding Size}" Width="*"/>
                             </DataGrid.Columns>
                         </DataGrid>
-
-                        <Border Height="1" Background="{StaticResource DividerBrush}" Margin="0,8,0,0"/>
-                        <Grid Margin="18,12">
-                            <TextBlock Text="{Binding StreamCountText}" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
-                            <TextBlock Text="{Binding SelectedStreamText}" Style="{StaticResource MetaText}" FontWeight="SemiBold" HorizontalAlignment="Right"/>
-                        </Grid>
-                    </StackPanel>
+                    </DockPanel>
                 </Border>
             </Grid>
 
@@ -340,7 +522,7 @@
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding StartDownloadCommand}" Padding="24,14" Margin="0,0,12,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="White" Margin="0,0,10,0"/>
-                        <TextBlock Text="START DOWNLOAD"/>
+                        <TextBlock Text="START DOWNLOAD" Foreground="White" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding AddToQueueCommand}" Padding="24,13">
