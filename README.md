@@ -1,8 +1,10 @@
-# Yoink
+# YOINK
 
-A modern Windows desktop media downloader built on **yt-dlp** and **FFmpeg**, with a clean WPF interface for downloading, organizing, and managing video and audio from thousands of sites.
+**Yoink** is a media downloader for Windows that wraps the power of **yt-dlp** and **FFmpeg** in a clean, native WPF app — grab video or audio from thousands of sites, then keep it all organized in one place.
 
-Yoink provisions its own copies of yt-dlp and FFmpeg on first launch, so there is nothing to install separately — download the app and go.
+Point it at a URL, pick your quality and format, and go. Yoink handles playlists, follows channels for new uploads, queues concurrent downloads, and keeps a searchable library and history of everything you've saved — no command line, no browser extensions, no ads.
+
+It provisions its own copies of yt-dlp and FFmpeg on first launch, so there is nothing to install separately: download the app and start yoinking.
 
 ## Features
 
