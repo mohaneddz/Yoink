@@ -19,6 +19,8 @@ public partial class QueueJob : ObservableObject
     [ObservableProperty] private string _destination = string.Empty;
     [ObservableProperty] private QueueJobStatus _status;
     [ObservableProperty] private string _thumbnailHex = "#FF2B3542";
+    [ObservableProperty] private string _thumbnailUrl = string.Empty;
+    [ObservableProperty] private bool _isSelected;
 
     // Inspector detail fields
     [ObservableProperty] private string _sourceUrl = string.Empty;
@@ -50,4 +52,16 @@ public partial class QueueJob : ObservableObject
 
     [RelayCommand]
     private void SelectTab(string tab) => SelectedInspectorTab = tab;
+
+    [RelayCommand]
+    private void CopyLog()
+    {
+        if (LogLines.Count > 0)
+        {
+            try { System.Windows.Clipboard.SetText(string.Join(Environment.NewLine, LogLines)); } catch { }
+        }
+    }
+
+    [RelayCommand]
+    private void ClearLog() => LogLines.Clear();
 }

@@ -19,6 +19,7 @@ public sealed class QueueJobEntity
     public string OutputFolder { get; set; } = string.Empty;
     public string SelectedFormatText { get; set; } = string.Empty;
     public string ThumbnailHex { get; set; } = string.Empty;
+    public string ThumbnailUrl { get; set; } = string.Empty;
     public string SourceUrl { get; set; } = string.Empty;
     public string FileSizeText { get; set; } = string.Empty;
     public string DownloadedText { get; set; } = string.Empty;

@@ -17,6 +17,7 @@
         <conv:ProgressToStarWidthConverter x:Key="ProgressStarConverter"/>
         <conv:QueueJobStatusToActionIconConverter x:Key="ActionIconConverter"/>
         <conv:CountToVisibilityConverter x:Key="CountToVisibility"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style x:Key="FilterCount" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
@@ -131,27 +132,56 @@
                 <Button Style="{StaticResource PrimaryButton}" Padding="16,10" Command="{Binding StartAllCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconPlay}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="White" Margin="0,0,7,0"/>
-                        <TextBlock Text="START ALL" FontSize="12"/>
+                        <TextBlock Text="START ALL" FontSize="12" Foreground="White" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource ToolbarButton}" Command="{Binding PauseAllCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconPause}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,7,0"/>
+                        <Path Data="{StaticResource IconPause}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,7,0"/>
                         <TextBlock Text="PAUSE ALL" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource ToolbarButton}" Command="{Binding ClearCompletedCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconTrash}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,7,0"/>
+                        <Path Data="{StaticResource IconTrash}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,7,0"/>
                         <TextBlock Text="CLEAR COMPLETED" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
-                <Button Style="{StaticResource ToolbarButton}" Command="{Binding RetryFailedCommand}">
+                <Button Style="{StaticResource ToolbarButton}" Command="{Binding ClearFailedCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,7,0"/>
+                        <Path Data="{StaticResource IconTrash}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource ErrorBrush}" Margin="0,0,7,0"/>
+                        <TextBlock Text="DELETE FAILED" FontWeight="Bold" Foreground="{DynamicResource ErrorBrush}"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource ToolbarButton}" Command="{Binding RetryFailedCommand}" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,7,0"/>
                         <TextBlock Text="RETRY FAILED" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
+
+                <!-- Batch Actions (when items are selected) -->
+                <StackPanel Orientation="Horizontal" Visibility="{Binding HasSelectedJobs, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Border Width="1" Background="{DynamicResource DividerBrush}" Margin="6,4,16,4"/>
+                    <Button Style="{StaticResource ToolbarButton}" Command="{Binding DeleteSelectedCommand}" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconTrash}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource ErrorBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="{Binding SelectedCount, StringFormat='DELETE SELECTED ({0})'}" FontWeight="Bold" Foreground="{DynamicResource ErrorBrush}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}" Command="{Binding PauseSelectedCommand}" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconPause}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="PAUSE SELECTED" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource ToolbarButton}" Command="{Binding ResumeSelectedBatchCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconPlay}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource OrangePrimaryBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="RESUME SELECTED" FontWeight="Bold" Foreground="{DynamicResource OrangePrimaryBrush}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -170,6 +200,7 @@
             <DataGrid Visibility="{Binding Jobs.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}"
                       ItemsSource="{Binding FilteredJobs}" SelectedItem="{Binding SelectedJob}"
                       Style="{StaticResource FlatDataGrid}" RowStyle="{StaticResource QueueRowStyle}"
+                      IsReadOnly="True"
                       controls:DataGridBehaviors.SelectRowOnRightClick="True" FontSize="11" ColumnHeaderHeight="28">
                 <!-- Scoped to the grid (not the Window) so Space/Delete only act on the queue
                      selection when the list itself has focus, not while typing in a text field. -->
@@ -187,6 +218,16 @@
                     </Style>
                 </DataGrid.Resources>
                 <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="30">
+                        <DataGridTemplateColumn.Header>
+                            <CheckBox Style="{StaticResource TableCheckBox}" IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}" ToolTip="Select all"/>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox Style="{StaticResource TableCheckBox}" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="#" Width="22">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -197,7 +238,10 @@
                     <DataGridTemplateColumn Header="" Width="38">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border Background="{Binding ThumbnailHex}" Width="30" Height="22"/>
+                                <Grid Width="30" Height="22" ClipToBounds="True">
+                                    <Border Background="{Binding ThumbnailHex}" CornerRadius="2"/>
+                                    <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

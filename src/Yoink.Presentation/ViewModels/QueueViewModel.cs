@@ -5,6 +5,7 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Yoink.Application.Abstractions;
+using Yoink.Presentation.Extensions;
 using Yoink.Presentation.Services;
 using Yoink.Presentation.ViewModels.Models;
 
@@ -83,6 +84,11 @@ public partial class QueueViewModel : ObservableObject
         {
             RefreshCounts();
         }
+        else if (e.PropertyName == nameof(QueueJob.IsSelected))
+        {
+            OnPropertyChanged(nameof(SelectedCount));
+            OnPropertyChanged(nameof(HasSelectedJobs));
+        }
     }
 
     private bool FilterJob(object obj)
@@ -103,7 +109,7 @@ public partial class QueueViewModel : ObservableObject
         };
     }
 
-    partial void OnSelectedFilterChanged(QueueFilter value) => _filteredJobs.Refresh();
+    partial void OnSelectedFilterChanged(QueueFilter value) => _filteredJobs.SafeRefresh();
 
     partial void OnMaxConcurrentChanged(int value)
     {
@@ -128,15 +134,55 @@ public partial class QueueViewModel : ObservableObject
         }
     }
 
+    [ObservableProperty] private bool _isAllSelected;
+
+    public int SelectedCount => Jobs.Count(j => j.IsSelected);
+    public bool HasSelectedJobs => SelectedCount > 0;
+
+    partial void OnIsAllSelectedChanged(bool value)
+    {
+        foreach (var job in _filteredJobs.OfType<QueueJob>())
+        {
+            job.IsSelected = value;
+        }
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(HasSelectedJobs));
+    }
+
     [RelayCommand] private void StartAll() => _coordinator.StartAll();
     [RelayCommand] private void PauseAll() => _coordinator.PauseAll();
     [RelayCommand] private void ClearCompleted() => _coordinator.ClearCompleted();
+    [RelayCommand] private void ClearFailed() => _coordinator.ClearFailed();
     [RelayCommand] private void RetryFailed() => _coordinator.RetryFailed();
     [RelayCommand] private void ToggleJob(QueueJob job) => _coordinator.ToggleJob(job);
     [RelayCommand] private void PauseJob(QueueJob job) => _coordinator.PauseJob(job);
     [RelayCommand] private void ResumeJob(QueueJob job) => _coordinator.ResumeJob(job);
     [RelayCommand] private void RetryJob(QueueJob job) => _coordinator.RetryJob(job);
     [RelayCommand] private void RemoveJob(QueueJob job) => _coordinator.RemoveJob(job);
+
+    [RelayCommand]
+    private void DeleteSelected()
+    {
+        var selected = Jobs.Where(j => j.IsSelected).ToList();
+        _coordinator.RemoveJobs(selected);
+        IsAllSelected = false;
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(HasSelectedJobs));
+    }
+
+    [RelayCommand]
+    private void PauseSelected()
+    {
+        var selected = Jobs.Where(j => j.IsSelected).ToList();
+        _coordinator.PauseJobs(selected);
+    }
+
+    [RelayCommand]
+    private void ResumeSelectedBatch()
+    {
+        var selected = Jobs.Where(j => j.IsSelected).ToList();
+        _coordinator.ResumeJobs(selected);
+    }
 
     [RelayCommand]
     private void ResumeSelected()
@@ -154,6 +200,8 @@ public partial class QueueViewModel : ObservableObject
         OnPropertyChanged(nameof(PausedCount));
         OnPropertyChanged(nameof(CompletedCount));
         OnPropertyChanged(nameof(FailedCount));
-        _filteredJobs.Refresh();
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(HasSelectedJobs));
+        _filteredJobs.SafeRefresh();
     }
 }

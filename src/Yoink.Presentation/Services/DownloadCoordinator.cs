@@ -110,6 +110,7 @@ public sealed class DownloadCoordinator
                 OutputFolder = entity.OutputFolder,
                 SelectedFormatText = entity.SelectedFormatText,
                 ThumbnailHex = string.IsNullOrEmpty(entity.ThumbnailHex) ? ColorFromKey(entity.Title) : entity.ThumbnailHex,
+                ThumbnailUrl = entity.ThumbnailUrl ?? string.Empty,
                 SourceUrl = entity.SourceUrl,
                 FileSizeText = entity.FileSizeText,
                 DownloadedText = entity.DownloadedText,
@@ -166,6 +167,7 @@ public sealed class DownloadCoordinator
             Destination = request.OutputFolder,
             SelectedFormatText = $"{info.Format} · {info.Quality}",
             ThumbnailHex = ColorFromKey(info.Title),
+            ThumbnailUrl = info.ThumbnailUrl ?? string.Empty,
             AddedAtText = Formatting.ShortDate(DateTimeOffset.Now)
         };
         job.LogLines.Add($"{DateTime.Now:HH:mm:ss}  Queued: {info.Title}");
@@ -173,6 +175,12 @@ public sealed class DownloadCoordinator
         job.OpenFolderAction = () => OpenJobFolder(job);
 
         _runtimes[job] = new JobRuntime { Request = request, Kind = request.Kind };
+        if (!startImmediately)
+        {
+            job.Status = QueueJobStatus.Paused;
+            job.StatusDetailText = "Paused";
+        }
+
         Jobs.Add(job);
         JobsChanged?.Invoke(this, EventArgs.Empty);
         Persist(job, request, request.Kind);
@@ -315,6 +323,50 @@ public sealed class DownloadCoordinator
         JobsChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    public void ClearFailed()
+    {
+        foreach (var job in Jobs.Where(j => j.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled).ToList())
+        {
+            _runtimes.TryRemove(job, out _);
+            Jobs.Remove(job);
+            DeletePersisted(job);
+        }
+
+        JobsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void RemoveJobs(IEnumerable<QueueJob> jobs)
+    {
+        foreach (var job in jobs.ToList())
+        {
+            if (_runtimes.TryRemove(job, out var rt))
+            {
+                rt.Cts?.Cancel();
+            }
+
+            Jobs.Remove(job);
+            DeletePersisted(job);
+        }
+
+        JobsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void PauseJobs(IEnumerable<QueueJob> jobs)
+    {
+        foreach (var job in jobs.ToList())
+        {
+            PauseJob(job);
+        }
+    }
+
+    public void ResumeJobs(IEnumerable<QueueJob> jobs)
+    {
+        foreach (var job in jobs.ToList())
+        {
+            ResumeJob(job);
+        }
+    }
+
     public void RetryFailed()
     {
         foreach (var job in Jobs.Where(j => j.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled))
@@ -352,6 +404,13 @@ public sealed class DownloadCoordinator
 
     private void StartRun(QueueJob job, JobRuntime rt)
     {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is not null && !dispatcher.CheckAccess())
+        {
+            dispatcher.BeginInvoke(() => StartRun(job, rt));
+            return;
+        }
+
         rt.Cts = new CancellationTokenSource();
         rt.Running = true;
         job.Status = QueueJobStatus.DownloadingVideo;
@@ -359,7 +418,6 @@ public sealed class DownloadCoordinator
         job.LogLines.Add($"{DateTime.Now:HH:mm:ss}  Starting download");
         PersistExisting(job);
 
-        var dispatcher = System.Windows.Application.Current.Dispatcher;
         var progress = new Progress<DownloadProgress>(p => ApplyProgress(job, p));
 
         _ = Task.Run(async () =>
@@ -378,12 +436,26 @@ public sealed class DownloadCoordinator
                 result = new DownloadResult { Outcome = DownloadOutcome.Failed, ErrorMessage = ex.Message, ExitCode = -1 };
             }
 
-            await dispatcher.InvokeAsync(() => OnJobFinished(job, rt, result));
+            if (dispatcher is not null)
+            {
+                await dispatcher.InvokeAsync(() => OnJobFinished(job, rt, result));
+            }
+            else
+            {
+                OnJobFinished(job, rt, result);
+            }
         });
     }
 
     private void ApplyProgress(QueueJob job, DownloadProgress p)
     {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is not null && !dispatcher.CheckAccess())
+        {
+            dispatcher.BeginInvoke(() => ApplyProgress(job, p));
+            return;
+        }
+
         if (p.RawLine is not null)
         {
             job.LogLines.Add($"{DateTime.Now:HH:mm:ss}  {p.RawLine}");
@@ -434,6 +506,13 @@ public sealed class DownloadCoordinator
 
     private async void OnJobFinished(QueueJob job, JobRuntime rt, DownloadResult result)
     {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is not null && !dispatcher.CheckAccess())
+        {
+            await dispatcher.InvokeAsync(() => OnJobFinished(job, rt, result));
+            return;
+        }
+
         rt.Running = false;
         rt.Cts?.Dispose();
         rt.Cts = null;
@@ -518,6 +597,7 @@ public sealed class DownloadCoordinator
                     Kind = rt.Kind,
                     Format = job.Format,
                     Quality = job.Quality,
+                    ThumbnailUrl = job.ThumbnailUrl ?? string.Empty,
                     ResolutionText = resolution,
                     VideoCodec = probe?.VideoCodec ?? string.Empty,
                     AudioCodec = probe?.AudioCodec ?? string.Empty,
@@ -637,6 +717,7 @@ public sealed class DownloadCoordinator
         OutputFolder = job.OutputFolder,
         SelectedFormatText = job.SelectedFormatText,
         ThumbnailHex = job.ThumbnailHex,
+        ThumbnailUrl = job.ThumbnailUrl,
         SourceUrl = job.SourceUrl,
         FileSizeText = job.FileSizeText,
         DownloadedText = job.DownloadedText,

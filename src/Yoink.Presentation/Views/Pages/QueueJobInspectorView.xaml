@@ -29,7 +29,10 @@
         <StackPanel DockPanel.Dock="Top" Margin="20,20,20,0">
             <Grid Margin="0,0,0,16">
                 <StackPanel Orientation="Horizontal">
-                    <Border Background="{Binding ThumbnailHex}" Width="60" Height="42" Margin="0,0,12,0"/>
+                    <Grid Width="60" Height="42" Margin="0,0,12,0" ClipToBounds="True">
+                        <Border Background="{Binding ThumbnailHex}" CornerRadius="2"/>
+                        <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    </Grid>
                     <StackPanel VerticalAlignment="Center" MaxWidth="200">
                         <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" TextWrapping="Wrap"/>
                         <TextBlock Margin="0,2,0,0">
@@ -133,8 +136,11 @@
                     </Grid>
 
                     <Grid Margin="0,0,0,8">
-                        <TextBlock Text="LOG PREVIEW" Style="{StaticResource FieldLabel}" HorizontalAlignment="Left"/>
-                        <TextBlock Text="CLEAR" Style="{StaticResource FieldLabel}" HorizontalAlignment="Right" Foreground="{StaticResource OrangePrimaryBrush}"/>
+                        <TextBlock Text="LOG PREVIEW" Style="{StaticResource FieldLabel}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <Button Content="COPY" Command="{Binding CopyLogCommand}" Style="{StaticResource TextLinkButton}" Margin="0,0,16,0" ToolTip="Copy log preview to clipboard"/>
+                            <Button Content="CLEAR" Command="{Binding ClearLogCommand}" Style="{StaticResource TextLinkButton}" ToolTip="Clear log lines"/>
+                        </StackPanel>
                     </Grid>
                     <Border Background="{StaticResource LogPanelBrush}" Padding="12" Height="150" Margin="0,0,0,16">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
