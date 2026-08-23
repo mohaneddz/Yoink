@@ -78,48 +78,46 @@
         <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="120"/>
-                <ColumnDefinition Width="230"/>
-                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0" Height="40">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Path Grid.Column="0" Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}" Margin="12,0,0,0"/>
-                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="10,11"
+                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="10,9"
                              Tag="Search by title, channel, or tag..."/>
                 </Grid>
             </Border>
-            <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" ToolTip="Filter library"
+            <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Padding="14,0" Height="40" ToolTip="Filter library"
                     ContextMenu="{StaticResource LibraryFilterMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Path Data="{StaticResource IconFilter}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
-                    <TextBlock Text="FILTERS" FontWeight="Bold" FontSize="12"/>
+                    <TextBlock Text="FILTERS" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
-            <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SortBy}" Margin="0,0,10,0"/>
-            <StackPanel Grid.Column="3" Orientation="Horizontal">
-                <RadioButton GroupName="ViewMode" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static models:LibraryViewMode.Grid}"
-                             IsChecked="{Binding ViewMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Grid, Mode=OneWay}" Margin="0,0,6,0">
-                    <RadioButton.Style>
-                        <Style TargetType="RadioButton" BasedOn="{StaticResource ChipToggleButton}"/>
-                    </RadioButton.Style>
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconGrid}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
-                        <TextBlock Text="GRID"/>
+            <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SortBy}" Margin="0,0,10,0" Height="40"/>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <RadioButton Style="{StaticResource ChipToggleButton}" GroupName="LibViewMode"
+                             Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static models:LibraryViewMode.Grid}"
+                             IsChecked="{Binding ViewMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Grid, Mode=OneWay}"
+                             Margin="0,0,6,0" Padding="14,8" Height="40">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Path Data="{StaticResource IconGrid}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="GRID" VerticalAlignment="Center" FontWeight="Bold" FontSize="11"/>
                     </StackPanel>
                 </RadioButton>
-                <RadioButton GroupName="ViewMode" Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static models:LibraryViewMode.List}"
-                             IsChecked="{Binding ViewMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=List, Mode=OneWay}">
-                    <RadioButton.Style>
-                        <Style TargetType="RadioButton" BasedOn="{StaticResource ChipToggleButton}"/>
-                    </RadioButton.Style>
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
-                        <TextBlock Text="LIST"/>
+                <RadioButton Style="{StaticResource ChipToggleButton}" GroupName="LibViewMode"
+                             Command="{Binding SetViewModeCommand}" CommandParameter="{x:Static models:LibraryViewMode.List}"
+                             IsChecked="{Binding ViewMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=List, Mode=OneWay}"
+                             Padding="14,8" Height="40">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="LIST" VerticalAlignment="Center" FontWeight="Bold" FontSize="11"/>
                     </StackPanel>
                 </RadioButton>
             </StackPanel>
@@ -179,7 +177,10 @@
                     <TextBlock Style="{StaticResource GroupHeader}">
                         <Run Text="Recent Downloads ("/><Run Text="{Binding RecentDownloads.Count, Mode=OneWay}"/><Run Text=")"/>
                     </TextBlock>
-                    <ItemsControl ItemsSource="{Binding RecentDownloads}" Margin="0,0,0,24">
+
+                    <!-- Grid View (Card tiles) -->
+                    <ItemsControl ItemsSource="{Binding RecentDownloads}" Margin="0,0,0,24"
+                                  Visibility="{Binding ViewMode, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=Grid}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel/>
@@ -192,10 +193,11 @@
                                         <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.SelectItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
                                     </Border.InputBindings>
                                     <StackPanel>
-                                        <Grid Height="106">
-                                            <Border Background="{Binding ThumbnailHex}"/>
+                                        <Grid Height="106" ClipToBounds="True">
+                                            <Border Background="{Binding ThumbnailHex}" CornerRadius="2"/>
+                                            <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                                             <CheckBox Style="{StaticResource TableCheckBox}" IsChecked="{Binding IsSelected}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"/>
-                                            <Border Background="#CC000000" Padding="5,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="6">
+                                            <Border Background="#CC000000" Padding="5,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="6" CornerRadius="2">
                                                 <TextBlock Text="{Binding DurationText}" Foreground="White" FontSize="10" FontWeight="SemiBold"/>
                                             </Border>
                                         </Grid>
@@ -215,6 +217,54 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <!-- List View (DataGrid rows) -->
+                    <Border Style="{StaticResource Card}" Padding="0" Margin="0,0,0,24"
+                            Visibility="{Binding ViewMode, Converter={StaticResource EnumEqualsToVisibility}, ConverterParameter=List}">
+                        <DataGrid Style="{StaticResource FlatDataGrid}" ItemsSource="{Binding RecentDownloads}"
+                                  SelectedItem="{Binding SelectedItem, Mode=TwoWay}" MaxHeight="450">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="36">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Style="{StaticResource TableCheckBox}" IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="THUMBNAIL" Width="85">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid Width="70" Height="40" Margin="0,4" ClipToBounds="True">
+                                                <Border Background="{Binding ThumbnailHex}" CornerRadius="2"/>
+                                                <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                <Border Background="#CC000000" Padding="4,1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="2" CornerRadius="2">
+                                                    <TextBlock Text="{Binding DurationText}" Foreground="White" FontSize="9" FontWeight="SemiBold"/>
+                                                </Border>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="TITLE" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center" Margin="0,4">
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Channel}" Style="{StaticResource MetaText}" FontSize="11" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTextColumn Header="FORMAT" Binding="{Binding Format}" Width="75"/>
+                                <DataGridTextColumn Header="QUALITY" Binding="{Binding Quality}" Width="85"/>
+                                <DataGridTextColumn Header="SIZE" Binding="{Binding FileSizeText}" Width="85"/>
+                                <DataGridTextColumn Header="DOWNLOADED" Binding="{Binding DownloadDateText}" Width="120"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
 
                     <TextBlock Style="{StaticResource GroupHeader}">
                         <Run Text="Playlists ("/><Run Text="{Binding Playlists.Count, Mode=OneWay}"/><Run Text=")"/>
@@ -259,7 +309,15 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <Ellipse Grid.Column="0" Width="32" Height="32" Fill="{StaticResource OrangePrimaryBrush}" Margin="0,0,12,0"/>
+                                            <Grid Grid.Column="0" Width="32" Height="32" Margin="0,0,12,0">
+                                                <Grid.Clip>
+                                                    <EllipseGeometry Center="16,16" RadiusX="16" RadiusY="16"/>
+                                                </Grid.Clip>
+                                                <Ellipse Fill="{StaticResource OrangePrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold" FontSize="13"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <Image Source="{Binding AvatarUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            </Grid>
                                             <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                             <TextBlock Grid.Column="2" Text="{Binding ItemCountText}" Style="{StaticResource MetaText}" VerticalAlignment="Center" Margin="0,0,24,0"/>
                                             <TextBlock Grid.Column="3" Text="{Binding UpdatedText}" Style="{StaticResource MetaText}" VerticalAlignment="Center"/>
@@ -276,15 +334,24 @@
             <Border Grid.Column="2" Style="{StaticResource Card}" Padding="0" VerticalAlignment="Top" DataContext="{Binding SelectedItem}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="820">
                     <StackPanel Margin="18">
-                        <Grid Height="160" Margin="0,0,0,14">
-                            <Border Background="{Binding ThumbnailHex}"/>
-                            <Border Background="#CC000000" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
+                        <Grid Height="160" Margin="0,0,0,14" ClipToBounds="True">
+                            <Border Background="{Binding ThumbnailHex}" CornerRadius="4"/>
+                            <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <Border Background="#CC000000" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8" CornerRadius="2">
                                 <TextBlock Text="{Binding DurationText}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
                             </Border>
                         </Grid>
                         <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" TextWrapping="Wrap" Margin="0,0,0,8"/>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <Ellipse Width="18" Height="18" Fill="{StaticResource OrangePrimaryBrush}"/>
+                            <Grid Width="20" Height="20" VerticalAlignment="Center">
+                                <Grid.Clip>
+                                    <EllipseGeometry Center="10,10" RadiusX="10" RadiusY="10"/>
+                                </Grid.Clip>
+                                <Ellipse Fill="{StaticResource OrangePrimaryBrush}"/>
+                                <TextBlock Text="{Binding ChannelInitial}" Foreground="White" FontWeight="Bold" FontSize="10"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image Source="{Binding ChannelAvatarUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Grid>
                             <TextBlock Text="{Binding Channel}" Foreground="{StaticResource OrangePrimaryBrush}" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
                             <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" VerticalAlignment="Center"
                                   Visibility="{Binding ChannelVerified, Converter={StaticResource BooleanToVisibilityConverter}}"/>

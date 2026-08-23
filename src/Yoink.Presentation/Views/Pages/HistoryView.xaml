@@ -193,6 +193,7 @@
                                    Visibility="{Binding Records.Count, Converter={StaticResource CountToVisibility}}"/>
             <DataGrid Visibility="{Binding Records.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}"
                       ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord}" Style="{StaticResource FlatDataGrid}"
+                      IsReadOnly="True"
                       RowStyle="{StaticResource HistoryRowStyle}" controls:DataGridBehaviors.SelectRowOnRightClick="True" FontSize="11.5">
                 <DataGrid.Resources>
                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">

@@ -40,7 +40,10 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,0,20,20">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                    <Border Background="{Binding ThumbnailHex}" Width="60" Height="42" Margin="0,0,12,0"/>
+                    <Grid Width="60" Height="42" Margin="0,0,12,0" ClipToBounds="True">
+                        <Border Background="{Binding ThumbnailHex}" CornerRadius="2"/>
+                        <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    </Grid>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" MaxWidth="200"/>
                         <TextBlock Text="{Binding Channel}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,2,0,0"/>
@@ -68,8 +71,14 @@
                 <Grid Margin="0,0,0,8"><TextBlock Text="Output" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding Output}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
                 <Grid Margin="0,0,0,16"><TextBlock Text="Exit Code" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding ExitCodeText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
 
-                <TextBlock Text="LOG PREVIEW" Style="{StaticResource FieldLabel}"/>
-                <Border Background="{StaticResource LogPanelBrush}" Padding="12" Height="130" Margin="0,4,0,8">
+                <Grid Margin="0,0,0,4">
+                    <TextBlock Text="LOG PREVIEW" Style="{StaticResource FieldLabel}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Content="COPY" Command="{Binding CopyLogCommand}" Style="{StaticResource TextLinkButton}" Margin="0,0,16,0" ToolTip="Copy log preview to clipboard"/>
+                        <Button Content="CLEAR" Command="{Binding ClearLogCommand}" Style="{StaticResource TextLinkButton}" ToolTip="Clear log lines"/>
+                    </StackPanel>
+                </Grid>
+                <Border Background="{StaticResource LogPanelBrush}" Padding="12" Height="130" Margin="0,0,0,8">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding LogLines}">
                             <ItemsControl.ItemTemplate>
@@ -91,7 +100,7 @@
                     <Button Grid.Column="0" Style="{StaticResource PrimaryButton}" Padding="14,12" Command="{Binding RetryCommand}">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="White" Margin="0,0,8,0"/>
-                            <TextBlock Text="RETRY THIS DOWNLOAD" FontSize="12"/>
+                            <TextBlock Text="RETRY THIS DOWNLOAD" FontSize="12" Foreground="White" FontWeight="Bold"/>
                         </StackPanel>
                     </Button>
                     <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Padding="12,12" ToolTip="More actions"

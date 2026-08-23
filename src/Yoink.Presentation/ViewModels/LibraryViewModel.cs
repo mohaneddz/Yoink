@@ -14,13 +14,19 @@ namespace Yoink.Presentation.ViewModels;
 public partial class LibraryViewModel : ObservableObject
 {
     private readonly ILibraryRepository _repository;
+    private readonly ISavedChannelRepository _channels;
     private readonly ISystemAccess _system;
     private readonly IFfmpegService _ffmpeg;
     private readonly List<LibraryItem> _all = new();
 
-    public LibraryViewModel(ILibraryRepository repository, ISystemAccess system, IFfmpegService ffmpeg)
+    public LibraryViewModel(
+        ILibraryRepository repository,
+        ISavedChannelRepository channels,
+        ISystemAccess system,
+        IFfmpegService ffmpeg)
     {
         _repository = repository;
+        _channels = channels;
         _system = system;
         _ffmpeg = ffmpeg;
         _ = LoadAsync();
@@ -61,7 +67,7 @@ public partial class LibraryViewModel : ObservableObject
             _all.Add(Map(e));
         }
 
-        BuildGroups();
+        await BuildGroupsAsync();
         ApplyView();
     }
 
@@ -99,19 +105,32 @@ public partial class LibraryViewModel : ObservableObject
         }
     }
 
-    private void BuildGroups()
+    private async Task BuildGroupsAsync()
     {
+        var savedChannels = await _channels.GetAllAsync();
+        var channelMap = savedChannels.ToDictionary(c => c.Name, c => c.AvatarUrl, StringComparer.OrdinalIgnoreCase);
+
         Channels.Clear();
         foreach (var group in _all.Where(i => !string.IsNullOrWhiteSpace(i.Channel))
                      .GroupBy(i => i.Channel).OrderByDescending(g => g.Count()))
         {
+            channelMap.TryGetValue(group.Key, out var avatarUrl);
             Channels.Add(new LibraryGroupSummary
             {
                 Name = group.Key,
                 ItemCountText = $"{group.Count()} item{(group.Count() == 1 ? "" : "s")}",
                 UpdatedText = string.Empty,
-                IconKey = "IconUser"
+                IconKey = "IconUser",
+                AvatarUrl = avatarUrl ?? string.Empty
             });
+        }
+
+        foreach (var item in _all)
+        {
+            if (channelMap.TryGetValue(item.Channel, out var av) && !string.IsNullOrWhiteSpace(av))
+            {
+                item.ChannelAvatarUrl = av;
+            }
         }
 
         Playlists.Clear();
@@ -229,17 +248,20 @@ public partial class LibraryViewModel : ObservableObject
 
         _all.Remove(SelectedItem);
         RecentDownloads.Remove(SelectedItem);
-        BuildGroups();
+        _ = BuildGroupsAsync();
     }
 
     private static LibraryItem Map(LibraryEntry e)
     {
+        var thumb = TryExtractThumbnailUrl(e.SourceUrl, e.ThumbnailUrl);
         var item = new LibraryItem
         {
             EntryId = e.Id,
             Kind = e.Kind,
             Title = e.Title,
             Channel = e.Channel,
+            ThumbnailUrl = thumb,
+            ThumbnailHex = ColorFromKey(e.Title),
             DurationText = Formatting.Duration(e.DurationSeconds),
             Format = string.IsNullOrWhiteSpace(e.Format) ? "—" : e.Format,
             Quality = string.IsNullOrWhiteSpace(e.Quality) ? "—" : e.Quality,
@@ -260,5 +282,37 @@ public partial class LibraryViewModel : ObservableObject
         }
 
         return item;
+    }
+
+    private static string TryExtractThumbnailUrl(string? sourceUrl, string? explicitThumb)
+    {
+        if (!string.IsNullOrWhiteSpace(explicitThumb))
+        {
+            return explicitThumb;
+        }
+
+        if (string.IsNullOrWhiteSpace(sourceUrl))
+        {
+            return string.Empty;
+        }
+
+        var match = System.Text.RegularExpressions.Regex.Match(
+            sourceUrl,
+            @"(?:v=|\/v\/|\/embed\/|\/shorts\/|youtu\.be\/|\/watch\?v=)([a-zA-Z0-9_-]{11})");
+
+        if (match.Success)
+        {
+            return $"https://i.ytimg.com/vi/{match.Groups[1].Value}/hqdefault.jpg";
+        }
+
+        return string.Empty;
+    }
+
+    private static string ColorFromKey(string key)
+    {
+        string[] palette = { "#2B3A4A", "#1E3A34", "#3D2C4A", "#4A2B2B", "#2D3748", "#1F2937" };
+        if (string.IsNullOrEmpty(key)) return palette[0];
+        var hash = Math.Abs(key.GetHashCode());
+        return palette[hash % palette.Length];
     }
 }

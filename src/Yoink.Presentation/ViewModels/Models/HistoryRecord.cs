@@ -10,6 +10,7 @@ public partial class HistoryRecord : ObservableObject
     [ObservableProperty] private int _entryId;
     [ObservableProperty] private int _index;
     [ObservableProperty] private string _thumbnailHex = "#FF2B3542";
+    [ObservableProperty] private string _thumbnailUrl = string.Empty;
     [ObservableProperty] private string _title = string.Empty;
     [ObservableProperty] private string _channel = string.Empty;
     [ObservableProperty] private string _timestampText = string.Empty;
@@ -40,4 +41,16 @@ public partial class HistoryRecord : ObservableObject
     [RelayCommand] private void Retry() => RetryAction?.Invoke();
     [RelayCommand] private void CopyUrl() => CopyUrlAction?.Invoke();
     [RelayCommand] private void OpenFolder() => OpenFolderAction?.Invoke();
+
+    [RelayCommand]
+    private void CopyLog()
+    {
+        if (LogLines.Count > 0)
+        {
+            try { System.Windows.Clipboard.SetText(string.Join(Environment.NewLine, LogLines)); } catch { }
+        }
+    }
+
+    [RelayCommand]
+    private void ClearLog() => LogLines.Clear();
 }

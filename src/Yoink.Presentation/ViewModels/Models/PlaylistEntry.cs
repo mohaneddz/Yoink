@@ -16,6 +16,7 @@ public partial class PlaylistEntry : ObservableObject
     [ObservableProperty] private string _url = string.Empty;
     [ObservableProperty] private int _index;
     [ObservableProperty] private string _thumbnailHex = "#FF2B3542";
+    [ObservableProperty] private string _thumbnailUrl = string.Empty;
     [ObservableProperty] private string _title = string.Empty;
     [ObservableProperty] private string _duration = string.Empty;
     [ObservableProperty] private string _channel = string.Empty;

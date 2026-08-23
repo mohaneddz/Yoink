@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using Yoink.Application.Abstractions;
 using Yoink.Application.Downloads;
 using Yoink.Domain.Media;
+using Yoink.Presentation.Extensions;
 using Yoink.Presentation.Navigation;
 using Yoink.Presentation.Services;
 using Yoink.Presentation.ViewModels.Models;
@@ -48,14 +49,21 @@ public partial class PlaylistsViewModel : ObservableObject
     }
 
     [ObservableProperty] private string _playlistUrl = string.Empty;
+    [ObservableProperty] private string _playlistThumbnailUrl = string.Empty;
     [ObservableProperty] private string _playlistTitle = "No playlist loaded";
     [ObservableProperty] private string _creator = string.Empty;
+    [ObservableProperty] private bool _creatorVerified;
     [ObservableProperty] private string _videoCountText = "0 videos";
     [ObservableProperty] private string _totalDurationText = "—";
     [ObservableProperty] private string _visibility = "—";
     [ObservableProperty] private string _description = string.Empty;
     [ObservableProperty] private bool _isInspecting;
     [ObservableProperty] private string _statusMessage = string.Empty;
+    [ObservableProperty] private bool _isDetectedTypeValid;
+
+    public string DetectedTypeDisplay => IsDetectedTypeValid ? "Playlist" : (string.IsNullOrWhiteSpace(PlaylistUrl) ? "—" : "Invalid");
+
+    partial void OnIsDetectedTypeValidChanged(bool value) => OnPropertyChanged(nameof(DetectedTypeDisplay));
 
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private PlaylistFilter _selectedFilter = PlaylistFilter.All;
@@ -126,10 +134,10 @@ public partial class PlaylistsViewModel : ObservableObject
     private void SelectFilter(PlaylistFilter filter)
     {
         SelectedFilter = filter;
-        _filteredEntries.Refresh();
+        _filteredEntries.SafeRefresh();
     }
 
-    partial void OnSearchTextChanged(string value) => _filteredEntries.Refresh();
+    partial void OnSearchTextChanged(string value) => _filteredEntries.SafeRefresh();
 
     [RelayCommand]
     private async Task Inspect()
@@ -160,13 +168,26 @@ public partial class PlaylistsViewModel : ObservableObject
         }
     }
 
+    partial void OnPlaylistUrlChanged(string value)
+    {
+        var sanitized = TextSanitizer.TruncateToSingleLine(value);
+        if (sanitized != value)
+        {
+            PlaylistUrl = sanitized;
+            return;
+        }
+
+        IsDetectedTypeValid = !string.IsNullOrWhiteSpace(value) && (value.Contains("list=", StringComparison.OrdinalIgnoreCase) || value.Contains("/playlist", StringComparison.OrdinalIgnoreCase) || _inspector.DetectKind(value) == MediaSourceKind.Playlist);
+        OnPropertyChanged(nameof(DetectedTypeDisplay));
+    }
+
     [RelayCommand]
     private void Paste()
     {
         var text = _system.ReadClipboardText();
         if (!string.IsNullOrWhiteSpace(text))
         {
-            PlaylistUrl = text.Trim();
+            PlaylistUrl = TextSanitizer.TruncateToSingleLine(text);
         }
     }
 
@@ -276,14 +297,14 @@ public partial class PlaylistsViewModel : ObservableObject
                 KnownTitle = entry.Title
             };
 
-            _coordinator.Enqueue(request, new EnqueueInfo(entry.Title, entry.Channel, VideoQuality, CommonFormat), start);
+            _coordinator.Enqueue(request, new EnqueueInfo(entry.Title, entry.Channel, VideoQuality, CommonFormat, entry.ThumbnailUrl), start);
             enqueued++;
         }
 
         StatusMessage = $"{enqueued} added to queue.";
         if (enqueued > 0)
         {
-            _navigation.Navigate(AppPage.Queue);
+            StatusMessage = start ? $"Started {enqueued} download(s)." : $"Added {enqueued} video(s) to queue.";
         }
     }
 
@@ -296,7 +317,10 @@ public partial class PlaylistsViewModel : ObservableObject
 
         Entries.Clear();
 
+        PlaylistThumbnailUrl = m.ThumbnailUrl ?? m.Entries.FirstOrDefault(e => !string.IsNullOrEmpty(e.ThumbnailUrl))?.ThumbnailUrl ?? string.Empty;
         PlaylistTitle = m.Title;
+        IsDetectedTypeValid = true;
+        OnPropertyChanged(nameof(DetectedTypeDisplay));
         Creator = m.Uploader ?? string.Empty;
         Visibility = string.IsNullOrWhiteSpace(m.Availability) ? "Public" : Capitalize(m.Availability!);
         Description = m.Description ?? string.Empty;
@@ -317,6 +341,7 @@ public partial class PlaylistsViewModel : ObservableObject
                 Channel = e.Uploader ?? m.Uploader ?? string.Empty,
                 Availability = MapAvailability(e.Availability),
                 Format = "Best",
+                ThumbnailUrl = e.ThumbnailUrl ?? string.Empty,
                 IsSelected = true
             };
             entry.Url = e.Url;
@@ -324,7 +349,7 @@ public partial class PlaylistsViewModel : ObservableObject
             Entries.Add(entry);
         }
 
-        _filteredEntries.Refresh();
+        _filteredEntries.SafeRefresh();
         OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(AvailableCount));
         OnPropertyChanged(nameof(UnavailableCount));

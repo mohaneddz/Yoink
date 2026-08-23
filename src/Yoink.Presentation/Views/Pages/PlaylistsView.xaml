@@ -51,7 +51,7 @@
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="230"/>
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0" Height="42">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -60,14 +60,14 @@
                         <Border Grid.Column="0" Background="#FFE8281E" Width="22" Height="16" Margin="12,0,10,0" VerticalAlignment="Center">
                             <Path Data="{StaticResource IconPlay}" Fill="White" Width="9" Height="9" Stretch="Uniform"/>
                         </Border>
-                        <TextBox Grid.Column="1" Text="{Binding PlaylistUrl}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11"
+                        <TextBox Grid.Column="1" Text="{Binding PlaylistUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11"
                                  Tag="Paste a playlist or channel URL..."/>
                     </Grid>
                 </Border>
                 <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Command="{Binding PasteCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
-                        <TextBlock Text="PASTE"/>
+                        <TextBlock Text="PASTE" Foreground="White" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Command="{Binding InspectCommand}">
@@ -80,11 +80,13 @@
                     <StackPanel>
                         <TextBlock Text="TYPE DETECTED" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                         <StackPanel Orientation="Horizontal">
-                            <Border Background="#FFE8281E" Width="18" Height="13" Margin="0,0,8,0">
+                            <Border Background="#FFE8281E" Width="18" Height="13" Margin="0,0,8,0"
+                                    Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Path Data="{StaticResource IconPlay}" Fill="White" Width="7" Height="7" Stretch="Uniform"/>
                             </Border>
-                            <TextBlock Text="Playlist" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource SuccessBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding DetectedTypeDisplay}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource SuccessBrush}" Margin="10,0,0,0" VerticalAlignment="Center"
+                                  Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -105,17 +107,21 @@
                                 <ColumnDefinition Width="200"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Background="#FF2B3542" Height="130" Margin="0,0,20,0" VerticalAlignment="Top">
-                                <Border Background="#CC000000" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
-                                    <TextBlock Text="{Binding VideoCountText}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
-                                </Border>
+                            <Border Grid.Column="0" Background="#FF2B3542" Height="130" Margin="0,0,20,0" VerticalAlignment="Top" CornerRadius="4" ClipToBounds="True">
+                                <Grid>
+                                    <Image Source="{Binding PlaylistThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <Border Background="#CC000000" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8" CornerRadius="2">
+                                        <TextBlock Text="{Binding VideoCountText}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                    </Border>
+                                </Grid>
                             </Border>
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="{Binding PlaylistTitle}" FontSize="18" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,8"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                     <Ellipse Width="18" Height="18" Fill="{StaticResource OrangePrimaryBrush}"/>
                                     <TextBlock Text="{Binding Creator}" Foreground="{StaticResource OrangePrimaryBrush}" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" VerticalAlignment="Center"
+                                          Visibility="{Binding CreatorVerified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                     <Path Data="{StaticResource IconFilm}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,5,0"/>
@@ -134,43 +140,43 @@
                     <Grid Margin="0,0,0,12">
                         <StackPanel Orientation="Horizontal">
                             <Button Style="{StaticResource SecondaryButton}" Padding="12,8" FontSize="12" Command="{Binding SelectAllCommand}" Margin="0,0,8,0">
-                                <TextBlock FontWeight="Bold">
+                                <TextBlock FontWeight="Bold" VerticalAlignment="Center">
                                     <Run Text="SELECT ALL ("/><Run Text="{Binding TotalCount, Mode=OneWay}"/><Run Text=")"/>
                                 </TextBlock>
                             </Button>
                             <Button Style="{StaticResource SecondaryButton}" Padding="12,8" FontSize="12" Command="{Binding ClearSelectionCommand}" Content="CLEAR" FontWeight="Bold" Margin="0,0,12,0"/>
-                            <Border Style="{StaticResource Card}" Width="220">
+                            <Border Style="{StaticResource Card}" Width="220" Height="36">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Path Grid.Column="0" Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextMutedBrush}" Margin="10,0,0,0"/>
-                                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="8,9"
+                                    <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="8,8"
                                              Tag="Search videos..."/>
                                 </Grid>
                             </Border>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <RadioButton Style="{StaticResource ChipToggleButton}" GroupName="PlFilter" Margin="0,0,8,0"
                                          Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:PlaylistFilter.All}"
                                          IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=All, Mode=OneWay}">
-                                <TextBlock><Run Text="ALL ("/><Run Text="{Binding TotalCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
+                                <TextBlock VerticalAlignment="Center"><Run Text="ALL ("/><Run Text="{Binding TotalCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
                             </RadioButton>
                             <RadioButton Style="{StaticResource ChipToggleButton}" GroupName="PlFilter" Margin="0,0,8,0"
                                          Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:PlaylistFilter.Available}"
                                          IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Available, Mode=OneWay}">
-                                <TextBlock><Run Text="AVAILABLE ("/><Run Text="{Binding AvailableCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
+                                <TextBlock VerticalAlignment="Center"><Run Text="AVAILABLE ("/><Run Text="{Binding AvailableCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
                             </RadioButton>
                             <RadioButton Style="{StaticResource ChipToggleButton}" GroupName="PlFilter" Margin="0,0,8,0"
                                          Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:PlaylistFilter.Unavailable}"
                                          IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Unavailable, Mode=OneWay}">
-                                <TextBlock><Run Text="UNAVAILABLE ("/><Run Text="{Binding UnavailableCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
+                                <TextBlock VerticalAlignment="Center"><Run Text="UNAVAILABLE ("/><Run Text="{Binding UnavailableCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
                             </RadioButton>
                             <RadioButton Style="{StaticResource ChipToggleButton}" GroupName="PlFilter"
                                          Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:PlaylistFilter.Selected}"
                                          IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Selected, Mode=OneWay}">
-                                <TextBlock><Run Text="SELECTED ("/><Run Text="{Binding SelectedCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
+                                <TextBlock VerticalAlignment="Center"><Run Text="SELECTED ("/><Run Text="{Binding SelectedCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
                             </RadioButton>
                         </StackPanel>
                     </Grid>
@@ -185,7 +191,7 @@
                     </StackPanel>
 
                     <Border Style="{StaticResource Card}" Padding="0" Margin="0,0,0,16">
-                        <DataGrid ItemsSource="{Binding FilteredEntries}" Style="{StaticResource FlatDataGrid}" FontSize="12" MaxHeight="380">
+                        <DataGrid ItemsSource="{Binding FilteredEntries}" Style="{StaticResource FlatDataGrid}" IsReadOnly="True" FontSize="12" MaxHeight="380">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="" Width="34">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -198,7 +204,10 @@
                                 <DataGridTemplateColumn Header="" Width="50">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Border Background="{Binding ThumbnailHex}" Width="40" Height="26"/>
+                                            <Grid Width="40" Height="26" ClipToBounds="True">
+                                                <Border Background="{Binding ThumbnailHex}" CornerRadius="2"/>
+                                                <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            </Grid>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -226,9 +235,9 @@
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
-                                    <TextBlock><Run Text="DOWNLOAD SELECTED ("/><Run Text="{Binding SelectedCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
+                                    <TextBlock Foreground="White" FontWeight="Bold"><Run Text="DOWNLOAD SELECTED ("/><Run Text="{Binding SelectedCount, Mode=OneWay}"/><Run Text=")"/></TextBlock>
                                 </StackPanel>
-                                <TextBlock Text="{Binding EstimatedDurationText}" FontSize="10" Opacity="0.85" HorizontalAlignment="Center" Margin="0,2,0,0">
+                                <TextBlock Text="{Binding EstimatedDurationText}" Foreground="White" FontSize="10" Opacity="0.85" HorizontalAlignment="Center" Margin="0,2,0,0">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Style.Triggers>
