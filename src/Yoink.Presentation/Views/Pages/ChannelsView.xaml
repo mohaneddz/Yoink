@@ -61,6 +61,13 @@
                     <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
+            <MenuItem Header="Mark as Seen / Unseen"
+                      Command="{Binding PlacementTarget.Tag.ToggleSeenCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                <MenuItem.Icon>
+                    <Path Data="{StaticResource IconEye}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator/>
             <MenuItem Header="Open channel"
                       Command="{Binding PlacementTarget.Tag.OpenChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
@@ -87,14 +94,18 @@
                 <ColumnDefinition Width="170"/>
                 <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
-                <TextBox Text="{Binding AddChannelUrl}" Style="{StaticResource FieldTextBox}" BorderThickness="0"
-                         Padding="14,11" Tag="Paste YouTube channel URL here..."/>
+            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0" Height="42">
+                <TextBox Text="{Binding AddChannelUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0"
+                         Padding="14,11" Tag="Paste YouTube channel URL, handle (@name), or link...">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding AddChannelCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
             </Border>
             <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Command="{Binding AddChannelCommand}" Margin="0,0,10,0">
                 <StackPanel Orientation="Horizontal">
                     <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White" Margin="0,0,8,0"/>
-                    <TextBlock Text="ADD CHANNEL"/>
+                    <TextBlock Text="ADD CHANNEL" Foreground="White" FontWeight="Bold"/>
                 </StackPanel>
             </Button>
             <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Command="{Binding AddChannelCommand}">
@@ -114,25 +125,12 @@
                 <ColumnDefinition Width="340"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Saved channels -->
+            <!-- Channels list (left) -->
             <DockPanel Grid.Column="0">
-                <TextBlock DockPanel.Dock="Top" Style="{StaticResource SectionTitleText}" Margin="0,0,0,12">
-                    <Run Text="SAVED CHANNELS ("/><Run Text="{Binding Channels.Count, Mode=OneWay}"/><Run Text=")"/>
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource GroupHeader}">
+                    <Run Text="Following ("/><Run Text="{Binding Channels.Count, Mode=OneWay}"/><Run Text=")"/>
                 </TextBlock>
-                <TextBlock DockPanel.Dock="Top" Style="{StaticResource StatusMessageText}" Text="{Binding StatusMessage}" Margin="0,0,0,10"/>
-                <Button DockPanel.Dock="Bottom" Style="{StaticResource SecondaryButton}" Command="{Binding AddChannelCommand}" Padding="12,12">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="ADD CHANNEL" FontWeight="Bold" FontSize="12"/>
-                    </StackPanel>
-                </Button>
-                <Grid Margin="0,0,0,12">
-                  <shared:EmptyStateView IconData="{StaticResource IconUsers}"
-                                         Title="No channels followed"
-                                         Subtitle="Add a channel to track its uploads."
-                                         Visibility="{Binding Channels.Count, Converter={StaticResource CountToVisibility}}"/>
-                  <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                Visibility="{Binding Channels.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Channels}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -140,41 +138,49 @@
                                     <Border.InputBindings>
                                         <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.SelectChannelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
                                     </Border.InputBindings>
-                                    <StackPanel>
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                            <Ellipse Width="34" Height="34" Fill="{Binding AvatarHex}"/>
-                                            <StackPanel Margin="10,0,0,0">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"/>
-                                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="11" Height="11" Stroke="{StaticResource SuccessBrush}" Margin="5,0,0,0" Visibility="{Binding Verified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                </StackPanel>
-                                                <TextBlock Text="{Binding Handle}" Style="{StaticResource MetaText}" FontSize="11"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid Grid.Column="0" Width="36" Height="36" Margin="0,0,12,0">
+                                            <Grid.Clip>
+                                                <EllipseGeometry Center="18,18" RadiusX="18" RadiusY="18"/>
+                                            </Grid.Clip>
+                                            <Ellipse Fill="{Binding AvatarHex}"/>
+                                            <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold" FontSize="14"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Image Source="{Binding AvatarUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Grid>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13" TextTrimming="CharacterEllipsis"/>
+                                                <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="11" Height="11" Stroke="{StaticResource SuccessBrush}" Margin="5,0,0,0" Visibility="{Binding Verified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                             </StackPanel>
+                                            <TextBlock Text="{Binding SubscriberCountText}" Style="{StaticResource MetaText}" FontSize="11"/>
                                         </StackPanel>
-                                        <TextBlock Text="{Binding SubscribersText}" Style="{StaticResource MetaText}" FontSize="11"/>
-                                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                                            <Path Data="{StaticResource IconPlay}" Style="{StaticResource Icon}" Width="10" Height="10" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,4,0"/>
-                                            <TextBlock Text="{Binding VideoCountText}" Style="{StaticResource MetaText}" FontSize="11" Margin="0,0,10,0"/>
-                                            <Path Data="{StaticResource IconFilm}" Style="{StaticResource Icon}" Width="10" Height="10" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,4,0"/>
-                                            <TextBlock Text="{Binding ShortCountText}" Style="{StaticResource MetaText}" FontSize="11" Margin="0,0,10,0"/>
-                                            <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="10" Height="10" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,4,0"/>
-                                            <TextBlock Text="{Binding PlaylistCountText}" Style="{StaticResource MetaText}" FontSize="11"/>
-                                        </StackPanel>
-                                    </StackPanel>
+                                    </Grid>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                  </ScrollViewer>
-                </Grid>
+                </ScrollViewer>
             </DockPanel>
 
-            <!-- Selected channel uploads -->
-            <DockPanel Grid.Column="2" d:DataContext="{Binding SelectedChannel}">
+            <!-- Channel detail + uploads (center) -->
+            <DockPanel Grid.Column="2">
                 <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="20" Margin="0,0,0,16">
                     <Grid DataContext="{Binding SelectedChannel}">
                         <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="52" Height="52" Fill="{Binding AvatarHex}"/>
+                            <Grid Width="52" Height="52">
+                                <Grid.Clip>
+                                    <EllipseGeometry Center="26,26" RadiusX="26" RadiusY="26"/>
+                                </Grid.Clip>
+                                <Ellipse Fill="{Binding AvatarHex}"/>
+                                <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold" FontSize="20"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image Source="{Binding AvatarUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Grid>
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="17"/>
@@ -211,6 +217,12 @@
                         <Run Text="{Binding DataContext.SelectedUploadCount, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneWay}"/><Run Text=" SELECTED"/>
                     </TextBlock>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource SecondaryButton}" Padding="12,9" FontSize="12" Margin="0,0,8,0" Command="{Binding DataContext.SelectUnseenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource IconCheckSquare}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Text="SELECT ALL UNSEEN" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
                         <Button Style="{StaticResource SecondaryButton}" Padding="12,9" FontSize="12" Margin="0,0,8,0" Command="{Binding DataContext.AddSelectedToQueueCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
                             <TextBlock Text="ADD TO QUEUE" FontWeight="Bold"/>
                         </Button>
@@ -218,7 +230,7 @@
                             <TextBlock Text="DOWNLOAD LATEST" FontWeight="Bold"/>
                         </Button>
                         <Button Style="{StaticResource SecondaryButton}" Padding="12,9" FontSize="12" Command="{Binding DataContext.MarkAllAsSeenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                            <TextBlock Text="MARK AS SEEN" FontWeight="Bold"/>
+                            <TextBlock Text="MARK ALL AS SEEN" FontWeight="Bold"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -246,8 +258,9 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" Style="{StaticResource TableCheckBox}" IsChecked="{Binding IsSelected}" VerticalAlignment="Center" Margin="0,0,14,0"/>
-                                        <Grid Grid.Column="1" Height="62" Margin="0,0,14,0">
-                                            <Border Background="{Binding ThumbnailHex}"/>
+                                        <Grid Grid.Column="1" Height="62" Margin="0,0,14,0" ClipToBounds="True">
+                                            <Border Background="{Binding ThumbnailHex}" CornerRadius="2"/>
+                                            <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                                             <TextBlock Text="{Binding DurationText}" Foreground="White" FontSize="10" Background="#CC000000" Padding="4,1"
                                                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="4"/>
                                         </Grid>
@@ -258,7 +271,18 @@
                                             </TextBlock>
                                         </StackPanel>
                                         <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Border Background="{Binding Type, Converter={StaticResource UploadTypeConverter}, ConverterParameter=bg}" Padding="8,4" Margin="0,0,10,0">
+                                            <!-- Seen / Unseen / Downloaded Badge -->
+                                            <Border Visibility="{Binding Downloaded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                    Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2" Margin="0,0,8,0" CornerRadius="2">
+                                                <TextBlock Text="DOWNLOADED" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/>
+                                            </Border>
+                                            <Border Visibility="{Binding IsNew, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                    Background="{StaticResource OrangePrimaryBrush}" Padding="6,2" Margin="0,0,8,0" CornerRadius="2">
+                                                <TextBlock Text="NEW" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                                            </Border>
+
+                                            <!-- Media type badge -->
+                                            <Border Background="{Binding Type, Converter={StaticResource UploadTypeConverter}, ConverterParameter=bg}" Padding="8,4" Margin="0,0,10,0" CornerRadius="2">
                                                 <TextBlock Text="{Binding Type, Converter={StaticResource UploadTypeConverter}, ConverterParameter=label}" FontSize="10" FontWeight="Bold"
                                                            Foreground="{Binding Type, Converter={StaticResource UploadTypeConverter}, ConverterParameter=fg}"/>
                                             </Border>
@@ -278,11 +302,18 @@
             </DockPanel>
 
             <!-- Channel inspector -->
-            <Border Grid.Column="4" Style="{StaticResource Card}" Padding="20" VerticalAlignment="Top" DataContext="{Binding SelectedChannel}">
+            <Border Grid.Column="4" Style="{StaticResource Card}" Padding="20" DataContext="{Binding SelectedChannel}">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock Text="CHANNEL INSPECTOR" Style="{StaticResource SectionTitleText}" Margin="0,0,0,16"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                        <Ellipse Width="48" Height="48" Fill="{Binding AvatarHex}"/>
+                        <Grid Width="48" Height="48">
+                            <Grid.Clip>
+                                <EllipseGeometry Center="24,24" RadiusX="24" RadiusY="24"/>
+                            </Grid.Clip>
+                            <Ellipse Fill="{Binding AvatarHex}"/>
+                            <Image Source="{Binding AvatarUrl}" Stretch="UniformToFill"/>
+                        </Grid>
                         <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15"/>
@@ -341,6 +372,7 @@
                     <Button Style="{StaticResource DestructiveButton}" Content="UNFOLLOW CHANNEL" Padding="12,10" HorizontalContentAlignment="Left"
                             Command="{Binding DataContext.UnfollowChannelCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                 </StackPanel>
+              </ScrollViewer>
             </Border>
         </Grid>
     </Grid>

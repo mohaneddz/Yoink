@@ -7,10 +7,12 @@ using Yoink.Application.Abstractions;
 using Yoink.Application.Downloads;
 using Yoink.Domain.Entities;
 using Yoink.Domain.Media;
+using Yoink.Presentation.Extensions;
 using Yoink.Presentation.Navigation;
 using Yoink.Presentation.Services;
 using Yoink.Presentation.ViewModels.Models;
 using Yoink.Shared;
+using Yoink.Shared.Validation;
 
 namespace Yoink.Presentation.ViewModels;
 
@@ -23,6 +25,7 @@ public partial class ChannelsViewModel : ObservableObject
     private readonly ISettingsService _settings;
     private readonly ISystemAccess _system;
     private readonly INavigationService _navigation;
+    private readonly ILibraryRepository _library;
 
     public ChannelsViewModel(
         ISavedChannelRepository repository,
@@ -30,7 +33,8 @@ public partial class ChannelsViewModel : ObservableObject
         DownloadCoordinator coordinator,
         ISettingsService settings,
         ISystemAccess system,
-        INavigationService navigation)
+        INavigationService navigation,
+        ILibraryRepository library)
     {
         _repository = repository;
         _inspector = inspector;
@@ -38,6 +42,7 @@ public partial class ChannelsViewModel : ObservableObject
         _settings = settings;
         _system = system;
         _navigation = navigation;
+        _library = library;
         _uploadsView = CollectionViewSource.GetDefaultView(Uploads);
         _uploadsView.Filter = FilterUpload;
         _ = LoadAsync();
@@ -62,7 +67,7 @@ public partial class ChannelsViewModel : ObservableObject
     [RelayCommand]
     private void SelectTab(string tab) => SelectedTab = tab;
 
-    partial void OnSelectedTabChanged(string value) => _uploadsView.Refresh();
+    partial void OnSelectedTabChanged(string value) => _uploadsView.SafeRefresh();
 
     private bool FilterUpload(object obj)
     {
@@ -121,17 +126,30 @@ public partial class ChannelsViewModel : ObservableObject
         }
     }
 
+    partial void OnAddChannelUrlChanged(string value)
+    {
+        var sanitized = TextSanitizer.TruncateToSingleLine(value);
+        if (sanitized != value)
+        {
+            AddChannelUrl = sanitized;
+        }
+    }
+
     [RelayCommand]
     private async Task AddChannel()
     {
-        var url = AddChannelUrl.Trim();
-        if (string.IsNullOrWhiteSpace(url))
+        var raw = TextSanitizer.TruncateToSingleLine(AddChannelUrl);
+        if (string.IsNullOrWhiteSpace(raw))
         {
             StatusMessage = "Paste a channel URL first.";
             return;
         }
 
-        if (Channels.Any(c => string.Equals(c.ChannelUrl, url, StringComparison.OrdinalIgnoreCase)))
+        var url = TextSanitizer.NormalizeChannelInput(raw);
+        var baseCandidate = StripTabSuffix(url);
+
+        if (Channels.Any(c => string.Equals(c.ChannelUrl, url, StringComparison.OrdinalIgnoreCase) ||
+                              string.Equals(c.ChannelUrl, baseCandidate, StringComparison.OrdinalIgnoreCase)))
         {
             StatusMessage = "Channel already saved.";
             return;
@@ -141,7 +159,17 @@ public partial class ChannelsViewModel : ObservableObject
         StatusMessage = "Fetching channel…";
         try
         {
-            var result = await _inspector.InspectPlaylistAsync(url, limit: 30);
+            // Try videos tab first for yt-dlp flat-playlist metadata, fallback to base and raw url
+            var result = await _inspector.InspectPlaylistAsync($"{baseCandidate}/videos", limit: 30);
+            if (result.IsFailure)
+            {
+                result = await _inspector.InspectPlaylistAsync(baseCandidate, limit: 30);
+            }
+            if (result.IsFailure)
+            {
+                result = await _inspector.InspectPlaylistAsync(url, limit: 30);
+            }
+
             if (result.IsFailure)
             {
                 StatusMessage = result.Error ?? "Could not fetch channel.";
@@ -149,15 +177,18 @@ public partial class ChannelsViewModel : ObservableObject
             }
 
             var meta = result.Value!;
+            var resolvedChannelUrl = NormalizeChannelUrl(meta.ChannelUrl) ?? baseCandidate;
             var entry = new SavedChannelEntry
             {
-                ChannelUrl = url,
+                ChannelUrl = resolvedChannelUrl,
                 ChannelId = meta.ChannelId ?? string.Empty,
-                Name = meta.Title,
+                Name = !string.IsNullOrWhiteSpace(meta.Title) ? meta.Title : (meta.Uploader ?? "Channel"),
                 Handle = meta.Uploader ?? string.Empty,
                 Verified = false,
                 VideoCount = meta.Entries.Count,
+                SubscriberCount = meta.SubscriberCount ?? 0,
                 Description = meta.Description ?? string.Empty,
+                AvatarUrl = meta.ThumbnailUrl ?? string.Empty,
                 AddedAt = DateTimeOffset.Now,
                 LastCheckedAt = DateTimeOffset.Now
             };
@@ -175,6 +206,14 @@ public partial class ChannelsViewModel : ObservableObject
         }
     }
 
+    private static readonly (string Suffix, ChannelUploadType Type)[] ChannelTabs =
+    {
+        ("videos", ChannelUploadType.Video),
+        ("shorts", ChannelUploadType.Short),
+        ("streams", ChannelUploadType.Live),
+        ("playlists", ChannelUploadType.Playlist)
+    };
+
     private async Task LoadUploadsAsync(SavedChannel channel)
     {
         Uploads.Clear();
@@ -187,33 +226,64 @@ public partial class ChannelsViewModel : ObservableObject
         StatusMessage = "Loading uploads…";
         try
         {
-            var result = await _inspector.InspectPlaylistAsync(channel.ChannelUrl, limit: _uploadLimit);
-            if (result.IsFailure)
+            var libraryEntries = await _library.GetAllAsync();
+            var downloadedUrls = libraryEntries.Select(l => l.SourceUrl).Where(u => !string.IsNullOrEmpty(u)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var baseUrl = StripTabSuffix(channel.ChannelUrl);
+            var tabResults = await Task.WhenAll(ChannelTabs.Select(tab =>
+                _inspector.InspectPlaylistAsync($"{baseUrl}/{tab.Suffix}", limit: _uploadLimit)));
+
+            var anySucceeded = false;
+            var merged = new List<ChannelUpload>();
+            for (var i = 0; i < ChannelTabs.Length; i++)
             {
-                StatusMessage = result.Error ?? "Could not load uploads.";
+                var (_, type) = ChannelTabs[i];
+                var result = tabResults[i];
+                if (result.IsFailure)
+                {
+                    continue;
+                }
+
+                anySucceeded = true;
+                foreach (var e in result.Value!.Entries)
+                {
+                    var isDownloaded = !string.IsNullOrEmpty(e.Url) && downloadedUrls.Contains(e.Url);
+                    var upload = new ChannelUpload
+                    {
+                        Title = e.Title,
+                        ThumbnailUrl = e.ThumbnailUrl ?? string.Empty,
+                        DateText = Formatting.RelativeDate(e.UploadDate),
+                        DurationText = Formatting.Duration(e.DurationSeconds),
+                        ViewsText = e.ViewCount is { } v ? $"{Formatting.Count(v)} views" : string.Empty,
+                        Type = type,
+                        UploadDate = e.UploadDate,
+                        Downloaded = isDownloaded,
+                        IsSeen = isDownloaded
+                    };
+                    upload.Url = e.Url;
+                    upload.PropertyChanged += (_, args) =>
+                    {
+                        if (args.PropertyName == nameof(ChannelUpload.IsSelected))
+                        {
+                            OnPropertyChanged(nameof(SelectedUploadCount));
+                        }
+                    };
+                    merged.Add(upload);
+                }
+            }
+
+            if (!anySucceeded)
+            {
+                StatusMessage = "Could not load uploads.";
                 return;
             }
 
-            foreach (var e in result.Value!.Entries)
+            foreach (var upload in merged.OrderByDescending(u => u.UploadDate ?? DateOnly.MinValue))
             {
-                var upload = new ChannelUpload
-                {
-                    Title = e.Title,
-                    DateText = Formatting.RelativeDate(e.UploadDate),
-                    DurationText = Formatting.Duration(e.DurationSeconds),
-                    ViewsText = e.ViewCount is { } v ? $"{Formatting.Count(v)} views" : string.Empty,
-                    Type = e.Url.Contains("/shorts/", StringComparison.OrdinalIgnoreCase) ? ChannelUploadType.Short : ChannelUploadType.Video
-                };
-                upload.Url = e.Url;
-                upload.PropertyChanged += (_, args) =>
-                {
-                    if (args.PropertyName == nameof(ChannelUpload.IsSelected))
-                    {
-                        OnPropertyChanged(nameof(SelectedUploadCount));
-                    }
-                };
                 Uploads.Add(upload);
             }
+
+            UpdateTabCounts(channel, merged);
 
             StatusMessage = string.Empty;
             OnPropertyChanged(nameof(SelectedUploadCount));
@@ -223,6 +293,28 @@ public partial class ChannelsViewModel : ObservableObject
             IsBusy = false;
         }
     }
+
+    private static void UpdateTabCounts(SavedChannel channel, IReadOnlyCollection<ChannelUpload> uploads)
+    {
+        channel.VideoCountText = FormatTabCount(uploads.Count(u => u.Type == ChannelUploadType.Video));
+        channel.ShortCountText = FormatTabCount(uploads.Count(u => u.Type == ChannelUploadType.Short));
+        channel.LiveCountText = FormatTabCount(uploads.Count(u => u.Type == ChannelUploadType.Live));
+        channel.PlaylistCountText = FormatTabCount(uploads.Count(u => u.Type == ChannelUploadType.Playlist));
+    }
+
+    private static string FormatTabCount(int count) => count > 0 ? count.ToString() : "—";
+
+    private static string StripTabSuffix(string channelUrl)
+    {
+        var trimmed = channelUrl.Trim().TrimEnd('/');
+        return TabSuffixRegex().Replace(trimmed, string.Empty);
+    }
+
+    private static string? NormalizeChannelUrl(string? channelUrl) =>
+        string.IsNullOrWhiteSpace(channelUrl) ? null : StripTabSuffix(channelUrl);
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"/(videos|shorts|streams|playlists|about|community)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex TabSuffixRegex();
 
     [RelayCommand]
     private void AddSelectedToQueue()
@@ -282,6 +374,28 @@ public partial class ChannelsViewModel : ObservableObject
 
         _coordinator.Enqueue(request, new EnqueueInfo(upload.Title, SelectedChannel?.Name ?? string.Empty, "Best", settings.PreferredVideoContainer.ToUpperInvariant()), start);
         upload.Downloaded = true;
+        upload.IsSeen = true;
+    }
+
+    [RelayCommand]
+    private void SelectUnseen()
+    {
+        foreach (var upload in Uploads)
+        {
+            upload.IsSelected = !upload.IsSeen && !upload.Downloaded;
+        }
+        OnPropertyChanged(nameof(SelectedUploadCount));
+    }
+
+    [RelayCommand]
+    private void SelectAll()
+    {
+        var allSelected = Uploads.Count > 0 && Uploads.All(u => u.IsSelected);
+        foreach (var upload in Uploads)
+        {
+            upload.IsSelected = !allSelected;
+        }
+        OnPropertyChanged(nameof(SelectedUploadCount));
     }
 
     [RelayCommand]
@@ -289,7 +403,17 @@ public partial class ChannelsViewModel : ObservableObject
     {
         foreach (var upload in Uploads)
         {
-            upload.Downloaded = true;
+            upload.IsSeen = true;
+        }
+        StatusMessage = "All uploads marked as seen.";
+    }
+
+    [RelayCommand]
+    private void ToggleSeen(ChannelUpload? upload)
+    {
+        if (upload is not null)
+        {
+            upload.IsSeen = !upload.IsSeen;
         }
     }
 
@@ -374,6 +498,7 @@ public partial class ChannelsViewModel : ObservableObject
             Name = e.Name,
             Handle = e.Handle,
             Initial = string.IsNullOrEmpty(e.Name) ? "?" : e.Name[..1].ToUpperInvariant(),
+            AvatarUrl = e.AvatarUrl,
             Verified = e.Verified,
             SubscriberCountText = e.SubscriberCount > 0 ? Formatting.Count(e.SubscriberCount) : "—",
             VideoCountText = e.VideoCount > 0 ? e.VideoCount.ToString() : "—",

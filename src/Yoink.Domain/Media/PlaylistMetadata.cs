@@ -12,6 +12,9 @@ public sealed class PlaylistMetadata
     public string? ChannelId { get; init; }
     public string? Description { get; init; }
     public string? Availability { get; init; }
+    public string? ThumbnailUrl { get; init; }
+    public string? ChannelUrl { get; init; }
+    public long? SubscriberCount { get; init; }
     public MediaSourceKind SourceKind { get; init; }
     public IReadOnlyList<PlaylistEntry> Entries { get; init; } = Array.Empty<PlaylistEntry>();
 }

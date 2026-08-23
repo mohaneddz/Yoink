@@ -9,6 +9,7 @@ public partial class SavedChannel : ObservableObject
     [ObservableProperty] private int _entryId;
     [ObservableProperty] private string _channelUrl = string.Empty;
     [ObservableProperty] private string _avatarHex = "#FFFF4F0A";
+    [ObservableProperty] private string _avatarUrl = string.Empty;
     [ObservableProperty] private string _initial = "S";
     [ObservableProperty] private string _name = string.Empty;
     [ObservableProperty] private string _handle = string.Empty;
