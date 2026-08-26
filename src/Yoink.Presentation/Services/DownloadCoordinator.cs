@@ -196,6 +196,26 @@ public sealed class DownloadCoordinator
     /// <summary>Re-evaluate the queue (e.g. after the concurrency limit changed).</summary>
     public void Refresh() => Pump();
 
+    /// <summary>
+    /// Re-checks that completed downloads still exist on disk and flags any that were removed or
+    /// moved externally. Cheap enough to call on a short UI timer so the Queue page stays honest.
+    /// </summary>
+    public void VerifyFilesExist()
+    {
+        foreach (var job in Jobs)
+        {
+            if (job.Status == QueueJobStatus.Completed)
+            {
+                var path = job.Destination;
+                job.FileMissing = !string.IsNullOrWhiteSpace(path) && !File.Exists(path) && !Directory.Exists(path);
+            }
+            else if (job.FileMissing)
+            {
+                job.FileMissing = false;
+            }
+        }
+    }
+
     private void OpenJobFolder(QueueJob job)
     {
         var target = !string.IsNullOrWhiteSpace(job.Destination) && File.Exists(job.Destination)

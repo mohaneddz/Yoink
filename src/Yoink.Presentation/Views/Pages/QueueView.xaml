@@ -276,9 +276,14 @@
                     <DataGridTemplateColumn Header="STATUS" Width="0.95*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Status, Converter={StaticResource StatusLabelConverter}}"
-                                           Foreground="{Binding Status, Converter={StaticResource StatusBrushConverter}}"
-                                           Style="{StaticResource StatusPillText}" FontSize="10"/>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Status, Converter={StaticResource StatusLabelConverter}}"
+                                               Foreground="{Binding Status, Converter={StaticResource StatusBrushConverter}}"
+                                               Style="{StaticResource StatusPillText}" FontSize="10"/>
+                                    <TextBlock Text="FILE MISSING" Foreground="{StaticResource ErrorBrush}" FontWeight="Bold" FontSize="8"
+                                               ToolTip="The downloaded file is no longer on disk."
+                                               Visibility="{Binding FileMissing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

@@ -22,6 +22,9 @@ public partial class QueueJob : ObservableObject
     [ObservableProperty] private string _thumbnailUrl = string.Empty;
     [ObservableProperty] private bool _isSelected;
 
+    /// <summary>True when a completed job's output file is no longer present on disk (deleted or moved externally).</summary>
+    [ObservableProperty] private bool _fileMissing;
+
     // Inspector detail fields
     [ObservableProperty] private string _sourceUrl = string.Empty;
     [ObservableProperty] private string _selectedFormatText = string.Empty;

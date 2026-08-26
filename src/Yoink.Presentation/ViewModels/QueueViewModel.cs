@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Data;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Yoink.Application.Abstractions;
@@ -18,6 +19,7 @@ public partial class QueueViewModel : ObservableObject
     private readonly DownloadCoordinator _coordinator;
     private readonly ISettingsService _settings;
     private readonly ICollectionView _filteredJobs;
+    private readonly DispatcherTimer _refreshTimer;
 
     public QueueViewModel(InspectorViewModel inspector, DownloadCoordinator coordinator, ISettingsService settings)
     {
@@ -35,6 +37,16 @@ public partial class QueueViewModel : ObservableObject
         {
             job.PropertyChanged += OnJobPropertyChanged;
         }
+
+        // Poll the queue so live jobs and the on-disk state of finished ones stay in sync even when
+        // no progress events are firing (e.g. a completed file gets deleted outside the app).
+        _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        _refreshTimer.Tick += (_, _) =>
+        {
+            _coordinator.VerifyFilesExist();
+            RefreshCounts();
+        };
+        _refreshTimer.Start();
     }
 
     public ObservableCollection<QueueJob> Jobs => _coordinator.Jobs;
