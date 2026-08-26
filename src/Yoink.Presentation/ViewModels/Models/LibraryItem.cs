@@ -20,7 +20,9 @@ public partial class LibraryItem : ObservableObject
     [ObservableProperty] private string _quality = "1080p";
     [ObservableProperty] private string _audioCodec = "AAC";
     [ObservableProperty] private string _downloadDateText = string.Empty;
+    [ObservableProperty] private System.DateTimeOffset _downloadedAt;
     [ObservableProperty] private string _fileSizeText = string.Empty;
+    [ObservableProperty] private long _fileSizeBytes;
     [ObservableProperty] private string _filePath = string.Empty;
     [ObservableProperty] private string _videoCodec = "H.264 (AVC)";
     [ObservableProperty] private string _resolutionText = string.Empty;

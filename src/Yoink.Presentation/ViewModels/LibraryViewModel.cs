@@ -18,6 +18,7 @@ public partial class LibraryViewModel : ObservableObject
     private readonly ISystemAccess _system;
     private readonly IFfmpegService _ffmpeg;
     private readonly List<LibraryItem> _all = new();
+    private const int RecentDownloadsLimit = 5;
 
     public LibraryViewModel(
         ILibraryRepository repository,
@@ -86,15 +87,15 @@ public partial class LibraryViewModel : ObservableObject
 
         query = SortBy switch
         {
-            "Date Downloaded (Oldest)" => query.OrderBy(i => i.DownloadDateText),
+            "Date Downloaded (Oldest)" => query.OrderBy(i => i.DownloadedAt),
             "Title (A–Z)" => query.OrderBy(i => i.Title),
             "Title (Z–A)" => query.OrderByDescending(i => i.Title),
-            "File Size (Largest)" => query.OrderByDescending(i => i.FileSizeText),
-            _ => query
+            "File Size (Largest)" => query.OrderByDescending(i => i.FileSizeBytes),
+            _ => query.OrderByDescending(i => i.DownloadedAt)
         };
 
         RecentDownloads.Clear();
-        foreach (var i in query)
+        foreach (var i in query.Take(RecentDownloadsLimit))
         {
             RecentDownloads.Add(i);
         }
@@ -268,7 +269,9 @@ public partial class LibraryViewModel : ObservableObject
             AudioCodec = string.IsNullOrWhiteSpace(e.AudioCodec) ? "—" : e.AudioCodec,
             VideoCodec = string.IsNullOrWhiteSpace(e.VideoCodec) ? "—" : e.VideoCodec,
             DownloadDateText = Formatting.ShortDate(e.DownloadedAt),
+            DownloadedAt = e.DownloadedAt,
             FileSizeText = Formatting.Bytes(e.FileSizeBytes),
+            FileSizeBytes = e.FileSizeBytes,
             FilePath = e.FilePath,
             ResolutionText = string.IsNullOrWhiteSpace(e.ResolutionText) ? "—" : e.ResolutionText,
             FrameRateText = e.Fps is { } f ? $"{f:0} FPS" : "—",
