@@ -5,17 +5,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" x:Name="Root">
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="360">
-        <Border Width="56" Height="56" CornerRadius="28" Background="{StaticResource SurfaceSecondaryBrush}"
+        <Border Width="56" Height="56" CornerRadius="28" Background="{DynamicResource SurfaceSecondaryBrush}"
                 HorizontalAlignment="Center" Margin="0,0,0,16">
             <Path Data="{Binding IconData, ElementName=Root}" Style="{StaticResource Icon}"
-                  Width="24" Height="24" Stroke="{StaticResource TextMutedBrush}"
+                  Width="24" Height="24" Stroke="{DynamicResource TextMutedBrush}"
                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
         <TextBlock Text="{Binding Title, ElementName=Root}" FontFamily="{StaticResource InterfaceFont}"
-                   FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                   FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"
                    HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,6"/>
         <TextBlock Text="{Binding Subtitle, ElementName=Root}" FontFamily="{StaticResource InterfaceFont}"
-                   FontSize="12.5" Foreground="{StaticResource TextMutedBrush}"
+                   FontSize="12.5" Foreground="{DynamicResource TextMutedBrush}"
                    HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
     </StackPanel>
 </UserControl>

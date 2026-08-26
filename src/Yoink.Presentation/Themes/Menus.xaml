@@ -98,7 +98,7 @@
 
     <!-- ==================== TOOLTIPS ==================== -->
     <Style TargetType="ToolTip">
-        <Setter Property="Background" Value="{StaticResource AppShellBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource AppShellBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
         <Setter Property="FontSize" Value="12"/>

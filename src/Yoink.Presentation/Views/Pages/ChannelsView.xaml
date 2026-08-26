@@ -24,19 +24,19 @@
         </Style>
 
         <Style x:Key="ChannelListItem" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="14"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DisabledBrush}"/>
                 </Trigger>
                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource RowSelectedBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
                     <Setter Property="BorderBrush" Value="{StaticResource OrangePrimaryBrush}"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -44,12 +44,12 @@
 
         <Style x:Key="UploadRowItem" TargetType="Border">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="Padding" Value="8,12"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -59,27 +59,27 @@
             <MenuItem Header="Download"
                       Command="{Binding PlacementTarget.Tag.DownloadLatestCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Add to queue"
                       Command="{Binding PlacementTarget.Tag.AddSelectedToQueueCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Mark as Seen / Unseen"
                       Command="{Binding PlacementTarget.Tag.ToggleSeenCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconEye}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconEye}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
             <Separator/>
             <MenuItem Header="Open channel"
                       Command="{Binding PlacementTarget.Tag.OpenChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconExternalLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconExternalLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
@@ -117,7 +117,7 @@
             </Button>
             <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Command="{Binding AddChannelCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                    <Path Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                     <TextBlock Text="INSPECT" FontWeight="Bold"/>
                 </StackPanel>
             </Button>
@@ -217,7 +217,7 @@
                     <RadioButton Style="{StaticResource FilterTabButton}" GroupName="ChTab" Content="ABOUT" Command="{Binding DataContext.SelectTabCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="About"
                                  IsChecked="{Binding DataContext.SelectedTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource EnumEqualsConverter}, ConverterParameter='About', Mode=OneWay}"/>
                 </StackPanel>
-                <Border DockPanel.Dock="Top" Height="1" Background="{StaticResource DividerBrush}" Margin="0,-14,0,16"/>
+                <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource DividerBrush}" Margin="0,-14,0,16"/>
 
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,14">
                     <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -236,7 +236,7 @@
                         </Button>
                         <Button Style="{StaticResource SecondaryButton}" Padding="12,9" FontSize="12" Margin="0,0,8,0" Command="{Binding DataContext.SelectUnseenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource IconCheck}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                                <Path Data="{StaticResource IconCheck}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                                 <TextBlock Text="SELECT ALL UNSEEN" FontWeight="Bold"/>
                             </StackPanel>
                         </Button>
@@ -290,7 +290,7 @@
                                         <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                                             <!-- Seen / Unseen / Downloaded Badge -->
                                             <Border Visibility="{Binding Downloaded, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                    Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2" Margin="0,0,8,0" CornerRadius="2">
+                                                    Background="{DynamicResource SurfaceSecondaryBrush}" Padding="6,2" Margin="0,0,8,0" CornerRadius="2">
                                                 <TextBlock Text="DOWNLOADED" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/>
                                             </Border>
                                             <Border Visibility="{Binding IsNew, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -307,7 +307,7 @@
                                                     Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     ContextMenu="{StaticResource UploadRowMenu}"
                                                     controls:ButtonBehaviors.OpensContextMenu="True">
-                                                <Path Data="{StaticResource IconMoreVertical}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextMutedBrush}"/>
+                                                <Path Data="{StaticResource IconMoreVertical}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextMutedBrush}"/>
                                             </Button>
                                         </StackPanel>
                                     </Grid>

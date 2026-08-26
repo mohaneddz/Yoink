@@ -50,7 +50,7 @@
         </Grid.RowDefinitions>
 
         <!-- ==================== TITLE BAR ==================== -->
-        <Border Grid.Row="0" Background="{StaticResource AppShellBrush}" BorderBrush="#FF1A1A1A" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="{DynamicResource AppShellBrush}" BorderBrush="#FF1A1A1A" BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -88,20 +88,20 @@
             </Grid.ColumnDefinitions>
 
             <!-- == SIDEBAR == -->
-            <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
+            <Border Grid.Column="0" Background="{DynamicResource SidebarBrush}">
                 <DockPanel LastChildFill="True">
 
                     <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,20">
                         <Border Height="1" Background="#FF1A1A1A" Margin="24,0,24,18"/>
                         <StackPanel Margin="24,0,24,0">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="SYSTEM STATUS" Foreground="{StaticResource SidebarTextMutedBrush}"
+                                <TextBlock Text="SYSTEM STATUS" Foreground="{DynamicResource SidebarTextMutedBrush}"
                                            FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
                                 <Ellipse Width="7" Height="7" Fill="{Binding SystemStatus.DotBrush}" Margin="7,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                             <TextBlock Text="{Binding SystemStatus.StateLabel}" Foreground="White" FontWeight="Bold"
                                        FontSize="19" Margin="0,4,0,2"/>
-                            <TextBlock Text="{Binding SystemStatus.Detail}" Foreground="{StaticResource SidebarTextMutedBrush}" FontSize="12"/>
+                            <TextBlock Text="{Binding SystemStatus.Detail}" Foreground="{DynamicResource SidebarTextMutedBrush}" FontSize="12"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -143,12 +143,12 @@
         </Grid>
 
         <!-- ==================== STATUS STRIP ==================== -->
-        <Border Grid.Row="2" Background="{StaticResource AppShellBrush}" BorderBrush="#FF1A1A1A" BorderThickness="0,1,0,0">
+        <Border Grid.Row="2" Background="{DynamicResource AppShellBrush}" BorderBrush="#FF1A1A1A" BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" Margin="24,0">
 
                 <Button Style="{StaticResource PlainHoverButton}" Height="64" Padding="0" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Queue}">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextMutedBrush}"/>
+                        <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{DynamicResource SidebarTextMutedBrush}"/>
                         <StackPanel Margin="10,0,0,0">
                             <TextBlock Text="ACTIVE DOWNLOADS" Style="{StaticResource StatusLabelText}"/>
                             <TextBlock Text="{Binding StatusStrip.ActiveDownloads}" Style="{StaticResource StatusValueText}"/>
@@ -159,7 +159,7 @@
                 <Border Width="1" Background="#FF1A1A1A" Margin="24,18"/>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Path Data="{StaticResource IconActivity}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextMutedBrush}"/>
+                    <Path Data="{StaticResource IconActivity}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{DynamicResource SidebarTextMutedBrush}"/>
                     <StackPanel Margin="10,0,0,0">
                         <TextBlock Text="TOTAL SPEED" Style="{StaticResource StatusLabelText}"/>
                         <TextBlock Text="{Binding StatusStrip.TotalSpeedText}" Style="{StaticResource StatusValueText}"/>
@@ -170,7 +170,7 @@
 
                 <Button Style="{StaticResource PlainHoverButton}" Height="64" Padding="0" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Queue}">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextMutedBrush}"/>
+                        <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{DynamicResource SidebarTextMutedBrush}"/>
                         <StackPanel Margin="10,0,0,0">
                             <TextBlock Text="FILES IN QUEUE" Style="{StaticResource StatusLabelText}"/>
                             <TextBlock Text="{Binding StatusStrip.FilesInQueue}" Style="{StaticResource StatusValueText}"/>
@@ -182,7 +182,7 @@
 
                 <Button Style="{StaticResource PlainHoverButton}" Height="64" Padding="0" Command="{Binding NavigateToCommand}" CommandParameter="{x:Static nav:AppPage.Settings}">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconHardDrive}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{StaticResource SidebarTextMutedBrush}"/>
+                        <Path Data="{StaticResource IconHardDrive}" Style="{StaticResource Icon}" Width="18" Height="18" Stroke="{DynamicResource SidebarTextMutedBrush}"/>
                         <StackPanel Margin="10,0,0,0">
                             <TextBlock Text="STORAGE" Style="{StaticResource StatusLabelText}"/>
                             <TextBlock Text="{Binding StatusStrip.StorageFreeText}" Style="{StaticResource StatusValueText}"/>

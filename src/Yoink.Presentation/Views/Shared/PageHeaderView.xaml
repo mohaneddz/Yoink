@@ -18,10 +18,10 @@
 
         <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,8">
             <TextBlock x:Name="ClockText" FontFamily="{StaticResource InterfaceFont}" FontSize="26" FontWeight="Bold"
-                       Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right"
+                       Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Right"
                        Typography.NumeralAlignment="Tabular"/>
             <TextBlock x:Name="DateText" FontFamily="{StaticResource InterfaceFont}" FontSize="13"
-                       Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" Margin="0,2,0,0"/>
+                       Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Right" Margin="0,2,0,0"/>
         </StackPanel>
     </Grid>
 </UserControl>

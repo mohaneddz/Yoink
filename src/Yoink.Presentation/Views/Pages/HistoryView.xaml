@@ -44,26 +44,26 @@
             <MenuItem Header="Retry this download"
                       Command="{Binding PlacementTarget.Tag.RetrySelectedCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconRotateCcw}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconRotateCcw}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Reuse settings"
                       Command="{Binding PlacementTarget.Tag.ReuseSettingsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconSliders}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconSliders}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
             <Separator/>
             <MenuItem Header="Open output folder"
                       Command="{Binding PlacementTarget.Tag.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Copy source URL"
                       Command="{Binding PlacementTarget.Tag.CopySourceUrlCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
@@ -98,7 +98,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Path Grid.Column="0" Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}" Margin="14,0,0,0"/>
+                    <Path Grid.Column="0" Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextMutedBrush}" Margin="14,0,0,0"/>
                     <TextBox Grid.Column="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="10,12"
                              Tag="Search history by title, channel, or URL..."/>
                 </Grid>
@@ -110,9 +110,9 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Path Grid.Column="0" Data="{StaticResource IconCalendar}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}" Margin="14,0,10,0"/>
+                    <Path Grid.Column="0" Data="{StaticResource IconCalendar}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextMutedBrush}" Margin="14,0,10,0"/>
                     <TextBlock Grid.Column="1" Text="{Binding DateRangeText}" FontSize="13" VerticalAlignment="Center"/>
-                    <Path Grid.Column="2" Data="{StaticResource IconChevronDown}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,14,0"/>
+                    <Path Grid.Column="2" Data="{StaticResource IconChevronDown}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextMutedBrush}" Margin="0,0,14,0"/>
                 </Grid>
             </Border>
         </Grid>
@@ -133,7 +133,7 @@
             <ComboBox Grid.Column="4" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding FormatOptions}" SelectedItem="{Binding FormatFilter}"/>
             <Button Grid.Column="6" Style="{StaticResource SecondaryButton}" Command="{Binding ClearFiltersCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                    <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                     <TextBlock Text="CLEAR FILTERS" FontWeight="Bold" FontSize="12"/>
                 </StackPanel>
             </Button>
@@ -143,37 +143,37 @@
         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,14">
             <Button Style="{StaticResource ToolbarLink}" Command="{Binding RetrySelectedCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconRotateCcw}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                    <Path Data="{StaticResource IconRotateCcw}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="RETRY SELECTED" Style="{StaticResource ToolbarLinkText}"/>
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource ToolbarLink}" Command="{Binding ReuseSettingsCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconSliders}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                    <Path Data="{StaticResource IconSliders}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="REUSE SETTINGS" Style="{StaticResource ToolbarLinkText}"/>
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource ToolbarLink}" Command="{Binding OpenFolderCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="OPEN OUTPUT FOLDER" Style="{StaticResource ToolbarLinkText}"/>
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource ToolbarLink}" Command="{Binding CopySourceUrlCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="COPY SOURCE URL" Style="{StaticResource ToolbarLinkText}"/>
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource ToolbarLink}" Command="{Binding ExportLogsCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconUpload}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                    <Path Data="{StaticResource IconUpload}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="EXPORT LOGS" Style="{StaticResource ToolbarLinkText}"/>
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource ToolbarLink}" Command="{Binding ExportHistoryCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconSave}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                    <Path Data="{StaticResource IconSave}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="EXPORT HISTORY" Style="{StaticResource ToolbarLinkText}"/>
                 </StackPanel>
             </Button>
@@ -220,7 +220,7 @@
                                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
                                     <Border Style="{StaticResource Badge}" HorizontalAlignment="Left" Margin="0,3,0,0" Padding="5,1"
                                             Visibility="{Binding Redownloaded, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Text="REDOWNLOADED" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}"/>
+                                        <TextBlock Text="REDOWNLOADED" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}"/>
                                     </Border>
                                 </StackPanel>
                             </DataTemplate>

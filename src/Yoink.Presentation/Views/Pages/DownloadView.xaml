@@ -49,14 +49,14 @@
                                  Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11" VerticalAlignment="Center"
                                  Tag="Paste a YouTube, Vimeo, or direct media URL..."/>
                         <Button Grid.Column="2" Style="{StaticResource IconButton}" Command="{Binding ClearSourceCommand}" Margin="0,0,6,0" ToolTip="Clear">
-                            <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextMutedBrush}"/>
+                            <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextMutedBrush}"/>
                         </Button>
                     </Grid>
                 </Border>
 
                 <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Command="{Binding PasteCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                         <TextBlock Text="PASTE" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
@@ -148,7 +148,7 @@
                             </Border>
                             <Border Style="{StaticResource Badge}" Margin="0,0,8,0"><TextBlock Text="4K" Style="{StaticResource BadgeText}"/></Border>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Path Data="{StaticResource IconSubtitles}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}" Margin="0,0,6,0"/>
+                                <Path Data="{StaticResource IconSubtitles}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextMutedBrush}" Margin="0,0,6,0"/>
                                 <TextBlock Text="{Binding SubtitleAvailabilityText}" Style="{StaticResource MetaText}"/>
                             </StackPanel>
                         </StackPanel>
@@ -202,7 +202,7 @@
                     </StackPanel>
                 </RadioButton>
             </StackPanel>
-            <Border Height="1" Background="{StaticResource DividerBrush}" Margin="0,0,0,20"/>
+            <Border Height="1" Background="{DynamicResource DividerBrush}" Margin="0,0,0,20"/>
 
             <!-- Controls + streams -->
             <Grid Margin="0,0,0,20">
@@ -472,12 +472,12 @@
                         <Grid DockPanel.Dock="Top" Margin="18,16">
                             <TextBlock Text="AVAILABLE STREAMS" Style="{StaticResource SectionTitleText}" HorizontalAlignment="Left"/>
                             <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Command="{Binding RefreshStreamsCommand}" ToolTip="Refresh streams">
-                                <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource TextMutedBrush}"/>
+                                <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{DynamicResource TextMutedBrush}"/>
                             </Button>
                         </Grid>
-                        <Border DockPanel.Dock="Top" Height="1" Background="{StaticResource DividerBrush}"/>
+                        <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource DividerBrush}"/>
 
-                        <Border DockPanel.Dock="Bottom" Height="1" Background="{StaticResource DividerBrush}" Margin="0,8,0,0"/>
+                        <Border DockPanel.Dock="Bottom" Height="1" Background="{DynamicResource DividerBrush}" Margin="0,8,0,0"/>
                         <Grid DockPanel.Dock="Bottom" Margin="18,12">
                             <TextBlock Text="{Binding StreamCountText}" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <TextBlock Text="{Binding SelectedStreamText}" Style="{StaticResource MetaText}" FontWeight="SemiBold" HorizontalAlignment="Right"/>
@@ -527,7 +527,7 @@
                 </Button>
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding AddToQueueCommand}" Padding="24,13">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,10,0"/>
+                        <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,10,0"/>
                         <TextBlock Text="ADD TO QUEUE" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>

@@ -14,13 +14,13 @@
             <MenuItem Header="Copy source URL"
                       Command="{Binding PlacementTarget.DataContext.CopyUrlCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Open output folder"
                       Command="{Binding PlacementTarget.DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
-                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}"/>
+                    <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
         </ContextMenu>
@@ -33,7 +33,7 @@
             </TextBlock>
             <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" VerticalAlignment="Top"
                     Command="{Binding DataContext.Inspector.CloseCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextMutedBrush}"/>
+                <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextMutedBrush}"/>
             </Button>
         </Grid>
 
@@ -46,7 +46,7 @@
                     </Grid>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" MaxWidth="200"/>
-                        <TextBlock Text="{Binding Channel}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Channel}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -78,7 +78,7 @@
                         <Button Content="CLEAR" Command="{Binding ClearLogCommand}" Style="{StaticResource TextLinkButton}" ToolTip="Clear log lines"/>
                     </StackPanel>
                 </Grid>
-                <Border Background="{StaticResource LogPanelBrush}" Padding="12" Height="130" Margin="0,0,0,8">
+                <Border Background="{DynamicResource LogPanelBrush}" Padding="12" Height="130" Margin="0,0,0,8">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding LogLines}">
                             <ItemsControl.ItemTemplate>

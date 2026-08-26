@@ -217,7 +217,7 @@
                                 <TextBox Grid.Column="0" Text="{Binding FilenameTemplate}" Style="{StaticResource FieldTextBox}"/>
                                 <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Padding="13,11" ToolTip="Insert variable"
                                         ContextMenu="{StaticResource TemplateVariableMenu}" controls:ButtonBehaviors.OpensContextMenu="True">
-                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}"/>
+                                    <Path Data="{StaticResource IconPlus}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextPrimaryBrush}"/>
                                 </Button>
                             </Grid>
                             <TextBlock Text="Example: %(title)s [%(id)s].%(ext)s" Style="{StaticResource SettingHint}"/>
@@ -324,7 +324,7 @@
                             </Grid>
                             <Button Style="{StaticResource SecondaryButton}" Padding="12,11" HorizontalAlignment="Left" Command="{Binding ViewLogsCommand}">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                                    <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                                     <TextBlock Text="VIEW LOGS" FontWeight="Bold" FontSize="12"/>
                                 </StackPanel>
                             </Button>
@@ -343,7 +343,7 @@
                             <TextBlock Text="Yoink Version" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <TextBlock Text="{Binding AppVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
-                                <Border Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2"><TextBlock Text="LATEST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+                                <Border Background="{DynamicResource SurfaceSecondaryBrush}" Padding="6,2"><TextBlock Text="LATEST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
                             </StackPanel>
                         </Grid>
                         <Grid Margin="0,0,0,10">
@@ -353,7 +353,7 @@
                                 <Border Padding="6,2" CornerRadius="2">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{StaticResource SurfaceSecondaryBrush}"/>
+                                            <Setter Property="Background" Value="{DynamicResource SurfaceSecondaryBrush}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsYtDlpUpdated}" Value="False">
                                                     <Setter Property="Background" Value="{StaticResource OrangePrimaryBrush}"/>
@@ -380,7 +380,7 @@
                             <TextBlock Text="FFmpeg" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <TextBlock Text="{Binding FfmpegVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
-                                <Border Background="{StaticResource SurfaceSecondaryBrush}" Padding="6,2" CornerRadius="2"><TextBlock Text="OK" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+                                <Border Background="{DynamicResource SurfaceSecondaryBrush}" Padding="6,2" CornerRadius="2"><TextBlock Text="OK" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
                             </StackPanel>
                         </Grid>
                         <Grid Margin="0,0,0,14">
@@ -440,7 +440,7 @@
                         <TextBlock Text="{Binding CachePath}" Style="{StaticResource MetaText}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,14"/>
                         <Button Style="{StaticResource SecondaryButton}" Padding="12,11" Command="{Binding ManageStorageCommand}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                                <Path Data="{StaticResource IconFolder}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="MANAGE STORAGE" FontWeight="Bold" FontSize="12"/>
                             </StackPanel>
                         </Button>
@@ -483,7 +483,7 @@
                         </Grid>
                         <Button Style="{StaticResource SecondaryButton}" Padding="12,11" Command="{Binding ViewLogsCommand}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                                <Path Data="{StaticResource IconList}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="VIEW LOGS" FontWeight="Bold" FontSize="12"/>
                             </StackPanel>
                         </Button>
@@ -504,7 +504,7 @@
                 </Button>
                 <Button Style="{StaticResource SecondaryButton}" Padding="22,12" Command="{Binding RevertCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconRotateCcw}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                        <Path Data="{StaticResource IconRotateCcw}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                         <TextBlock Text="REVERT" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>

@@ -7,9 +7,9 @@
         Title="Yoink" Height="290" Width="460"
         WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource SurfacePrimaryBrush}"
+        Background="{DynamicResource SurfacePrimaryBrush}"
         FontFamily="{StaticResource InterfaceFont}">
-    <Border BorderBrush="{StaticResource DividerBrush}" BorderThickness="1">
+    <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="1">
         <Grid Margin="28">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -19,10 +19,10 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" x:Name="HeadlineText" Text="DOWNLOADS ARE STILL ACTIVE"
-                       FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                       FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"
                        TextWrapping="Wrap" Margin="0,0,0,10"/>
             <TextBlock Grid.Row="1" Text="Closing now will stop them. Choose how you'd like to proceed."
-                       FontSize="13" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap"/>
+                       FontSize="13" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"/>
 
             <StackPanel Grid.Row="3">
                 <Button Style="{StaticResource PrimaryButton}" Padding="18,13" Margin="0,0,0,10"

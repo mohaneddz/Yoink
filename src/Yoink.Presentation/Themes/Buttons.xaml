@@ -38,7 +38,7 @@
                             <Setter TargetName="Cp" Property="Opacity" Value="0.9"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Bg" Property="Background" Value="{StaticResource DisabledBrush}"/>
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource DisabledBrush}"/>
                             <Setter Property="Foreground" Value="#FFAAAAAA"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -288,7 +288,7 @@
                             <Setter Property="Foreground" Value="#FFCC3B00"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{StaticResource DisabledBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource DisabledBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

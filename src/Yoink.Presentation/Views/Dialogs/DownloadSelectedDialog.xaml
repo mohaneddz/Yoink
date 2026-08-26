@@ -8,12 +8,12 @@
         Title="Yoink" Height="540" Width="500"
         WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource SurfacePrimaryBrush}"
+        Background="{DynamicResource SurfacePrimaryBrush}"
         FontFamily="{StaticResource InterfaceFont}">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
-    <Border BorderBrush="{StaticResource DividerBrush}" BorderThickness="1">
+    <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="1">
         <Grid Margin="28">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -24,10 +24,10 @@
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="{Binding HeadlineText}"
-                       FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                       FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}"
                        TextWrapping="Wrap" Margin="0,0,0,6"/>
             <TextBlock Grid.Row="1" Text="Pick how they should be downloaded, then start them all."
-                       FontSize="13" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,18"/>
+                       FontSize="13" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,18"/>
 
             <!-- Video / Audio mode -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,18">

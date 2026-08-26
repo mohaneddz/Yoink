@@ -104,13 +104,13 @@
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
         <Setter Property="Margin" Value="0,0,0,6"/>
     </Style>
 
     <!-- Small format/quality pill badge, e.g. "MP4" "1080p" "4K" -->
     <Style x:Key="Badge" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceSecondaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceSecondaryBrush}"/>
         <Setter Property="Padding" Value="8,3"/>
     </Style>
 
@@ -118,7 +118,7 @@
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
     </Style>
 
     <!-- Status pill text, color set per-state at usage site -->
@@ -131,12 +131,12 @@
     <!-- Thin 1px divider line -->
     <Style x:Key="HDivider" TargetType="Border">
         <Setter Property="Height" Value="1"/>
-        <Setter Property="Background" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource DividerBrush}"/>
     </Style>
 
     <Style x:Key="VDivider" TargetType="Border">
         <Setter Property="Width" Value="1"/>
-        <Setter Property="Background" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource DividerBrush}"/>
     </Style>
 
     <!-- Card / panel surface -->
@@ -213,7 +213,7 @@
         <Setter Property="RowBackground" Value="Transparent"/>
         <Setter Property="AlternatingRowBackground" Value="Transparent"/>
         <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource DividerBrush}"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerBrush}"/>
         <Setter Property="EnableRowVirtualization" Value="True"/>
         <Setter Property="EnableColumnVirtualization" Value="True"/>
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
