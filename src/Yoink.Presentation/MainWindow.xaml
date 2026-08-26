@@ -12,6 +12,7 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" ResizeMode="CanResize"
         Background="{DynamicResource SurfacePrimaryBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
         FontFamily="{StaticResource InterfaceFont}">
 
     <WindowChrome.WindowChrome>

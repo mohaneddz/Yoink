@@ -5,9 +5,14 @@
     <FontFamily x:Key="InterfaceFont">Segoe UI</FontFamily>
     <FontFamily x:Key="MonoFont">Consolas</FontFamily>
 
-    <!-- Implicit default TextBlock style for consistent theming -->
+    <!--
+      Implicit default TextBlock style. Foreground is deliberately NOT set here: a Style Setter on
+      TextBlock itself outranks Foreground inherited from an ancestor, so a hardcoded value here would
+      silently defeat any Button/RadioButton trigger that changes Foreground for a selected/active
+      state (e.g. ChipToggleButton, FilterTabButton) — the icon would recolor but the label wouldn't.
+      Root windows set Foreground explicitly so plain text still inherits the theme-correct color.
+    -->
     <Style TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
     </Style>
 

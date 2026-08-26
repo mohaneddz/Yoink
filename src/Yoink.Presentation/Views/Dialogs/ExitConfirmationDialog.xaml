@@ -8,6 +8,7 @@
         WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource SurfacePrimaryBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
         FontFamily="{StaticResource InterfaceFont}">
     <Border BorderBrush="{DynamicResource DividerBrush}" BorderThickness="1">
         <Grid Margin="28">
