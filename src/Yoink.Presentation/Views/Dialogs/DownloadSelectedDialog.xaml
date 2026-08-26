@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        Title="Yoink" Height="360" Width="480"
+        xmlns:vm="clr-namespace:Yoink.Presentation.ViewModels"
+        mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:BatchDownloadDialogViewModel}"
+        Title="Yoink" Height="480" Width="500"
         WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource SurfacePrimaryBrush}"
@@ -14,36 +15,58 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" x:Name="HeadlineText" Text="DOWNLOAD 0 VIDEOS"
+            <TextBlock Grid.Row="0" Text="{Binding HeadlineText}"
                        FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
-                       TextWrapping="Wrap" Margin="0,0,0,8"/>
-            <TextBlock Grid.Row="1" Text="They'll be queued and started right away using your current preset."
-                       FontSize="13" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,18"/>
+                       TextWrapping="Wrap" Margin="0,0,0,6"/>
+            <TextBlock Grid.Row="1" Text="Pick how they should be downloaded, then start them all."
+                       FontSize="13" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,20"/>
 
-            <Border Grid.Row="2" Background="{StaticResource SurfaceSecondaryBrush}" CornerRadius="4" Padding="16,14">
+            <StackPanel Grid.Row="2">
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="FORMAT" Style="{StaticResource FieldLabel}"/>
+                        <ComboBox Style="{StaticResource FieldComboBox}" Margin="0,6,0,0" Padding="12,9"
+                                  ItemsSource="{Binding ContainerOptions}" SelectedItem="{Binding Container}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="QUALITY" Style="{StaticResource FieldLabel}"/>
+                        <ComboBox Style="{StaticResource FieldComboBox}" Margin="0,6,0,0" Padding="12,9"
+                                  ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding Quality}"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="SUBTITLES" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox Style="{StaticResource FieldComboBox}" Margin="0,6,0,0" Padding="12,9"
+                              ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}"/>
+                </StackPanel>
+
                 <StackPanel>
-                    <Grid Margin="0,0,0,10">
-                        <TextBlock Text="FORMAT" Style="{StaticResource FieldLabel}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="FormatText" Text="MP4" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right"/>
-                    </Grid>
-                    <Grid Margin="0,0,0,10">
-                        <TextBlock Text="QUALITY" Style="{StaticResource FieldLabel}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="QualityText" Text="Best available" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right"/>
-                    </Grid>
-                    <Grid>
-                        <TextBlock Text="SAVE TO" Style="{StaticResource FieldLabel}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                        <TextBlock x:Name="FolderText" Text="—" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"
-                                   TextTrimming="CharacterEllipsis" MaxWidth="300" TextAlignment="Right"/>
+                    <TextBlock Text="SAVE TO" Style="{StaticResource FieldLabel}"/>
+                    <Grid Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0" Height="40">
+                            <TextBox Text="{Binding OutputFolder, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}"
+                                     BorderThickness="0" Padding="12,10" VerticalAlignment="Center"/>
+                        </Border>
+                        <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Padding="16,10" Content="BROWSE" Click="Browse_Click"/>
                     </Grid>
                 </StackPanel>
-            </Border>
+            </StackPanel>
 
-            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Style="{StaticResource SecondaryButton}" Padding="20,12" Margin="0,0,10,0"
                         Click="Cancel_Click" Content="CANCEL" IsCancel="True"/>
                 <Button Style="{StaticResource PrimaryButton}" Padding="24,13"

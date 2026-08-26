@@ -1,19 +1,38 @@
+using System.IO;
 using System.Windows;
+using Microsoft.Win32;
+using Yoink.Presentation.ViewModels;
+using Yoink.Presentation.ViewModels.Models;
 
 namespace Yoink.Presentation.Views.Dialogs;
 
-/// <summary>Confirms a batch download from the Channels page, showing the count and the preset it will use.</summary>
+/// <summary>Confirms a batch download from the Channels page and lets the user tune format, quality, subtitles, and folder.</summary>
 public partial class DownloadSelectedDialog : Window
 {
-    public bool Confirmed { get; private set; }
+    private readonly BatchDownloadDialogViewModel _vm;
 
-    public DownloadSelectedDialog(int count, string format, string quality, string folder)
+    public bool Confirmed { get; private set; }
+    public BatchDownloadOptions Options => _vm.ToOptions();
+
+    public DownloadSelectedDialog(BatchDownloadDialogViewModel viewModel)
     {
         InitializeComponent();
-        HeadlineText.Text = count == 1 ? "DOWNLOAD 1 VIDEO" : $"DOWNLOAD {count} VIDEOS";
-        FormatText.Text = string.IsNullOrWhiteSpace(format) ? "—" : format;
-        QualityText.Text = string.IsNullOrWhiteSpace(quality) ? "—" : quality;
-        FolderText.Text = string.IsNullOrWhiteSpace(folder) ? "—" : folder;
+        _vm = viewModel;
+        DataContext = viewModel;
+    }
+
+    private void Browse_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Multiselect = false };
+        if (!string.IsNullOrWhiteSpace(_vm.OutputFolder) && Directory.Exists(_vm.OutputFolder))
+        {
+            dialog.InitialDirectory = _vm.OutputFolder;
+        }
+
+        if (dialog.ShowDialog() == true)
+        {
+            _vm.OutputFolder = dialog.FolderName;
+        }
     }
 
     private void Download_Click(object sender, RoutedEventArgs e)

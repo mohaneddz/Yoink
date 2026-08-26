@@ -65,9 +65,8 @@ public partial class ChannelsViewModel : ObservableObject
     public int SelectedUploadCount => Uploads.Count(u => u.IsSelected);
     public bool HasSelectedUploads => Uploads.Any(u => u.IsSelected);
 
-    /// <summary>Preset the selected uploads will be downloaded with, surfaced in the confirmation dialog.</summary>
+    /// <summary>Preset defaults used to seed the "Download selected" dialog.</summary>
     public string PresetFormatText => _settings.Current.PreferredVideoContainer.ToUpperInvariant();
-    public string PresetQualityText => "Best available";
     public string PresetFolderText => _settings.Current.DefaultDownloadFolder;
 
     private void RaiseSelectionChanged()
@@ -351,7 +350,7 @@ public partial class ChannelsViewModel : ObservableObject
     /// Queues every selected upload and starts them immediately in the current preset. Invoked by the
     /// Channels page after the user confirms the "Download selected" dialog.
     /// </summary>
-    public void DownloadSelected()
+    public void DownloadSelected(BatchDownloadOptions options)
     {
         var selected = Uploads.Where(u => u.IsSelected).ToList();
         if (selected.Count == 0)
@@ -361,7 +360,7 @@ public partial class ChannelsViewModel : ObservableObject
 
         foreach (var upload in selected)
         {
-            Enqueue(upload, start: true);
+            Enqueue(upload, start: true, options);
         }
 
         StatusMessage = $"Downloading {selected.Count} {(selected.Count == 1 ? "video" : "videos")}…";
@@ -382,7 +381,7 @@ public partial class ChannelsViewModel : ObservableObject
         _navigation.Navigate(AppPage.Queue);
     }
 
-    private void Enqueue(ChannelUpload upload, bool start)
+    private void Enqueue(ChannelUpload upload, bool start, BatchDownloadOptions? options = null)
     {
         if (string.IsNullOrWhiteSpace(upload.Url))
         {
@@ -390,25 +389,55 @@ public partial class ChannelsViewModel : ObservableObject
         }
 
         var settings = _settings.Current;
+        var container = string.IsNullOrWhiteSpace(options?.Container) ? settings.PreferredVideoContainer : options.Container;
+        var outputFolder = string.IsNullOrWhiteSpace(options?.OutputFolder) ? settings.DefaultDownloadFolder : options.OutputFolder;
+        var embedSubtitles = !string.IsNullOrWhiteSpace(options?.SubtitleLanguage) && options.SubtitleLanguage != "None";
+
         var request = new DownloadRequest
         {
             Url = upload.Url,
             Kind = DownloadKind.Video,
-            VideoContainer = settings.PreferredVideoContainer,
+            MaxHeight = ParseHeight(options?.Quality),
+            VideoContainer = container.ToLowerInvariant(),
             AudioContainer = settings.PreferredAudioContainer,
-            OutputFolder = settings.DefaultDownloadFolder,
+            OutputFolder = outputFolder,
             FilenameTemplate = settings.FilenameTemplate,
             EmbedMetadata = true,
+            EmbedSubtitles = embedSubtitles,
+            SubtitleLanguages = MapSubtitleLang(options?.SubtitleLanguage),
             CookiesFile = settings.CookiesFile,
             Proxy = settings.Proxy,
             SpeedLimitKbps = settings.DownloadSpeedLimitKbps,
             KnownTitle = upload.Title
         };
 
-        _coordinator.Enqueue(request, new EnqueueInfo(upload.Title, SelectedChannel?.Name ?? string.Empty, "Best", settings.PreferredVideoContainer.ToUpperInvariant()), start);
+        var qualityLabel = string.IsNullOrWhiteSpace(options?.Quality) ? "Best" : options.Quality;
+        _coordinator.Enqueue(request, new EnqueueInfo(upload.Title, SelectedChannel?.Name ?? string.Empty, qualityLabel, container.ToUpperInvariant(), upload.ThumbnailUrl), start);
         upload.Downloaded = true;
         upload.IsSeen = true;
     }
+
+    private static int ParseHeight(string? quality)
+    {
+        if (string.IsNullOrWhiteSpace(quality))
+        {
+            return 0;
+        }
+
+        var digits = new string(quality.TakeWhile(char.IsDigit).ToArray());
+        return int.TryParse(digits, out var h) ? h : 0;
+    }
+
+    private static string MapSubtitleLang(string? label) => label switch
+    {
+        null or "None" or "English" => "en.*",
+        "All" => ".*",
+        "Spanish" => "es.*",
+        "French" => "fr.*",
+        "German" => "de.*",
+        "Japanese" => "ja.*",
+        _ => $"{label}.*"
+    };
 
     [RelayCommand]
     private void SelectUnseen()

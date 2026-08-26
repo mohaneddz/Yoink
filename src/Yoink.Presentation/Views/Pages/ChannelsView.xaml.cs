@@ -27,15 +27,13 @@ public partial class ChannelsView : UserControl
             return;
         }
 
-        var dialog = new DownloadSelectedDialog(vm.SelectedUploadCount, vm.PresetFormatText, vm.PresetQualityText, vm.PresetFolderText)
-        {
-            Owner = Window.GetWindow(this)
-        };
+        var dialogViewModel = new BatchDownloadDialogViewModel(vm.SelectedUploadCount, vm.PresetFormatText, vm.PresetFolderText);
+        var dialog = new DownloadSelectedDialog(dialogViewModel) { Owner = Window.GetWindow(this) };
         dialog.ShowDialog();
 
         if (dialog.Confirmed)
         {
-            vm.DownloadSelected();
+            vm.DownloadSelected(dialog.Options);
         }
     }
 }
