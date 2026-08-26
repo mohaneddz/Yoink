@@ -1,10 +1,42 @@
-# YOINK
+![Yoink](screenshots/cover.avif)
 
-**Yoink** is a media downloader for Windows that wraps the power of **yt-dlp** and **FFmpeg** in a clean, native WPF app — grab video or audio from thousands of sites, then keep it all organized in one place.
+<h1 style="font-family: Arial, sans-serif; font-size: 36px; color: #f96a1c; display: flex; align-items: center; gap: 12px; border-bottom: 3px solid #f96a1c; padding-bottom: 8px;">
+  Yoink — Media Downloader for Windows
+</h1>
+
+**Yoink** is a medvia downloader for Windows that wraps the power of **yt-dlp** and **FFmpeg** in a clean, native WPF app — grab video or audio from thousands of sites, then keep it all organized in one place.
 
 Point it at a URL, pick your quality and format, and go. Yoink handles playlists, follows channels for new uploads, queues concurrent downloads, and keeps a searchable library and history of everything you've saved — no command line, no browser extensions, no ads.
 
 It provisions its own copies of yt-dlp and FFmpeg on first launch, so there is nothing to install separately: download the app and start yoinking.
+
+## Screenshots
+
+### Download
+
+Inspect a URL, choose the quality and format, configure subtitles and metadata, then start the download.
+
+![Yoink download screen](screenshots/download.avif)
+
+### Queue and playlists
+
+Manage active downloads with live progress, or inspect a playlist and selectively queue its entries.
+
+| Queue | Playlists |
+|---|---|
+| ![Yoink queue screen](screenshots/queue.avif) | ![Yoink playlists screen](screenshots/playlists.avif) |
+
+### Library, channels, history, and settings
+
+Keep downloads organized, follow channels for new uploads, review past activity, and customize the app from one place.
+
+| Library | Channels |
+|---|---|
+| ![Yoink library screen](screenshots/library.avif) | ![Yoink channels screen](screenshots/channels.avif) |
+
+| History | Settings |
+|---|---|
+| ![Yoink history screen](screenshots/history.avif) | ![Yoink settings screen](screenshots/settings.avif) |
 
 ## Features
 
