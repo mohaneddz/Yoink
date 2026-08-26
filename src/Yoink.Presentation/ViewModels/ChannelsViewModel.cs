@@ -63,6 +63,18 @@ public partial class ChannelsViewModel : ObservableObject
     [ObservableProperty] private string _selectedTab = "Recent Uploads";
 
     public int SelectedUploadCount => Uploads.Count(u => u.IsSelected);
+    public bool HasSelectedUploads => Uploads.Any(u => u.IsSelected);
+
+    /// <summary>Preset the selected uploads will be downloaded with, surfaced in the confirmation dialog.</summary>
+    public string PresetFormatText => _settings.Current.PreferredVideoContainer.ToUpperInvariant();
+    public string PresetQualityText => "Best available";
+    public string PresetFolderText => _settings.Current.DefaultDownloadFolder;
+
+    private void RaiseSelectionChanged()
+    {
+        OnPropertyChanged(nameof(SelectedUploadCount));
+        OnPropertyChanged(nameof(HasSelectedUploads));
+    }
 
     [RelayCommand]
     private void SelectTab(string tab) => SelectedTab = tab;
@@ -265,7 +277,7 @@ public partial class ChannelsViewModel : ObservableObject
                     {
                         if (args.PropertyName == nameof(ChannelUpload.IsSelected))
                         {
-                            OnPropertyChanged(nameof(SelectedUploadCount));
+                            RaiseSelectionChanged();
                         }
                     };
                     merged.Add(upload);
@@ -286,7 +298,7 @@ public partial class ChannelsViewModel : ObservableObject
             UpdateTabCounts(channel, merged);
 
             StatusMessage = string.Empty;
-            OnPropertyChanged(nameof(SelectedUploadCount));
+            RaiseSelectionChanged();
         }
         finally
         {
@@ -332,6 +344,27 @@ public partial class ChannelsViewModel : ObservableObject
         }
 
         StatusMessage = $"{selected.Count} added to queue.";
+        _navigation.Navigate(AppPage.Queue);
+    }
+
+    /// <summary>
+    /// Queues every selected upload and starts them immediately in the current preset. Invoked by the
+    /// Channels page after the user confirms the "Download selected" dialog.
+    /// </summary>
+    public void DownloadSelected()
+    {
+        var selected = Uploads.Where(u => u.IsSelected).ToList();
+        if (selected.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var upload in selected)
+        {
+            Enqueue(upload, start: true);
+        }
+
+        StatusMessage = $"Downloading {selected.Count} {(selected.Count == 1 ? "video" : "videos")}…";
         _navigation.Navigate(AppPage.Queue);
     }
 
@@ -384,7 +417,7 @@ public partial class ChannelsViewModel : ObservableObject
         {
             upload.IsSelected = !upload.IsSeen && !upload.Downloaded;
         }
-        OnPropertyChanged(nameof(SelectedUploadCount));
+        RaiseSelectionChanged();
     }
 
     [RelayCommand]
@@ -395,7 +428,7 @@ public partial class ChannelsViewModel : ObservableObject
         {
             upload.IsSelected = !allSelected;
         }
-        OnPropertyChanged(nameof(SelectedUploadCount));
+        RaiseSelectionChanged();
     }
 
     [RelayCommand]

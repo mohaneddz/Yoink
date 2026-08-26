@@ -16,6 +16,13 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:CountToVisibilityConverter x:Key="CountToVisibility"/>
 
+        <Style x:Key="GroupHeader" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource InterfaceFont}"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
         <Style x:Key="ChannelListItem" TargetType="Border">
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
@@ -217,9 +224,19 @@
                         <Run Text="{Binding DataContext.SelectedUploadCount, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneWay}"/><Run Text=" SELECTED"/>
                     </TextBlock>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="DownloadSelectedButton" Style="{StaticResource PrimaryButton}" Padding="14,9" FontSize="12" Margin="0,0,8,0"
+                                Click="DownloadSelectedButton_Click"
+                                IsEnabled="{Binding DataContext.HasSelectedUploads, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="White" Margin="0,0,6,0"/>
+                                <TextBlock Foreground="White" FontWeight="Bold">
+                                    <Run Text="DOWNLOAD SELECTED ("/><Run Text="{Binding DataContext.SelectedUploadCount, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneWay}"/><Run Text=")"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Button>
                         <Button Style="{StaticResource SecondaryButton}" Padding="12,9" FontSize="12" Margin="0,0,8,0" Command="{Binding DataContext.SelectUnseenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
                             <StackPanel Orientation="Horizontal">
-                                <Path Data="{StaticResource IconCheckSquare}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
+                                <Path Data="{StaticResource IconCheck}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource TextPrimaryBrush}" Margin="0,0,6,0"/>
                                 <TextBlock Text="SELECT ALL UNSEEN" FontWeight="Bold"/>
                             </StackPanel>
                         </Button>
