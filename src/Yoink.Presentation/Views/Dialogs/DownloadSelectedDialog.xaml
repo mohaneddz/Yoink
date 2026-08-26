@@ -5,14 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:Yoink.Presentation.ViewModels"
         mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:BatchDownloadDialogViewModel}"
-        Title="Yoink" Height="480" Width="500"
+        Title="Yoink" Height="540" Width="500"
         WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource SurfacePrimaryBrush}"
         FontFamily="{StaticResource InterfaceFont}">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
     <Border BorderBrush="{StaticResource DividerBrush}" BorderThickness="1">
         <Grid Margin="28">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -23,9 +27,27 @@
                        FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
                        TextWrapping="Wrap" Margin="0,0,0,6"/>
             <TextBlock Grid.Row="1" Text="Pick how they should be downloaded, then start them all."
-                       FontSize="13" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,20"/>
+                       FontSize="13" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,18"/>
 
-            <StackPanel Grid.Row="2">
+            <!-- Video / Audio mode -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,18">
+                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="BatchMode" Margin="0,0,28,0"
+                             IsChecked="{Binding IsVideo, Mode=TwoWay}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconPlay}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
+                        <TextBlock Text="VIDEO"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="BatchMode"
+                             IsChecked="{Binding IsAudio, Mode=TwoWay}">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconMusic}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,6,0"/>
+                        <TextBlock Text="AUDIO"/>
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+
+            <StackPanel Grid.Row="3">
                 <Grid Margin="0,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -35,16 +57,16 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="FORMAT" Style="{StaticResource FieldLabel}"/>
                         <ComboBox Style="{StaticResource FieldComboBox}" Margin="0,6,0,0" Padding="12,9"
-                                  ItemsSource="{Binding ContainerOptions}" SelectedItem="{Binding Container}"/>
+                                  ItemsSource="{Binding FormatOptions}" SelectedItem="{Binding Container}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="QUALITY" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding QualityLabel}" Style="{StaticResource FieldLabel}"/>
                         <ComboBox Style="{StaticResource FieldComboBox}" Margin="0,6,0,0" Padding="12,9"
                                   ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding Quality}"/>
                     </StackPanel>
                 </Grid>
 
-                <StackPanel Margin="0,0,0,16">
+                <StackPanel Margin="0,0,0,16" Visibility="{Binding ShowSubtitles, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="SUBTITLES" Style="{StaticResource FieldLabel}"/>
                     <ComboBox Style="{StaticResource FieldComboBox}" Margin="0,6,0,0" Padding="12,9"
                               ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}"/>
@@ -66,7 +88,7 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Style="{StaticResource SecondaryButton}" Padding="20,12" Margin="0,0,10,0"
                         Click="Cancel_Click" Content="CANCEL" IsCancel="True"/>
                 <Button Style="{StaticResource PrimaryButton}" Padding="24,13"

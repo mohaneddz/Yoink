@@ -389,33 +389,64 @@ public partial class ChannelsViewModel : ObservableObject
         }
 
         var settings = _settings.Current;
-        var container = string.IsNullOrWhiteSpace(options?.Container) ? settings.PreferredVideoContainer : options.Container;
+        var isAudio = options?.IsAudio == true;
         var outputFolder = string.IsNullOrWhiteSpace(options?.OutputFolder) ? settings.DefaultDownloadFolder : options.OutputFolder;
-        var embedSubtitles = !string.IsNullOrWhiteSpace(options?.SubtitleLanguage) && options.SubtitleLanguage != "None";
 
-        var request = new DownloadRequest
+        DownloadRequest request;
+        string container;
+        if (isAudio)
         {
-            Url = upload.Url,
-            Kind = DownloadKind.Video,
-            MaxHeight = ParseHeight(options?.Quality),
-            VideoContainer = container.ToLowerInvariant(),
-            AudioContainer = settings.PreferredAudioContainer,
-            OutputFolder = outputFolder,
-            FilenameTemplate = settings.FilenameTemplate,
-            EmbedMetadata = true,
-            EmbedSubtitles = embedSubtitles,
-            SubtitleLanguages = MapSubtitleLang(options?.SubtitleLanguage),
-            CookiesFile = settings.CookiesFile,
-            Proxy = settings.Proxy,
-            SpeedLimitKbps = settings.DownloadSpeedLimitKbps,
-            KnownTitle = upload.Title
-        };
+            container = string.IsNullOrWhiteSpace(options?.Container) ? settings.PreferredAudioContainer : options!.Container;
+            request = new DownloadRequest
+            {
+                Url = upload.Url,
+                Kind = DownloadKind.Audio,
+                AudioContainer = container.ToLowerInvariant(),
+                AudioQuality = MapAudioQuality(options?.Quality),
+                OutputFolder = outputFolder,
+                FilenameTemplate = settings.FilenameTemplate,
+                EmbedMetadata = true,
+                EmbedThumbnail = true,
+                CookiesFile = settings.CookiesFile,
+                Proxy = settings.Proxy,
+                SpeedLimitKbps = settings.DownloadSpeedLimitKbps,
+                KnownTitle = upload.Title
+            };
+        }
+        else
+        {
+            container = string.IsNullOrWhiteSpace(options?.Container) ? settings.PreferredVideoContainer : options!.Container;
+            var embedSubtitles = !string.IsNullOrWhiteSpace(options?.SubtitleLanguage) && options.SubtitleLanguage != "None";
+            request = new DownloadRequest
+            {
+                Url = upload.Url,
+                Kind = DownloadKind.Video,
+                MaxHeight = ParseHeight(options?.Quality),
+                VideoContainer = container.ToLowerInvariant(),
+                AudioContainer = settings.PreferredAudioContainer,
+                OutputFolder = outputFolder,
+                FilenameTemplate = settings.FilenameTemplate,
+                EmbedMetadata = true,
+                EmbedSubtitles = embedSubtitles,
+                SubtitleLanguages = MapSubtitleLang(options?.SubtitleLanguage),
+                CookiesFile = settings.CookiesFile,
+                Proxy = settings.Proxy,
+                SpeedLimitKbps = settings.DownloadSpeedLimitKbps,
+                KnownTitle = upload.Title
+            };
+        }
 
         var qualityLabel = string.IsNullOrWhiteSpace(options?.Quality) ? "Best" : options.Quality;
         _coordinator.Enqueue(request, new EnqueueInfo(upload.Title, SelectedChannel?.Name ?? string.Empty, qualityLabel, container.ToUpperInvariant(), upload.ThumbnailUrl), start);
         upload.Downloaded = true;
         upload.IsSeen = true;
     }
+
+    private static string MapAudioQuality(string? label) => label switch
+    {
+        null or "Best" => "0",
+        _ => new string(label.TakeWhile(char.IsDigit).ToArray()) is { Length: > 0 } k ? $"{k}K" : "0"
+    };
 
     private static int ParseHeight(string? quality)
     {
