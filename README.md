@@ -4,9 +4,9 @@
   Yoink — Media Downloader for Windows
 </h1>
 
-**Yoink** is a medvia downloader for Windows that wraps the power of **yt-dlp** and **FFmpeg** in a clean, native WPF app — grab video or audio from thousands of sites, then keep it all organized in one place.
+**Yoink** is a universal media downloader for Windows that wraps the power of **yt-dlp** and **FFmpeg** in a clean, native WPF app — download high-fidelity video or audio from thousands of websites with automatic watermark removal, playlist expansion, and complete library management.
 
-Point it at a URL, pick your quality and format, and go. Yoink handles playlists, follows channels for new uploads, queues concurrent downloads, and keeps a searchable library and history of everything you've saved — no command line, no browser extensions, no ads.
+Point it at any URL, pick your quality and container, and go. Yoink automatically selects clean, unwatermarked streams (for TikTok, Instagram, Twitter/X, Facebook, and more), handles playlists and channel feeds, queues concurrent downloads, and keeps a searchable library and history of everything you've saved — no command line, no browser extensions, no ads.
 
 It provisions its own copies of yt-dlp and FFmpeg on first launch, so there is nothing to install separately: download the app and start yoinking.
 
@@ -40,14 +40,14 @@ Keep downloads organized, follow channels for new uploads, review past activity,
 
 ## Features
 
-- **Download** — paste a URL, inspect available streams, pick quality/format, and download video or audio.
+- **Universal Download** — paste any media URL, inspect available streams, select quality/format, and download clean video or audio with automatic watermark filtering.
 - **Queue** — manage concurrent downloads with pause/resume/retry and live progress.
 - **Playlists** — expand and selectively download playlist entries.
 - **Channels** — follow channels and browse/download their uploads.
 - **Library** — browse everything you've downloaded, filtered by media type.
 - **History** — full record of past downloads with re-download and export.
-- **Settings** — configure download folder, concurrency, speed limits, preferred containers/quality,
-  filename templates, proxy, cookies, tool paths, appearance, and diagnostics.
+- **Settings & Network** — configure download folder, concurrency, speed limits, preferred containers/quality,
+  filename templates, proxy, cookies (for age-restricted or private media), tool paths, appearance, and diagnostics.
 
 Data (settings, the SQLite database, provisioned tools, and logs) is stored under
 `%LocalAppData%\Yoink`.

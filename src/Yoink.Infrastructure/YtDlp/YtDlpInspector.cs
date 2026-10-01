@@ -13,12 +13,18 @@ public sealed partial class YtDlpInspector : IMediaInspector
 {
     private readonly ProcessRunner _runner;
     private readonly IToolProvisioner _tools;
+    private readonly ISettingsService _settings;
     private readonly ILogger<YtDlpInspector> _logger;
 
-    public YtDlpInspector(ProcessRunner runner, IToolProvisioner tools, ILogger<YtDlpInspector> logger)
+    public YtDlpInspector(
+        ProcessRunner runner,
+        IToolProvisioner tools,
+        ISettingsService settings,
+        ILogger<YtDlpInspector> logger)
     {
         _runner = runner;
         _tools = tools;
+        _settings = settings;
         _logger = logger;
     }
 
@@ -64,8 +70,10 @@ public sealed partial class YtDlpInspector : IMediaInspector
         var args = new List<string>
         {
             "-J", "--no-warnings", "--no-playlist", "--no-progress",
-            url.Trim()
+            "--extractor-args", "tiktok:app_info=normal"
         };
+        AppendCommonInspectionArgs(args);
+        args.Add(url.Trim());
 
         try
         {
@@ -100,8 +108,10 @@ public sealed partial class YtDlpInspector : IMediaInspector
         var args = new List<string>
         {
             "-J", "--flat-playlist", "--no-warnings", "--no-progress",
-            "--extractor-args", "youtubetab:approximate_date"
+            "--extractor-args", "youtubetab:approximate_date",
+            "--extractor-args", "tiktok:app_info=normal"
         };
+        AppendCommonInspectionArgs(args);
         if (limit is > 0)
         {
             args.Add("--playlist-items");
@@ -320,15 +330,38 @@ public sealed partial class YtDlpInspector : IMediaInspector
         return line?.Replace("ERROR:", string.Empty).Trim();
     }
 
+    private void AppendCommonInspectionArgs(List<string> args)
+    {
+        args.Add("--user-agent");
+        args.Add("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+        args.Add("--socket-timeout");
+        args.Add("20");
+        args.Add("--retries");
+        args.Add("3");
+
+        var settings = _settings.Current;
+        if (!string.IsNullOrWhiteSpace(settings.CookiesFile) && File.Exists(settings.CookiesFile))
+        {
+            args.Add("--cookies");
+            args.Add(settings.CookiesFile);
+        }
+
+        if (!string.IsNullOrWhiteSpace(settings.Proxy))
+        {
+            args.Add("--proxy");
+            args.Add(settings.Proxy);
+        }
+    }
+
     [GeneratedRegex(@"[?&]list=", RegexOptions.IgnoreCase)]
     private static partial Regex PlaylistRegex();
 
-    [GeneratedRegex(@"/shorts/", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"(/shorts/|/reel/|/reels/|tiktok\.com|vm\.tiktok\.com)", RegexOptions.IgnoreCase)]
     private static partial Regex ShortsRegex();
 
     [GeneratedRegex(@"youtube\.com/(@|channel/|c/|user/)", RegexOptions.IgnoreCase)]
     private static partial Regex ChannelRegex();
 
-    [GeneratedRegex(@"(watch\?v=|youtu\.be/|/video/|vimeo\.com/\d+)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"(watch\?v=|youtu\.be/|/video/|vimeo\.com/\d+|tiktok\.com|instagram\.com/p/|x\.com/[^/]+/status|twitter\.com/[^/]+/status|pornhub\.com/view_video\.php|reddit\.com/r/[^/]+/comments/)", RegexOptions.IgnoreCase)]
     private static partial Regex VideoRegex();
 }

@@ -53,14 +53,15 @@ public partial class QueueViewModel : ObservableObject
 
     public ICollectionView FilteredJobs => _filteredJobs;
 
-    [ObservableProperty] private QueueFilter _selectedFilter = QueueFilter.Active;
+    [ObservableProperty] private QueueFilter _selectedFilter = QueueFilter.Queued;
     [ObservableProperty] private int _maxConcurrent;
     [ObservableProperty] private QueueJob? _selectedJob;
 
     public ObservableCollection<int> ConcurrencyOptions { get; } = new() { 1, 2, 3, 4, 5, 6, 8 };
 
     public int ActiveCount => Jobs.Count(IsActive);
-    public int QueuedCount => Jobs.Count(j => j.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting);
+    /// <summary>All unfinished work, including downloads currently in progress.</summary>
+    public int QueuedCount => Jobs.Count(j => IsActive(j) || j.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting);
     public int PausedCount => Jobs.Count(j => j.Status == QueueJobStatus.Paused);
     public int CompletedCount => Jobs.Count(j => j.Status == QueueJobStatus.Completed);
     public int FailedCount => Jobs.Count(j => j.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled);
@@ -112,8 +113,7 @@ public partial class QueueViewModel : ObservableObject
 
         return SelectedFilter switch
         {
-            QueueFilter.Active => IsActive(job),
-            QueueFilter.Queued => job.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting,
+            QueueFilter.Queued => IsActive(job) || job.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting,
             QueueFilter.Paused => job.Status == QueueJobStatus.Paused,
             QueueFilter.Completed => job.Status == QueueJobStatus.Completed,
             QueueFilter.Failed => job.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled,

@@ -3,6 +3,8 @@ setlocal
 
 cd /d "%~dp0"
 
+taskkill /F /IM Yoink.exe >nul 2>&1
+
 echo Restoring packages...
 dotnet restore Yoink.slnx
 if errorlevel 1 goto :failed

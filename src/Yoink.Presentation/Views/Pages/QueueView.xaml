@@ -84,18 +84,10 @@
         <!-- Filter tabs -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
             <RadioButton Style="{StaticResource FilterTabButton}" GroupName="QueueFilter" Margin="0,0,26,0"
-                         Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:QueueFilter.Active}"
-                         IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Active, Mode=OneWay}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="ACTIVE"/>
-                    <TextBlock Text="{Binding ActiveCount}" Style="{StaticResource FilterCount}"/>
-                </StackPanel>
-            </RadioButton>
-            <RadioButton Style="{StaticResource FilterTabButton}" GroupName="QueueFilter" Margin="0,0,26,0"
                          Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:QueueFilter.Queued}"
                          IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Queued, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="QUEUED"/>
+                    <TextBlock Text="QUEUE"/>
                     <TextBlock Text="{Binding QueuedCount}" Style="{StaticResource FilterCount}"/>
                 </StackPanel>
             </RadioButton>

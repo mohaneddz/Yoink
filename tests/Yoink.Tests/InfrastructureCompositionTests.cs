@@ -68,8 +68,12 @@ public class InfrastructureCompositionTests
 
         Assert.Equal(Shared.MediaSourceKind.Playlist, inspector.DetectKind("https://www.youtube.com/playlist?list=PL123"));
         Assert.Equal(Shared.MediaSourceKind.Short, inspector.DetectKind("https://www.youtube.com/shorts/abc123"));
+        Assert.Equal(Shared.MediaSourceKind.Short, inspector.DetectKind("https://www.tiktok.com/@creator/video/1234567890"));
+        Assert.Equal(Shared.MediaSourceKind.Short, inspector.DetectKind("https://www.instagram.com/reel/C8xyz123/"));
         Assert.Equal(Shared.MediaSourceKind.Channel, inspector.DetectKind("https://www.youtube.com/@SomeChannel"));
         Assert.Equal(Shared.MediaSourceKind.Video, inspector.DetectKind("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+        Assert.Equal(Shared.MediaSourceKind.Video, inspector.DetectKind("https://x.com/user/status/1234567890"));
+        Assert.Equal(Shared.MediaSourceKind.Video, inspector.DetectKind("https://example.com/stream.m3u8"));
         Assert.Equal(Shared.MediaSourceKind.Unknown, inspector.DetectKind("not a url"));
     }
 }

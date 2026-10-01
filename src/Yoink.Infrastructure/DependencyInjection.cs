@@ -45,11 +45,21 @@ public static class DependencyInjection
         return services;
     }
 
-    /// <summary>Create the SQLite database/schema if it does not yet exist.</summary>
+    /// <summary>Create the SQLite database/schema if it does not yet exist and migrate missing columns.</summary>
     public static async Task InitializeYoinkDatabaseAsync(this IServiceProvider provider)
     {
         var factory = provider.GetRequiredService<IDbContextFactory<YoinkDbContext>>();
         await using var db = await factory.CreateDbContextAsync().ConfigureAwait(false);
         await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
+
+        // Ensure backward-compatible migrations for any missing SQLite columns
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE Queue ADD COLUMN ThumbnailUrl TEXT DEFAULT ''").ConfigureAwait(false);
+        }
+        catch
+        {
+            // Column already exists or table does not exist yet
+        }
     }
 }

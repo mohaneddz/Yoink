@@ -24,10 +24,10 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,0,40,24">
         <StackPanel>
 
-            <shared:PageHeaderView HeaderTitle="DOWNLOAD" HeaderTagline="PASTE. INSPECT. DOWNLOAD."/>
+            <shared:PageHeaderView HeaderTitle="DOWNLOAD" HeaderTagline="UNIVERSAL MEDIA DOWNLOADER • HIGHEST QUALITY, NO WATERMARKS"/>
 
             <!-- Source bar -->
-            <Grid Margin="0,0,0,20">
+            <Grid Margin="0,0,0,20" Height="54">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="130"/>
@@ -35,7 +35,7 @@
                     <ColumnDefinition Width="230"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0" Height="42">
+                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -47,7 +47,7 @@
                         </Border>
                         <TextBox Grid.Column="1" Text="{Binding SourceUrl, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11" VerticalAlignment="Center"
-                                 Tag="Paste a YouTube, Vimeo, or direct media URL..."/>
+                                 Tag="Paste any video, social, or media URL (YouTube, TikTok, Instagram, Twitter/X, direct link)..."/>
                         <Button Grid.Column="2" Style="{StaticResource IconButton}" Command="{Binding ClearSourceCommand}" Margin="0,0,6,0" ToolTip="Clear">
                             <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextMutedBrush}"/>
                         </Button>
@@ -217,11 +217,7 @@
                         Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Video}">
                     <StackPanel>
                         <WrapPanel>
-                            <StackPanel Style="{StaticResource FieldStack}" Width="200">
-                                <TextBlock Text="QUALITY" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding Quality}" Height="42"/>
-                            </StackPanel>
-                            <StackPanel Style="{StaticResource FieldStack}" Width="150">
+                             <StackPanel Style="{StaticResource FieldStack}" Width="150">
                                 <TextBlock Text="CONTAINER" Style="{StaticResource FieldLabel}"/>
                                 <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding ContainerOptions}" SelectedItem="{Binding Container}" Height="42"/>
                             </StackPanel>
@@ -229,24 +225,9 @@
                                 <TextBlock Text="VIDEO CODEC" Style="{StaticResource FieldLabel}"/>
                                 <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoCodecOptions}" SelectedItem="{Binding VideoCodec}" Height="42"/>
                             </StackPanel>
-                            <StackPanel Style="{StaticResource FieldStack}" Width="150">
-                                <TextBlock Text="AUDIO QUALITY" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding AudioQuality}" Height="42"/>
-                            </StackPanel>
                         </WrapPanel>
 
                         <WrapPanel>
-                            <StackPanel Style="{StaticResource FieldStack}" Width="200">
-                                <TextBlock Text="SUBTITLES" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}" Height="42"/>
-                            </StackPanel>
-                            <StackPanel Style="{StaticResource FieldStack}" Width="140">
-                                <TextBlock Text="EMBED SUBTITLES" Style="{StaticResource FieldLabel}"/>
-                                <StackPanel Orientation="Horizontal" Height="42" VerticalAlignment="Center">
-                                    <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding EmbedSubtitles}"/>
-                                    <TextBlock Text="{Binding EmbedSubtitles, Converter={StaticResource OnOffConverter}}" Margin="8,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                                </StackPanel>
-                            </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="140">
                                 <TextBlock Text="EMBED METADATA" Style="{StaticResource FieldLabel}"/>
                                 <StackPanel Orientation="Horizontal" Height="42" VerticalAlignment="Center">
@@ -316,10 +297,6 @@
                                 <TextBlock Text="AUDIO FORMAT" Style="{StaticResource FieldLabel}"/>
                                 <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioContainerOptions}" SelectedItem="{Binding AudioContainer}" Height="42"/>
                             </StackPanel>
-                            <StackPanel Style="{StaticResource FieldStack}" Width="200">
-                                <TextBlock Text="AUDIO QUALITY / BITRATE" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding AudioQuality}" Height="42"/>
-                            </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="140">
                                 <TextBlock Text="EMBED METADATA" Style="{StaticResource FieldLabel}"/>
                                 <StackPanel Orientation="Horizontal" Height="42" VerticalAlignment="Center">
@@ -376,10 +353,6 @@
                         Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Subtitles}">
                     <StackPanel>
                         <WrapPanel>
-                            <StackPanel Style="{StaticResource FieldStack}" Width="220">
-                                <TextBlock Text="SUBTITLE LANGUAGE" Style="{StaticResource FieldLabel}"/>
-                                <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleOptions}" SelectedItem="{Binding SubtitleLanguage}" Height="42"/>
-                            </StackPanel>
                             <StackPanel Style="{StaticResource FieldStack}" Width="160">
                                 <TextBlock Text="FORMAT" Style="{StaticResource FieldLabel}"/>
                                 <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SubtitleFormatOptions}" SelectedItem="{Binding SubtitleFormat}" Height="42"/>
@@ -467,11 +440,38 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource Card}" Padding="0">
+                <Border Grid.Column="2" Padding="0" Height="360" VerticalAlignment="Top">
+                    <Border.Style>
+                        <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedMode}" Value="Thumbnail">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <DockPanel>
-                        <Grid DockPanel.Dock="Top" Margin="18,16">
-                            <TextBlock Text="AVAILABLE STREAMS" Style="{StaticResource SectionTitleText}" HorizontalAlignment="Left"/>
-                            <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Command="{Binding RefreshStreamsCommand}" ToolTip="Refresh streams">
+                        <Grid DockPanel.Dock="Top" Margin="18,12,12,0">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="StreamType" Margin="0,0,16,0"
+                                             Command="{Binding SelectModeCommand}" CommandParameter="{x:Static vm:DownloadMode.Video}"
+                                             IsChecked="{Binding SelectedMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Video, Mode=OneWay}">
+                                    <TextBlock Text="VIDEO"/>
+                                </RadioButton>
+                                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="StreamType" Margin="0,0,16,0"
+                                             Command="{Binding SelectModeCommand}" CommandParameter="{x:Static vm:DownloadMode.Audio}"
+                                             IsChecked="{Binding SelectedMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Audio, Mode=OneWay}">
+                                    <TextBlock Text="AUDIO"/>
+                                </RadioButton>
+                                <RadioButton Style="{StaticResource FilterTabButton}" GroupName="StreamType"
+                                             Command="{Binding SelectModeCommand}" CommandParameter="{x:Static vm:DownloadMode.Subtitles}"
+                                             IsChecked="{Binding SelectedMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Subtitles, Mode=OneWay}">
+                                    <TextBlock Text="SUBTITLES"/>
+                                </RadioButton>
+                            </StackPanel>
+                            <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Command="{Binding RefreshStreamsCommand}"
+                                    IsEnabled="{Binding IsRefreshingStreams, Converter={StaticResource InverseBoolConverter}}" ToolTip="Refresh streams only">
                                 <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{DynamicResource TextMutedBrush}"/>
                             </Button>
                         </Grid>
@@ -483,10 +483,14 @@
                             <TextBlock Text="{Binding SelectedStreamText}" Style="{StaticResource MetaText}" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                         </Grid>
 
-                        <DataGrid ItemsSource="{Binding Streams}" SelectedItem="{Binding SelectedStream}"
+                        <Grid>
+                        <DataGrid ItemsSource="{Binding VideoStreams}" SelectedItem="{Binding SelectedVideoStream}"
                                   Style="{StaticResource FlatDataGrid}" Margin="2,0"
                                   IsReadOnly="True"
-                                  ColumnHeaderHeight="30" FontSize="12">
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Video}"
+                                  ColumnHeaderHeight="40" FontSize="12">
                             <DataGrid.Resources>
                                 <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}">
                                     <Setter Property="FontSize" Value="10"/>
@@ -497,7 +501,7 @@
                                 </Style>
                             </DataGrid.Resources>
                             <DataGrid.Columns>
-                                <DataGridTemplateColumn Width="26">
+                                <DataGridTemplateColumn Width="36">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <RadioButton Style="{StaticResource TableRadioButton}" GroupName="Stream"
@@ -505,14 +509,57 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="RESOLUTION" Binding="{Binding Resolution}" Width="92" FontWeight="SemiBold"/>
-                                <DataGridTextColumn Header="FORMAT" Binding="{Binding Format}" Width="56"/>
-                                <DataGridTextColumn Header="VIDEO" Binding="{Binding VideoCodec}" Width="56"/>
-                                <DataGridTextColumn Header="AUDIO" Binding="{Binding AudioCodec}" Width="70"/>
-                                <DataGridTextColumn Header="FPS" Binding="{Binding Fps}" Width="36"/>
-                                <DataGridTextColumn Header="SIZE" Binding="{Binding Size}" Width="*"/>
+                                <DataGridTextColumn Header="RESOLUTION" Binding="{Binding Resolution}" Width="86" FontWeight="SemiBold"/>
+                                <DataGridTextColumn Header="OUTPUT" Binding="{Binding Format}" Width="72"/>
+                                <DataGridTextColumn Header="VIDEO CODEC" Binding="{Binding VideoCodec}" Width="74"/>
+                                <DataGridTextColumn Header="AUDIO CODEC" Binding="{Binding AudioCodec}" Width="76"/>
+                                <DataGridTextColumn Header="FPS" Binding="{Binding Fps}" Width="38"/>
+                                <DataGridTextColumn Header="STREAM SIZE" Binding="{Binding Size}" Width="*"/>
                             </DataGrid.Columns>
                         </DataGrid>
+
+                        <DataGrid ItemsSource="{Binding AudioStreams}" SelectedItem="{Binding SelectedAudioStream}"
+                                  Style="{StaticResource FlatDataGrid}" Margin="2,0" IsReadOnly="True"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Audio}"
+                                  ColumnHeaderHeight="40" FontSize="12">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="36">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <RadioButton Style="{StaticResource TableRadioButton}" GroupName="AudioStream"
+                                                         IsChecked="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="AUDIO BITRATE" Binding="{Binding Resolution}" Width="120" FontWeight="SemiBold"/>
+                                <DataGridTextColumn Header="OUTPUT" Binding="{Binding Format}" Width="100"/>
+                                <DataGridTextColumn Header="AUDIO CODEC" Binding="{Binding AudioCodec}" Width="110"/>
+                                <DataGridTextColumn Header="STREAM SIZE" Binding="{Binding Size}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <DataGrid ItemsSource="{Binding SubtitleStreams}" SelectedItem="{Binding SelectedSubtitleStream}"
+                                  Style="{StaticResource FlatDataGrid}" Margin="2,0" IsReadOnly="True"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  Visibility="{Binding SelectedMode, Converter={StaticResource EnumEqualsToVisibilityConverter}, ConverterParameter=Subtitles}"
+                                  ColumnHeaderHeight="40" FontSize="12">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="36">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <RadioButton Style="{StaticResource TableRadioButton}" GroupName="SubtitleStream"
+                                                         IsChecked="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected, Mode=OneWay}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="LANGUAGE" Binding="{Binding Resolution}" Width="*" FontWeight="SemiBold"/>
+                                <DataGridTextColumn Header="SOURCE" Binding="{Binding Format}" Width="90"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        </Grid>
                     </DockPanel>
                 </Border>
             </Grid>

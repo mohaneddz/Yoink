@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Yoink.Application.Abstractions;
@@ -54,10 +55,13 @@ public partial class DownloadViewModel : ObservableObject
     [ObservableProperty] private DetectedSourceType _detectedType = DetectedSourceType.Invalid;
     [ObservableProperty] private bool _hasInspectedMedia;
     [ObservableProperty] private bool _isInspecting;
+    [ObservableProperty] private bool _isRefreshingStreams;
     [ObservableProperty] private string _statusMessage = string.Empty;
 
-    public bool IsDetectedTypeValid => DetectedType != DetectedSourceType.Invalid && !string.IsNullOrWhiteSpace(SourceUrl);
-    public string DetectedTypeDisplay => string.IsNullOrWhiteSpace(SourceUrl) ? "—" : DetectedType.ToString();
+    // URL heuristics are not reliable enough to present as a detected type (a YouTube video URL
+    // may include a radio/playlist query parameter). Only show a type after yt-dlp resolves it.
+    public bool IsDetectedTypeValid => HasInspectedMedia && DetectedType != DetectedSourceType.Invalid;
+    public string DetectedTypeDisplay => IsDetectedTypeValid ? DetectedType.ToString() : "—";
 
     partial void OnDetectedTypeChanged(DetectedSourceType value)
     {
@@ -65,7 +69,14 @@ public partial class DownloadViewModel : ObservableObject
         OnPropertyChanged(nameof(DetectedTypeDisplay));
     }
 
+    partial void OnHasInspectedMediaChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsDetectedTypeValid));
+        OnPropertyChanged(nameof(DetectedTypeDisplay));
+    }
+
     private Task? _currentInspectTask;
+    private int _inspectionVersion;
 
     // ---- Media preview ----
     [ObservableProperty] private string _title = string.Empty;
@@ -80,7 +91,7 @@ public partial class DownloadViewModel : ObservableObject
     [ObservableProperty] private string _likeCountText = "—";
     [ObservableProperty] private string _descriptionPreview = string.Empty;
     [ObservableProperty] private string _subtitleAvailabilityText = "—";
-    [ObservableProperty] private string _fetchingDetailsText = "Fetching video information from URL…";
+    [ObservableProperty] private string _fetchingDetailsText = "Fetching media information and streams from URL…";
 
     // ---- Download mode ----
     [ObservableProperty] private DownloadMode _selectedMode = DownloadMode.Video;
@@ -91,10 +102,10 @@ public partial class DownloadViewModel : ObservableObject
     // ---- Video controls ----
     [ObservableProperty] private string _quality = "Best Quality";
     [ObservableProperty] private string _container = "MP4";
-    [ObservableProperty] private string _videoCodec = "Auto";
+    [ObservableProperty] private string _videoCodec = "Any";
     [ObservableProperty] private string _audioQuality = "Best";
     [ObservableProperty] private string _audioContainer = "MP3";
-    [ObservableProperty] private string _subtitleLanguage = "English";
+    [ObservableProperty] private string _subtitleLanguage = "en";
     [ObservableProperty] private string _subtitleFormat = "SRT";
     [ObservableProperty] private string _thumbnailFormat = "Best / JPG";
     [ObservableProperty] private bool _embedSubtitles = true;
@@ -106,15 +117,15 @@ public partial class DownloadViewModel : ObservableObject
 
     public ObservableCollection<string> QualityOptions { get; } =
         new() { "Best Quality", "2160p", "1440p", "1080p", "720p", "480p", "360p", "240p" };
-    public ObservableCollection<string> ContainerOptions { get; } = new() { "MP4", "MKV", "WEBM" };
+    public ObservableCollection<string> ContainerOptions { get; } = new() { "Any", "MP4", "MKV", "WEBM" };
     public ObservableCollection<string> VideoCodecOptions { get; } =
-        new() { "Auto", "H.264 (AVC)", "H.265 (HEVC)", "VP9", "AV1" };
+        new() { "Any", "H.264 (AVC)", "H.265 (HEVC)", "VP9", "AV1" };
     public ObservableCollection<string> AudioQualityOptions { get; } =
         new() { "Best", "320 kbps", "256 kbps", "192 kbps", "128 kbps", "96 kbps" };
     public ObservableCollection<string> AudioContainerOptions { get; } =
-        new() { "MP3", "M4A", "OPUS", "FLAC", "WAV", "AAC" };
-    public ObservableCollection<string> SubtitleOptions { get; } =
-        new() { "None", "English", "Spanish", "French", "German", "Japanese", "All" };
+        new() { "Any", "MP3", "M4A", "OPUS", "FLAC", "WAV", "AAC" };
+    public ObservableCollection<SubtitleLanguageOption> SubtitleOptions { get; } =
+        new() { new("None", "None") };
     public ObservableCollection<string> SubtitleFormatOptions { get; } =
         new() { "SRT", "VTT", "ASS" };
     public ObservableCollection<string> ThumbnailFormatOptions { get; } =
@@ -123,21 +134,58 @@ public partial class DownloadViewModel : ObservableObject
         new() { "Ignore", "Embed as chapters", "Split by chapter" };
 
     // ---- Available streams ----
-    public ObservableCollection<StreamOption> Streams { get; } = new();
+    public ObservableCollection<StreamOption> VideoStreams { get; } = new();
+    public ObservableCollection<StreamOption> AudioStreams { get; } = new();
+    public ObservableCollection<StreamOption> SubtitleStreams { get; } = new();
 
-    [ObservableProperty] private StreamOption? _selectedStream;
+    [ObservableProperty] private StreamOption? _selectedVideoStream;
+    [ObservableProperty] private StreamOption? _selectedAudioStream;
+    [ObservableProperty] private StreamOption? _selectedSubtitleStream;
 
-    public string StreamCountText => $"{Streams.Count} streams available";
-    public string SelectedStreamText => SelectedStream is null ? "No stream selected" : $"Selected: {SelectedStream.Resolution}";
+    public string StreamCountText => SelectedMode switch
+    {
+        DownloadMode.Audio => $"{AudioStreams.Count} audio streams available",
+        DownloadMode.Subtitles => $"{SubtitleStreams.Count} subtitle tracks available",
+        _ => $"{VideoStreams.Count} video streams available"
+    };
 
-    partial void OnSelectedStreamChanged(StreamOption? value) => OnPropertyChanged(nameof(SelectedStreamText));
+    public string SelectedStreamText => CurrentSelectedStream() is { } stream
+        ? $"Selected: {stream.Resolution}"
+        : "No stream selected";
+
+    partial void OnSelectedVideoStreamChanged(StreamOption? value) => OnPropertyChanged(nameof(SelectedStreamText));
+    partial void OnSelectedAudioStreamChanged(StreamOption? value) => OnPropertyChanged(nameof(SelectedStreamText));
+    partial void OnSelectedSubtitleStreamChanged(StreamOption? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value?.LanguageCode))
+        {
+            SubtitleLanguage = value.LanguageCode;
+        }
+        OnPropertyChanged(nameof(SelectedStreamText));
+    }
+
+    partial void OnSubtitleLanguageChanged(string value)
+    {
+        var matchingStream = SubtitleStreams.FirstOrDefault(stream =>
+            string.Equals(stream.LanguageCode, value, StringComparison.OrdinalIgnoreCase));
+        if (!ReferenceEquals(SelectedSubtitleStream, matchingStream))
+        {
+            SelectedSubtitleStream = matchingStream;
+        }
+    }
+
+    partial void OnSelectedModeChanged(DownloadMode value)
+    {
+        OnPropertyChanged(nameof(StreamCountText));
+        OnPropertyChanged(nameof(SelectedStreamText));
+    }
 
     // Choosing a quality preset clears any explicit stream pick so the height-based selector applies.
     partial void OnQualityChanged(string value)
     {
-        if (SelectedStream is not null && SelectedStream.Resolution != value)
+        if (SelectedVideoStream is not null && SelectedVideoStream.Resolution != value)
         {
-            SelectedStream = null;
+            SelectedVideoStream = null;
         }
     }
 
@@ -150,10 +198,16 @@ public partial class DownloadViewModel : ObservableObject
             return;
         }
 
-        DetectedType = MapKind(_inspector.DetectKind(value));
-        OnPropertyChanged(nameof(IsDetectedTypeValid));
-        OnPropertyChanged(nameof(DetectedTypeDisplay));
-        if (DetectedType != DetectedSourceType.Invalid && !string.IsNullOrWhiteSpace(value) && Uri.TryCreate(value.Trim(), UriKind.Absolute, out _))
+        // Do not show a speculative URL-based type while inspection is in flight.
+        _inspectionVersion++;
+        IsInspecting = false;
+        HasInspectedMedia = false;
+        DetectedType = DetectedSourceType.Invalid;
+        ThumbnailUrl = string.Empty;
+        ClearStreams();
+        _metadata = null;
+        OnPropertyChanged(nameof(StreamCountText));
+        if (!string.IsNullOrWhiteSpace(value) && Uri.TryCreate(value.Trim(), UriKind.Absolute, out _))
         {
             _currentInspectTask = Inspect();
         }
@@ -168,14 +222,37 @@ public partial class DownloadViewModel : ObservableObject
             return;
         }
 
+        var sourceUrl = SourceUrl.Trim();
+        var inspectionVersion = _inspectionVersion;
         IsInspecting = true;
-        StatusMessage = "Fetching video details…";
+        StatusMessage = "Fetching media details…";
         try
         {
-            var result = await _inspector.InspectAsync(SourceUrl);
+            var result = await _inspector.InspectAsync(sourceUrl);
+
+            // A prior inspection may finish after the user pastes another URL. Its metadata must
+            // not repopulate the page or overwrite the newer inspection's state.
+            if (inspectionVersion != _inspectionVersion)
+            {
+                return;
+            }
+
             if (result.IsFailure)
             {
-                StatusMessage = result.Error ?? "Inspection failed.";
+                var err = result.Error ?? "Inspection failed.";
+                if (err.Contains("timed out", StringComparison.OrdinalIgnoreCase)
+                    || err.Contains("geo", StringComparison.OrdinalIgnoreCase)
+                    || err.Contains("blocked", StringComparison.OrdinalIgnoreCase)
+                    || err.Contains("login", StringComparison.OrdinalIgnoreCase)
+                    || err.Contains("403", StringComparison.OrdinalIgnoreCase))
+                {
+                    StatusMessage = $"{err} — Tip: If this site is age-restricted or blocked by your network/ISP, configure a Proxy or Cookies file in Settings → Network.";
+                }
+                else
+                {
+                    StatusMessage = err;
+                }
+
                 HasInspectedMedia = false;
                 ThumbnailUrl = string.Empty;
                 return;
@@ -187,17 +264,45 @@ public partial class DownloadViewModel : ObservableObject
         }
         finally
         {
-            IsInspecting = false;
+            if (inspectionVersion == _inspectionVersion)
+            {
+                IsInspecting = false;
+            }
         }
     }
 
     [RelayCommand]
     private async Task RefreshStreams()
     {
-        if (!string.IsNullOrWhiteSpace(SourceUrl))
+        if (string.IsNullOrWhiteSpace(SourceUrl) || IsRefreshingStreams)
         {
-            _currentInspectTask = Inspect();
-            await _currentInspectTask;
+            return;
+        }
+
+        var sourceUrl = SourceUrl.Trim();
+        IsRefreshingStreams = true;
+        try
+        {
+            var result = await _inspector.InspectAsync(sourceUrl);
+            if (result.IsFailure)
+            {
+                StatusMessage = result.Error ?? "Could not refresh streams.";
+                return;
+            }
+
+            // Refresh the format/track catalog without replacing any displayed media-card data.
+            if (!string.Equals(sourceUrl, SourceUrl.Trim(), StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _metadata = result.Value!;
+            RebuildStreams(result.Value!);
+            StatusMessage = "Streams refreshed.";
+        }
+        finally
+        {
+            IsRefreshingStreams = false;
         }
     }
 
@@ -273,7 +378,7 @@ public partial class DownloadViewModel : ObservableObject
         SourceUrl = string.Empty;
         ThumbnailUrl = string.Empty;
         HasInspectedMedia = false;
-        Streams.Clear();
+        ClearStreams();
         _metadata = null;
         StatusMessage = string.Empty;
         OnPropertyChanged(nameof(StreamCountText));
@@ -313,41 +418,55 @@ public partial class DownloadViewModel : ObservableObject
         var settings = _settings.Current;
         var title = _metadata?.Title ?? SourceUrl;
         var channel = _metadata?.Channel ?? string.Empty;
+        var videoOutputContainer = ResolveVideoOutputContainer(settings.PreferredVideoContainer);
+        var audioOutputContainer = ResolveAudioOutputContainer(settings.PreferredAudioContainer);
 
         request = new DownloadRequest
         {
             Url = SourceUrl.Trim(),
             Kind = kind,
-            FormatId = SelectedStream?.FormatId,
-            MaxHeight = SelectedStream?.Height > 0 ? SelectedStream.Height : ParseHeight(Quality),
-            VideoContainer = Container.ToLowerInvariant(),
-            AudioContainer = string.IsNullOrWhiteSpace(AudioContainer) ? settings.PreferredAudioContainer : AudioContainer.ToLowerInvariant(),
-            VideoCodecPreference = VideoCodec == "Auto" ? null : VideoCodec,
+            // Explicit format/height selection is only meaningful for a video download.
+            FormatId = kind switch
+            {
+                DownloadKind.Video => SelectedVideoStream?.FormatId,
+                DownloadKind.Audio => SelectedAudioStream?.FormatId,
+                _ => null
+            },
+            MaxHeight = kind == DownloadKind.Video && SelectedVideoStream?.Height > 0 ? SelectedVideoStream.Height : kind == DownloadKind.Video ? ParseHeight(Quality) : 0,
+            VideoContainer = videoOutputContainer,
+            AudioContainer = audioOutputContainer,
+            VideoCodecPreference = VideoCodec is "Any" or "Auto" ? null : VideoCodec,
             AudioQuality = MapAudioQuality(AudioQuality),
             OutputFolder = string.IsNullOrWhiteSpace(OutputFolder) ? settings.DefaultDownloadFolder : OutputFolder,
             FilenameTemplate = string.IsNullOrWhiteSpace(FileNameTemplate) ? settings.FilenameTemplate : FileNameTemplate,
-            EmbedSubtitles = EmbedSubtitles && SubtitleLanguage != "None",
+            EmbedSubtitles = false,
             EmbedMetadata = EmbedMetadata,
             EmbedThumbnail = EmbedThumbnail,
             SplitChapters = Chapters == "Split by chapter",
             SubtitleLanguages = MapSubtitleLang(SubtitleLanguage),
+            SubtitleFormat = SubtitleFormat.ToLowerInvariant(),
             CookiesFile = settings.CookiesFile,
             Proxy = settings.Proxy,
             SpeedLimitKbps = settings.DownloadSpeedLimitKbps,
             KnownTitle = title
         };
 
-        var qualityLabel = SelectedStream?.Resolution ?? Quality;
+        var qualityLabel = kind switch
+        {
+            DownloadKind.Video => SelectedVideoStream?.Resolution ?? Quality,
+            DownloadKind.Audio => SelectedAudioStream?.Resolution ?? AudioQuality,
+            DownloadKind.Subtitles => SelectedSubtitleStream?.Resolution ?? LanguageDisplayName(SubtitleLanguage),
+            _ => ThumbnailFormat
+        };
         var formatLabel = kind switch
         {
-            DownloadKind.Audio => settings.PreferredAudioContainer.ToUpperInvariant(),
-            DownloadKind.Subtitles => "SRT",
+            DownloadKind.Audio => audioOutputContainer.ToUpperInvariant(),
+            DownloadKind.Subtitles => SubtitleFormat.ToUpperInvariant(),
             DownloadKind.Thumbnail => "JPG",
-            _ => Container
+            _ => videoOutputContainer.ToUpperInvariant()
         };
 
-        info = new EnqueueInfo(title, channel, qualityLabel, formatLabel, _metadata?.ThumbnailUrl,
-            SelectedStream is not null ? null : null);
+        info = new EnqueueInfo(title, channel, qualityLabel, formatLabel, _metadata?.ThumbnailUrl, null);
         return true;
     }
 
@@ -367,7 +486,7 @@ public partial class DownloadViewModel : ObservableObject
         DescriptionPreview = Truncate(m.Description, 220);
         DetectedType = MapKind(m.SourceKind);
 
-        var subCount = m.SubtitleLanguages.Count + m.AutomaticCaptionLanguages.Count;
+        var subCount = m.SubtitleLanguages.Count(IsUsableSubtitleLanguage);
         SubtitleAvailabilityText = subCount > 0 ? $"Subtitles available ({subCount})" : "No subtitles";
 
         RebuildSubtitleOptions(m);
@@ -375,28 +494,50 @@ public partial class DownloadViewModel : ObservableObject
         RebuildStreams(m);
     }
 
+    private static bool IsWatermarked(MediaFormat f) =>
+        f.FormatNote?.Contains("watermark", StringComparison.OrdinalIgnoreCase) == true
+        || f.FormatId.Contains("download", StringComparison.OrdinalIgnoreCase)
+        || f.FormatId.Contains("wmk", StringComparison.OrdinalIgnoreCase);
+
+    private void RebuildFilteredStreams()
+    {
+        if (_metadata is not null)
+        {
+            RebuildStreams(_metadata);
+        }
+    }
+
     private void RebuildStreams(MediaMetadata m)
     {
-        Streams.Clear();
+        ClearStreams();
         var videoFormats = m.Formats
             .Where(f => f.HasVideo && f.Height is > 0)
-            .OrderByDescending(f => f.Height)
+            .Where(IsCompatibleVideoContainer)
+            .Where(IsCompatibleVideoCodec)
+            .OrderBy(f => IsWatermarked(f) ? 1 : 0) // Clean/unwatermarked streams first
+            .ThenByDescending(f => f.Height)
             .ThenByDescending(f => f.TotalBitrateKbps ?? 0)
-            .GroupBy(f => f.Height)
-            .Select(g => g.First())
             .ToList();
 
-        var best = videoFormats.FirstOrDefault();
+        var best = videoFormats.FirstOrDefault(f => !IsWatermarked(f)) ?? videoFormats.FirstOrDefault();
         foreach (var f in videoFormats)
         {
-            Streams.Add(new StreamOption
+            var resLabel = FormatResolution(f);
+            if (IsWatermarked(f))
+            {
+                resLabel += " (Watermarked)";
+            }
+
+            VideoStreams.Add(new StreamOption
             {
                 FormatId = f.FormatId,
                 Height = f.Height ?? 0,
-                Resolution = FormatResolution(f),
-                Format = (f.Extension ?? "mp4").ToUpperInvariant(),
+                Resolution = resLabel,
+                Format = Container.Equals("Any", StringComparison.OrdinalIgnoreCase)
+                    ? (f.Extension ?? "video").ToUpperInvariant()
+                    : Container.ToUpperInvariant(),
                 VideoCodec = ShortCodec(f.VideoCodec),
-                AudioCodec = f.HasAudio ? ShortCodec(f.AudioCodec) : "video only",
+                AudioCodec = f.HasAudio ? ShortCodec(f.AudioCodec) : "AUTO",
                 Fps = (int)Math.Round(f.Fps ?? 0),
                 Hdr = f.IsHdr,
                 Size = Formatting.Bytes(f.EffectiveSizeBytes),
@@ -404,13 +545,55 @@ public partial class DownloadViewModel : ObservableObject
             });
         }
 
-        SelectedStream = null;
+        var audioFormats = m.Formats
+            .Where(f => IsKnownAudio(f) && !f.HasVideo)
+            .Where(IsCompatibleAudioContainer)
+            .OrderByDescending(f => f.AudioBitrateKbps ?? f.TotalBitrateKbps ?? 0)
+            .ThenByDescending(f => f.EffectiveSizeBytes ?? 0)
+            .ToList();
+
+        // Some extractors expose only combined A/V formats. They are still valid audio sources
+        // because yt-dlp/ffmpeg can extract the selected audio track from them.
+        if (audioFormats.Count == 0)
+        {
+            audioFormats = m.Formats
+                .Where(IsKnownAudio)
+                .Where(IsCompatibleAudioContainer)
+                .OrderByDescending(f => f.AudioBitrateKbps ?? f.TotalBitrateKbps ?? 0)
+                .ThenByDescending(f => f.EffectiveSizeBytes ?? 0)
+                .ToList();
+        }
+
+        foreach (var f in audioFormats)
+        {
+            var bitrate = f.AudioBitrateKbps;
+            AudioStreams.Add(new StreamOption
+            {
+                FormatId = f.FormatId,
+                Resolution = bitrate is > 0 ? $"{bitrate:0} kbps" : FriendlyAudioQuality(f.FormatNote),
+                Format = ResolveAudioOutputLabel(f),
+                VideoCodec = "—",
+                AudioCodec = ShortCodec(f.AudioCodec),
+                Size = Formatting.Bytes(f.EffectiveSizeBytes),
+                IsRecommended = ReferenceEquals(f, audioFormats.FirstOrDefault())
+            });
+        }
+
+        foreach (var code in m.SubtitleLanguages
+                     .Where(IsUsableSubtitleLanguage)
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(LanguageDisplayName))
+        {
+            SubtitleStreams.Add(CreateSubtitleStream(code, false));
+        }
         OnPropertyChanged(nameof(StreamCountText));
+        OnPropertyChanged(nameof(SelectedStreamText));
     }
 
     private void RebuildQualityOptions(MediaMetadata m)
     {
         var heights = m.Formats.Where(f => f.HasVideo && f.Height is > 0)
+            .OrderBy(f => IsWatermarked(f) ? 1 : 0)
             .Select(f => f.Height!.Value).Distinct().OrderByDescending(h => h).ToList();
         QualityOptions.Clear();
         QualityOptions.Add("Best Quality");
@@ -425,13 +608,197 @@ public partial class DownloadViewModel : ObservableObject
     private void RebuildSubtitleOptions(MediaMetadata m)
     {
         SubtitleOptions.Clear();
-        SubtitleOptions.Add("None");
-        foreach (var lang in m.SubtitleLanguages.Concat(m.AutomaticCaptionLanguages).Distinct().Take(30))
+        SubtitleOptions.Add(new SubtitleLanguageOption("None", "None"));
+        foreach (var option in m.SubtitleLanguages
+                     .Where(IsUsableSubtitleLanguage)
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .Select(lang => new SubtitleLanguageOption(lang, LanguageDisplayName(lang)))
+                     .OrderBy(option => option.DisplayName)
+                     .Take(60))
         {
-            SubtitleOptions.Add(lang);
+            SubtitleOptions.Add(option);
         }
 
-        SubtitleLanguage = SubtitleOptions.Contains("en") ? "en" : SubtitleOptions.FirstOrDefault() ?? "None";
+        SubtitleLanguage = SubtitleOptions.Any(x => x.Code == "en") ? "en" : SubtitleOptions.FirstOrDefault()?.Code ?? "None";
+    }
+
+    partial void OnContainerChanged(string value) => RebuildFilteredStreams();
+
+    partial void OnVideoCodecChanged(string value) => RebuildFilteredStreams();
+
+    partial void OnAudioContainerChanged(string value) => RebuildFilteredStreams();
+
+    private StreamOption? CurrentSelectedStream() => SelectedMode switch
+    {
+        DownloadMode.Video => SelectedVideoStream,
+        DownloadMode.Audio => SelectedAudioStream,
+        DownloadMode.Subtitles => SelectedSubtitleStream,
+        _ => null
+    };
+
+    private void ClearStreams()
+    {
+        VideoStreams.Clear();
+        AudioStreams.Clear();
+        SubtitleStreams.Clear();
+        SelectedVideoStream = null;
+        SelectedAudioStream = null;
+        SelectedSubtitleStream = null;
+        OnPropertyChanged(nameof(StreamCountText));
+        OnPropertyChanged(nameof(SelectedStreamText));
+    }
+
+    private bool IsCompatibleVideoContainer(MediaFormat format)
+    {
+        var extension = format.Extension?.TrimStart('.').ToLowerInvariant();
+        return Container.ToUpperInvariant() switch
+        {
+            "ANY" => true,
+            "MP4" => extension == "mp4",
+            "WEBM" => extension == "webm",
+            // MKV is a merge/output container and accepts all source video codecs.
+            "MKV" => true,
+            _ => true
+        };
+    }
+
+    private bool IsCompatibleVideoCodec(MediaFormat format)
+    {
+        if (VideoCodec is "Any" or "Auto")
+        {
+            return true;
+        }
+
+        var selectedCodec = VideoCodec switch
+        {
+            "H.264 (AVC)" => "H.264",
+            "H.265 (HEVC)" => "H.265",
+            _ => VideoCodec
+        };
+        return string.Equals(ShortCodec(format.VideoCodec), selectedCodec, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsCompatibleAudioContainer(MediaFormat format)
+    {
+        var extension = format.Extension?.TrimStart('.').ToLowerInvariant();
+        var codec = ShortCodec(format.AudioCodec);
+        return AudioContainer.ToUpperInvariant() switch
+        {
+            "ANY" => true,
+            "M4A" or "AAC" => extension is "m4a" or "mp4" || codec == "AAC",
+            "OPUS" => extension is "webm" or "opus" || codec == "Opus",
+            // These are conversion targets; any known source audio stream can produce them.
+            "MP3" or "FLAC" or "WAV" => true,
+            _ => true
+        };
+    }
+
+    private string ResolveVideoOutputContainer(string fallback)
+    {
+        if (!Container.Equals("Any", StringComparison.OrdinalIgnoreCase))
+        {
+            return Container.ToLowerInvariant();
+        }
+
+        var selected = SelectedVideoStream?.Format?.ToLowerInvariant();
+        return selected is "mp4" or "webm" or "mkv" ? selected : fallback.ToLowerInvariant();
+    }
+
+    private string ResolveAudioOutputContainer(string fallback)
+    {
+        if (!AudioContainer.Equals("Any", StringComparison.OrdinalIgnoreCase))
+        {
+            return AudioContainer.ToLowerInvariant();
+        }
+
+        if (SelectedAudioStream is { } selected)
+        {
+            if (selected.AudioCodec.Equals("Opus", StringComparison.OrdinalIgnoreCase))
+            {
+                return "opus";
+            }
+            if (selected.AudioCodec.Equals("AAC", StringComparison.OrdinalIgnoreCase))
+            {
+                return "m4a";
+            }
+        }
+
+        return fallback.ToLowerInvariant();
+    }
+
+    private string ResolveAudioOutputLabel(MediaFormat format)
+    {
+        if (!AudioContainer.Equals("Any", StringComparison.OrdinalIgnoreCase))
+        {
+            return AudioContainer.ToUpperInvariant();
+        }
+
+        return ShortCodec(format.AudioCodec) switch
+        {
+            "Opus" => "OPUS",
+            "AAC" => "M4A",
+            _ => (format.Extension ?? "AUDIO").ToUpperInvariant()
+        };
+    }
+
+    private static bool IsKnownAudio(MediaFormat format) =>
+        format.HasAudio
+        && !string.Equals(format.AudioCodec, "unknown", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(format.AudioCodec, "none", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsUsableSubtitleLanguage(string code) =>
+        !string.IsNullOrWhiteSpace(code)
+        && !code.Equals("live_chat", StringComparison.OrdinalIgnoreCase);
+
+    private static string FriendlyAudioQuality(string? formatNote)
+    {
+        if (string.IsNullOrWhiteSpace(formatNote))
+        {
+            return "Audio track";
+        }
+
+        var note = formatNote.Split(',')[0].Trim();
+        return note.Length == 0 ? "Audio track" : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(note);
+    }
+
+    private static StreamOption CreateSubtitleStream(string code, bool automatic) => new()
+    {
+        LanguageCode = code,
+        Resolution = LanguageDisplayName(code),
+        Format = automatic ? "AUTO" : "MANUAL",
+        VideoCodec = "—",
+        AudioCodec = "—",
+        Size = "—",
+        IsAutomaticSubtitle = automatic
+    };
+
+    private static string LanguageDisplayName(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code) || code.Equals("None", StringComparison.OrdinalIgnoreCase))
+        {
+            return "None";
+        }
+
+        var isOriginal = code.EndsWith("-orig", StringComparison.OrdinalIgnoreCase);
+        var normalized = code.Replace("-orig", string.Empty, StringComparison.OrdinalIgnoreCase);
+        try
+        {
+            var culture = CultureInfo.GetCultureInfo(normalized);
+            return isOriginal ? $"{culture.EnglishName} (Original)" : culture.EnglishName;
+        }
+        catch (CultureNotFoundException)
+        {
+            var baseCode = normalized.Split('-', '_')[0];
+            try
+            {
+                var name = CultureInfo.GetCultureInfo(baseCode).EnglishName;
+                return isOriginal ? $"{name} (Original)" : name;
+            }
+            catch (CultureNotFoundException)
+            {
+                return code;
+            }
+        }
     }
 
     private static string FormatResolution(MediaFormat f)

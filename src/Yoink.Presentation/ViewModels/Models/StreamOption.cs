@@ -14,4 +14,6 @@ public sealed class StreamOption
     public bool Hdr { get; init; }
     public required string Size { get; init; }
     public bool IsRecommended { get; init; }
+    public string? LanguageCode { get; init; }
+    public bool IsAutomaticSubtitle { get; init; }
 }

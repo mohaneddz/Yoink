@@ -1,12 +1,18 @@
 @echo off
 setlocal
-
 cd /d "%~dp0"
 
-if not exist ".\src\Yoink.Presentation\bin\Debug\net8.0-windows\Yoink.exe" (
-    echo Build output not found. Run build.bat first.
+echo [Yoink] Closing any running instances...
+taskkill /F /IM Yoink.exe >nul 2>&1
+
+echo [Yoink] Building latest code...
+dotnet build src\Yoink.Presentation\Yoink.Presentation.csproj --configuration Debug
+if errorlevel 1 (
+    echo [Yoink] Build failed.
+    pause
     exit /b 1
 )
 
-dotnet run --project ".\src\Yoink.Presentation\Yoink.Presentation.csproj" --no-build
-exit /b %errorlevel%
+echo [Yoink] Launching Yoink...
+start "" "src\Yoink.Presentation\bin\Debug\net8.0-windows\Yoink.exe"
+exit /b 0

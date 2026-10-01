@@ -28,6 +28,7 @@ public sealed class DownloadRequest
     public bool WriteThumbnail { get; init; }
     public bool SplitChapters { get; init; }
     public string SubtitleLanguages { get; init; } = "en.*";
+    public string SubtitleFormat { get; init; } = "srt";
 
     public string? CookiesFile { get; init; }
     public string? Proxy { get; init; }

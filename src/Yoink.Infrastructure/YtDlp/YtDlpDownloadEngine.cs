@@ -141,6 +141,10 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             "--no-colors",
             "--windows-filenames",
             "--no-simulate",
+            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+            "--socket-timeout", "30",
+            "--extractor-args", "tiktok:app_info=normal",
+            "--format-sort", "hasvid,ie_pref,res,fps",
             "--retries", "10",
             "--fragment-retries", "10",
             "--file-access-retries", "5",
@@ -161,7 +165,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
         {
             case DownloadKind.Audio:
                 args.Add("-f");
-                args.Add("ba/b");
+                args.Add(string.IsNullOrWhiteSpace(r.FormatId) ? "ba/b" : r.FormatId);
                 args.Add("-x");
                 args.Add("--audio-format");
                 args.Add(NormalizeAudioContainer(r.AudioContainer));
@@ -176,7 +180,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
                 args.Add("--sub-langs");
                 args.Add(string.IsNullOrWhiteSpace(r.SubtitleLanguages) ? "en.*" : r.SubtitleLanguages);
                 args.Add("--convert-subs");
-                args.Add("srt");
+                args.Add(NormalizeSubtitleFormat(r.SubtitleFormat));
                 break;
 
             case DownloadKind.Thumbnail:
@@ -248,15 +252,22 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
     {
         if (!string.IsNullOrWhiteSpace(r.FormatId))
         {
-            return $"{r.FormatId}+ba/{r.FormatId}";
+            var audioSelector = NormalizeVideoContainer(r.VideoContainer) switch
+            {
+                "webm" => $"{r.FormatId}+ba[ext=webm]/{r.FormatId}+ba/{r.FormatId}",
+                "mp4" => $"{r.FormatId}+ba[ext=m4a]/{r.FormatId}+ba/{r.FormatId}",
+                _ => $"{r.FormatId}+ba/{r.FormatId}"
+            };
+            return audioSelector;
         }
 
         var height = r.MaxHeight > 0 ? $"[height<=?{r.MaxHeight}]" : string.Empty;
         var codec = MapVideoCodec(r.VideoCodecPreference);
         var codecClause = codec is null ? string.Empty : $"[vcodec^={codec}]";
+        const string noWmk = "[format_note!*=?watermark][format_id!*=?download][format_id!*=?wmk]";
 
-        // Prefer the codec+height combo, then relax codec, then relax to any best.
-        return $"bv*{height}{codecClause}+ba/bv*{height}+ba/b{height}/b";
+        // Prefer clean/unwatermarked streams with codec+height, then relax clean streams, then fallback to standard streams
+        return $"bv*{noWmk}{height}{codecClause}+ba/bv*{noWmk}{height}+ba/b{noWmk}{height}/bv*{height}{codecClause}+ba/bv*{height}+ba/b{height}/b";
     }
 
     private static string? MapVideoCodec(string? pref)
@@ -281,6 +292,12 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
     {
         var v = string.IsNullOrWhiteSpace(c) ? "m4a" : c.Trim().TrimStart('.').ToLowerInvariant();
         return v switch { "m4a" or "mp3" or "opus" or "aac" or "flac" or "wav" or "vorbis" => v, _ => "m4a" };
+    }
+
+    private static string NormalizeSubtitleFormat(string format)
+    {
+        var value = string.IsNullOrWhiteSpace(format) ? "srt" : format.Trim().TrimStart('.').ToLowerInvariant();
+        return value is "srt" or "vtt" or "ass" ? value : "srt";
     }
 
     private static DownloadProgress? ParseProgress(string line, DownloadStage stage)
