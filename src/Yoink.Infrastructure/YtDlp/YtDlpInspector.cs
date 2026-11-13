@@ -14,17 +14,20 @@ public sealed partial class YtDlpInspector : IMediaInspector
     private readonly ProcessRunner _runner;
     private readonly IToolProvisioner _tools;
     private readonly ISettingsService _settings;
+    private readonly IProxyResolver _proxyResolver;
     private readonly ILogger<YtDlpInspector> _logger;
 
     public YtDlpInspector(
         ProcessRunner runner,
         IToolProvisioner tools,
         ISettingsService settings,
+        IProxyResolver proxyResolver,
         ILogger<YtDlpInspector> logger)
     {
         _runner = runner;
         _tools = tools;
         _settings = settings;
+        _proxyResolver = proxyResolver;
         _logger = logger;
     }
 
@@ -72,7 +75,10 @@ public sealed partial class YtDlpInspector : IMediaInspector
             "-J", "--no-warnings", "--no-playlist", "--no-progress",
             "--extractor-args", "tiktok:app_info=normal"
         };
-        AppendCommonInspectionArgs(args);
+        var proxy = !string.IsNullOrWhiteSpace(_settings.Current.Proxy)
+            ? _settings.Current.Proxy
+            : await _proxyResolver.ResolveAsync(url, ct).ConfigureAwait(false);
+        AppendCommonInspectionArgs(args, proxy);
         args.Add(url.Trim());
 
         try
@@ -111,7 +117,10 @@ public sealed partial class YtDlpInspector : IMediaInspector
             "--extractor-args", "youtubetab:approximate_date",
             "--extractor-args", "tiktok:app_info=normal"
         };
-        AppendCommonInspectionArgs(args);
+        var playlistProxy = !string.IsNullOrWhiteSpace(_settings.Current.Proxy)
+            ? _settings.Current.Proxy
+            : await _proxyResolver.ResolveAsync(url, ct).ConfigureAwait(false);
+        AppendCommonInspectionArgs(args, playlistProxy);
         if (limit is > 0)
         {
             args.Add("--playlist-items");
@@ -330,7 +339,7 @@ public sealed partial class YtDlpInspector : IMediaInspector
         return line?.Replace("ERROR:", string.Empty).Trim();
     }
 
-    private void AppendCommonInspectionArgs(List<string> args)
+    private void AppendCommonInspectionArgs(List<string> args, string? proxy)
     {
         args.Add("--user-agent");
         args.Add("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
@@ -346,10 +355,10 @@ public sealed partial class YtDlpInspector : IMediaInspector
             args.Add(settings.CookiesFile);
         }
 
-        if (!string.IsNullOrWhiteSpace(settings.Proxy))
+        if (!string.IsNullOrWhiteSpace(proxy))
         {
             args.Add("--proxy");
-            args.Add(settings.Proxy);
+            args.Add(proxy);
         }
     }
 

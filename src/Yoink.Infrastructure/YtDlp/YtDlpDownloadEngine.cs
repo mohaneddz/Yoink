@@ -14,12 +14,14 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
 
     private readonly ProcessRunner _runner;
     private readonly IToolProvisioner _tools;
+    private readonly IProxyResolver _proxyResolver;
     private readonly ILogger<YtDlpDownloadEngine> _logger;
 
-    public YtDlpDownloadEngine(ProcessRunner runner, IToolProvisioner tools, ILogger<YtDlpDownloadEngine> logger)
+    public YtDlpDownloadEngine(ProcessRunner runner, IToolProvisioner tools, IProxyResolver proxyResolver, ILogger<YtDlpDownloadEngine> logger)
     {
         _runner = runner;
         _tools = tools;
+        _proxyResolver = proxyResolver;
         _logger = logger;
     }
 
@@ -33,7 +35,10 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
 
         Directory.CreateDirectory(request.OutputFolder);
         var pathCaptureFile = Path.Combine(Path.GetTempPath(), $"sv-{Guid.NewGuid():N}.path");
-        var args = BuildArguments(request, pathCaptureFile);
+        var proxy = !string.IsNullOrWhiteSpace(request.Proxy)
+            ? request.Proxy
+            : await _proxyResolver.ResolveAsync(request.Url, ct).ConfigureAwait(false);
+        var args = BuildArguments(request, pathCaptureFile, proxy);
 
         var stage = DownloadStage.Preparing;
         string? lastDestination = null;
@@ -128,7 +133,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
         }
     }
 
-    private List<string> BuildArguments(DownloadRequest r, string pathCaptureFile)
+    private List<string> BuildArguments(DownloadRequest r, string pathCaptureFile, string? proxy)
     {
         var ffmpegDir = Path.GetDirectoryName(_tools.Paths.FfmpegPath);
         var outputTemplate = string.IsNullOrWhiteSpace(r.FilenameTemplate) ? "%(title)s [%(id)s].%(ext)s" : r.FilenameTemplate;
@@ -232,10 +237,11 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             args.Add(r.CookiesFile);
         }
 
-        if (!string.IsNullOrWhiteSpace(r.Proxy))
+        var effectiveProxy = !string.IsNullOrWhiteSpace(r.Proxy) ? r.Proxy : proxy;
+        if (!string.IsNullOrWhiteSpace(effectiveProxy))
         {
             args.Add("--proxy");
-            args.Add(r.Proxy);
+            args.Add(effectiveProxy);
         }
 
         if (r.SpeedLimitKbps > 0)

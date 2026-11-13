@@ -6,6 +6,7 @@ using Yoink.Infrastructure.Ffmpeg;
 using Yoink.Infrastructure.Persistence;
 using Yoink.Infrastructure.Processes;
 using Yoink.Infrastructure.Settings;
+using Yoink.Infrastructure.Proxy;
 using Yoink.Infrastructure.Tools;
 using Yoink.Infrastructure.Ytdlp;
 
@@ -33,6 +34,8 @@ public static class DependencyInjection
         services.AddSingleton<IMediaInspector, YtDlpInspector>();
         services.AddSingleton<IDownloadEngine, YtDlpDownloadEngine>();
         services.AddSingleton<IFfmpegService, FfmpegService>();
+        services.AddSingleton<TorManager>();
+        services.AddSingleton<IProxyResolver, ProxyResolver>();
 
         services.AddDbContextFactory<YoinkDbContext>(options =>
             options.UseSqlite($"Data Source={dbPath}"));
