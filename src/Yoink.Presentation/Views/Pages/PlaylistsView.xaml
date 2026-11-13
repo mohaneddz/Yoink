@@ -1,6 +1,7 @@
 <UserControl x:Class="Yoink.Presentation.Views.Pages.PlaylistsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:images="clr-namespace:Yoink.Presentation.Services"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:shared="clr-namespace:Yoink.Presentation.Views.Shared"
@@ -109,7 +110,7 @@
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Background="#FF2B3542" Height="130" Margin="0,0,20,0" VerticalAlignment="Top" CornerRadius="4" ClipToBounds="True">
                                 <Grid>
-                                    <Image Source="{Binding PlaylistThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <Image images:CachedImage.Source="{Binding PlaylistThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                                     <Border Background="#CC000000" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8" CornerRadius="2">
                                         <TextBlock Text="{Binding VideoCountText}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
                                     </Border>
@@ -206,7 +207,7 @@
                                         <DataTemplate>
                                             <Grid Width="40" Height="26" ClipToBounds="True">
                                                 <Border Background="{Binding ThumbnailHex}" CornerRadius="2"/>
-                                                <Image Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                <Image images:CachedImage.Source="{Binding ThumbnailUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                                             </Grid>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>

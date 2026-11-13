@@ -26,6 +26,9 @@ public partial class ChannelsViewModel : ObservableObject
     private readonly ISystemAccess _system;
     private readonly INavigationService _navigation;
     private readonly ILibraryRepository _library;
+    private readonly Dictionary<(string Url, int Limit, string Proxy, string Cookies),
+        (Result<PlaylistMetadata>[] Results, DateTimeOffset Expires)> _uploadCache = new();
+    private int _uploadsLoadVersion;
 
     public ChannelsViewModel(
         ISavedChannelRepository repository,
@@ -225,8 +228,15 @@ public partial class ChannelsViewModel : ObservableObject
         ("playlists", ChannelUploadType.Playlist)
     };
 
-    private async Task LoadUploadsAsync(SavedChannel channel)
+    [RelayCommand]
+    private async Task RefreshUploads()
     {
+        if (SelectedChannel is not null) await LoadUploadsAsync(SelectedChannel, forceRefresh: true);
+    }
+
+    private async Task LoadUploadsAsync(SavedChannel channel, bool forceRefresh = false)
+    {
+        var version = ++_uploadsLoadVersion;
         Uploads.Clear();
         if (string.IsNullOrWhiteSpace(channel.ChannelUrl))
         {
@@ -241,8 +251,26 @@ public partial class ChannelsViewModel : ObservableObject
             var downloadedUrls = libraryEntries.Select(l => l.SourceUrl).Where(u => !string.IsNullOrEmpty(u)).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var baseUrl = StripTabSuffix(channel.ChannelUrl);
-            var tabResults = await Task.WhenAll(ChannelTabs.Select(tab =>
-                _inspector.InspectPlaylistAsync($"{baseUrl}/{tab.Suffix}", limit: _uploadLimit)));
+            var limit = _uploadLimit;
+            var key = (baseUrl, limit, _settings.Current.Proxy, _settings.Current.CookiesFile);
+            Result<PlaylistMetadata>[] tabResults;
+            if (!forceRefresh && _uploadCache.TryGetValue(key, out var cached) && cached.Expires > DateTimeOffset.UtcNow)
+            {
+                tabResults = cached.Results;
+            }
+            else
+            {
+                _uploadCache.Remove(key);
+                tabResults = await Task.WhenAll(ChannelTabs.Select(tab =>
+                    _inspector.InspectPlaylistAsync($"{baseUrl}/{tab.Suffix}", limit: limit)));
+                if (tabResults.Any(result => result.IsSuccess))
+                {
+                    if (_uploadCache.Count >= 8) _uploadCache.Remove(_uploadCache.MinBy(entry => entry.Value.Expires).Key);
+                    _uploadCache[key] = (tabResults, DateTimeOffset.UtcNow.Add(
+                        tabResults.All(result => result.IsSuccess) ? TimeSpan.FromMinutes(5) : TimeSpan.FromSeconds(30)));
+                }
+            }
+            if (version != _uploadsLoadVersion) return;
 
             var anySucceeded = false;
             var merged = new List<ChannelUpload>();
@@ -301,7 +329,7 @@ public partial class ChannelsViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            if (version == _uploadsLoadVersion) IsBusy = false;
         }
     }
 
