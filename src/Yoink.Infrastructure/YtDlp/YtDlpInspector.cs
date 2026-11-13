@@ -17,18 +17,21 @@ public sealed partial class YtDlpInspector : IMediaInspector
     private readonly ISettingsService _settings;
     private readonly IProxyResolver _proxyResolver;
     private readonly ILogger<YtDlpInspector> _logger;
+    private readonly PreparedDownloadCache _prepared;
 
     public YtDlpInspector(
         ProcessRunner runner,
         IToolProvisioner tools,
         ISettingsService settings,
         IProxyResolver proxyResolver,
+        PreparedDownloadCache prepared,
         ILogger<YtDlpInspector> logger)
     {
         _runner = runner;
         _tools = tools;
         _settings = settings;
         _proxyResolver = proxyResolver;
+        _prepared = prepared;
         _logger = logger;
     }
 
@@ -72,6 +75,9 @@ public sealed partial class YtDlpInspector : IMediaInspector
 
     private async Task<Result<MediaMetadata>> InspectCoreAsync(string url, CancellationToken ct)
     {
+        var configuredProxy = _settings.Current.Proxy;
+        var cookies = _settings.Current.CookiesFile;
+        _prepared.Remove(url, configuredProxy, cookies);
         var ensure = await _tools.EnsureAsync(ct: ct).ConfigureAwait(false);
         if (ensure.IsFailure)
         {
@@ -98,7 +104,9 @@ public sealed partial class YtDlpInspector : IMediaInspector
             }
 
             using var doc = JsonDocument.Parse(result.StandardOutput);
-            return Result<MediaMetadata>.Success(MapMedia(doc.RootElement, url));
+            var media = MapMedia(doc.RootElement, url);
+            _prepared.Store(url, configuredProxy, cookies, result.StandardOutput, media);
+            return Result<MediaMetadata>.Success(media);
         }
         catch (OperationCanceledException)
         {

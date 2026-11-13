@@ -16,13 +16,18 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
     private readonly IToolProvisioner _tools;
     private readonly IProxyResolver _proxyResolver;
     private readonly ILogger<YtDlpDownloadEngine> _logger;
+    private readonly ISettingsService _settings;
+    private readonly PreparedDownloadCache _prepared;
 
-    public YtDlpDownloadEngine(ProcessRunner runner, IToolProvisioner tools, IProxyResolver proxyResolver, ILogger<YtDlpDownloadEngine> logger)
+    public YtDlpDownloadEngine(ProcessRunner runner, IToolProvisioner tools, IProxyResolver proxyResolver,
+        ISettingsService settings, PreparedDownloadCache prepared, ILogger<YtDlpDownloadEngine> logger)
     {
         _runner = runner;
         _tools = tools;
         _proxyResolver = proxyResolver;
         _logger = logger;
+        _settings = settings;
+        _prepared = prepared;
     }
 
     public async Task<DownloadResult> DownloadAsync(DownloadRequest request, IProgress<DownloadProgress> progress, CancellationToken ct)
@@ -38,7 +43,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
         var proxy = !string.IsNullOrWhiteSpace(request.Proxy)
             ? request.Proxy
             : await _proxyResolver.ResolveAsync(request.Url, ct).ConfigureAwait(false);
-        var args = BuildArguments(request, pathCaptureFile, proxy);
+        string? preparedInfoFile = null;
 
         var stage = DownloadStage.Preparing;
         string? lastDestination = null;
@@ -84,7 +89,15 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
 
         try
         {
-            progress.Report(new DownloadProgress { Stage = DownloadStage.Preparing, RawLine = "Starting download…" });
+            if (_settings.Current.ReuseRecentInspection && (request.Kind is DownloadKind.Video or DownloadKind.Audio)
+                && _prepared.Get(request.Url, request.Proxy, request.CookiesFile) is { } json)
+            {
+                preparedInfoFile = Path.Combine(Path.GetTempPath(), $"yoink-{Guid.NewGuid():N}.info.json");
+                await File.WriteAllTextAsync(preparedInfoFile, json, ct).ConfigureAwait(false);
+            }
+            var args = BuildArguments(request, pathCaptureFile, proxy, preparedInfoFile);
+            progress.Report(new DownloadProgress { Stage = DownloadStage.Preparing,
+                RawLine = preparedInfoFile is not null ? "Using recently inspected streams…" : "Fetching download links…" });
 
             var exit = await _runner.RunStreamingAsync(
                 _tools.Paths.YtDlpPath,
@@ -93,6 +106,19 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
                 line => HandleLine(line, false),
                 line => HandleLine(line, true),
                 ct).ConfigureAwait(false);
+
+            if (exit != 0 && preparedInfoFile is not null)
+            {
+                ct.ThrowIfCancellationRequested();
+                _prepared.Remove(request.Url, request.Proxy, request.CookiesFile);
+                lastErrorLine = null;
+                stage = DownloadStage.Preparing;
+                progress.Report(DownloadProgress.Log("Refreshing download links and retrying…", stage));
+                // Signed URLs can expire sooner than expected. Fall back once to normal extraction.
+                exit = await _runner.RunStreamingAsync(_tools.Paths.YtDlpPath,
+                    BuildArguments(request, pathCaptureFile, proxy), request.OutputFolder,
+                    line => HandleLine(line, false), line => HandleLine(line, true), ct).ConfigureAwait(false);
+            }
 
             var finalPath = ResolveFinalPath(pathCaptureFile, lastDestination);
             var size = finalPath is not null && File.Exists(finalPath) ? new FileInfo(finalPath).Length : 0;
@@ -130,10 +156,11 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
         finally
         {
             try { if (File.Exists(pathCaptureFile)) File.Delete(pathCaptureFile); } catch { /* best effort */ }
+            try { if (preparedInfoFile is not null) File.Delete(preparedInfoFile); } catch { /* best effort */ }
         }
     }
 
-    private List<string> BuildArguments(DownloadRequest r, string pathCaptureFile, string? proxy)
+    internal List<string> BuildArguments(DownloadRequest r, string pathCaptureFile, string? proxy, string? preparedInfoFile = null)
     {
         var ffmpegDir = Path.GetDirectoryName(_tools.Paths.FfmpegPath);
         var outputTemplate = string.IsNullOrWhiteSpace(r.FilenameTemplate) ? "%(title)s [%(id)s].%(ext)s" : r.FilenameTemplate;
@@ -146,11 +173,15 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             "--no-colors",
             "--windows-filenames",
             "--no-simulate",
+            "--continue",
+            "--progress-delta", "0.25",
+            "--concurrent-fragments", EffectiveFragmentCount(_settings.Current.ConcurrentFragments, proxy).ToString(CultureInfo.InvariantCulture),
+            "--buffer-size", "64K",
             "--socket-timeout", "30",
             "--extractor-args", "tiktok:app_info=normal",
             "--format-sort", "hasvid,ie_pref,res,fps",
-            "--retries", "10",
-            "--fragment-retries", "10",
+            "--retries", preparedInfoFile is null ? "10" : "1",
+            "--fragment-retries", preparedInfoFile is null ? "10" : "1",
             "--file-access-retries", "5",
             "--progress-template",
             $"download:{ProgressPrefix}%(progress.status)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s|%(progress.total_bytes_estimate)s|%(progress.speed)s|%(progress.eta)s",
@@ -249,9 +280,20 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             args.Add($"{r.SpeedLimitKbps}K");
         }
 
-        args.Add(r.Url.Trim());
+        if (preparedInfoFile is not null)
+        {
+            args.Add("--load-info-json");
+            args.Add(preparedInfoFile);
+        }
+        else
+        {
+            args.Add(r.Url.Trim());
+        }
         return args;
     }
+
+    internal static int EffectiveFragmentCount(int requested, string? proxy) =>
+        Math.Clamp(requested, 1, proxy?.StartsWith("socks", StringComparison.OrdinalIgnoreCase) == true ? 4 : 16);
 
     private static string BuildVideoSelector(DownloadRequest r)
     {

@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddSingleton<ProcessRunner>();
         services.AddSingleton<ISettingsService, SettingsService>();
         services.AddSingleton<IToolProvisioner, ToolProvisioner>();
+        services.AddSingleton<PreparedDownloadCache>();
         services.AddSingleton<IMediaInspector, YtDlpInspector>();
         services.AddSingleton<IDownloadEngine, YtDlpDownloadEngine>();
         services.AddSingleton<IFfmpegService, FfmpegService>();

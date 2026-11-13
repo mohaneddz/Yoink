@@ -10,6 +10,8 @@ public sealed class AppSettings
     public int DownloadSpeedLimitKbps { get; set; }
     public bool DesktopNotifications { get; set; } = true;
     public bool SoundNotifications { get; set; }
+    public int ConcurrentFragments { get; set; } = 8;
+    public bool ReuseRecentInspection { get; set; } = true;
 
     // Formats
     public string PreferredVideoContainer { get; set; } = "mp4";
