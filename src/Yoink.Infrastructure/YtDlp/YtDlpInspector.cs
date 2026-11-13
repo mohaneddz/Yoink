@@ -349,8 +349,6 @@ public sealed partial class YtDlpInspector : IMediaInspector
 
     private void AppendCommonInspectionArgs(List<string> args, string? proxy)
     {
-        args.Add("--user-agent");
-        args.Add("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
         args.Add("--socket-timeout");
         args.Add("20");
         args.Add("--retries");
