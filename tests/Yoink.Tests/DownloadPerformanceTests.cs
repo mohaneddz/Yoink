@@ -83,15 +83,15 @@ internal sealed class TestSettings : ISettingsService
     }
 }
 
-internal sealed class TestTools : IToolProvisioner
+internal class TestTools : IToolProvisioner
 {
     public ToolPaths Paths { get; init; } = new("yt-dlp.exe", "ffmpeg.exe", "ffprobe.exe");
     public bool IsReady => true;
-    public ToolUpdateInfo LastUpdateInfo { get; } = new(false, "test", "test", false, "test", false, DateTimeOffset.UtcNow);
+    public ToolUpdateInfo LastUpdateInfo { get; set; } = new(false, "test", "test", false, "test", false, DateTimeOffset.UtcNow);
     public Task<Result<ToolPaths>> EnsureAsync(IProgress<string>? log = null, CancellationToken ct = default) => Task.FromResult(Result<ToolPaths>.Success(Paths));
-    public Task<IReadOnlyList<ToolStatus>> GetStatusAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ToolStatus>>(Array.Empty<ToolStatus>());
-    public Task<ToolUpdateInfo> CheckForUpdatesAsync(CancellationToken ct = default) => Task.FromResult(LastUpdateInfo);
-    public Task<Result> UpdateAllToolsAsync(IProgress<string>? log = null, CancellationToken ct = default) => Task.FromResult(Result.Success());
+    public virtual Task<IReadOnlyList<ToolStatus>> GetStatusAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ToolStatus>>(Array.Empty<ToolStatus>());
+    public virtual Task<ToolUpdateInfo> CheckForUpdatesAsync(CancellationToken ct = default) => Task.FromResult(LastUpdateInfo);
+    public virtual Task<Result> UpdateAllToolsAsync(IProgress<string>? log = null, CancellationToken ct = default) => Task.FromResult(Result.Success());
     public Task<Result> UpdateYtDlpAsync(IProgress<string>? log = null, CancellationToken ct = default) => Task.FromResult(Result.Success());
     public Task<Result> UpdateFfmpegAsync(IProgress<string>? log = null, CancellationToken ct = default) => Task.FromResult(Result.Success());
 }

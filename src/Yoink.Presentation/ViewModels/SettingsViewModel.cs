@@ -27,7 +27,7 @@ public partial class SettingsViewModel : ObservableObject
         _coordinator = coordinator;
         _startup = startup;
         LoadFrom(settings.Current);
-        _ = RefreshSystemInfoAsync();
+        _ = InitializeSystemInfoAsync();
     }
 
     [ObservableProperty] private SettingsSection _selectedSection = SettingsSection.General;
@@ -79,10 +79,20 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _ytDlpVersion = "checking…";
     [ObservableProperty] private string _ffmpegVersion = "checking…";
     [ObservableProperty] private string _lastChecked = "—";
-    [ObservableProperty] private bool _hasUpdate;
-    [ObservableProperty] private string _updateButtonText = "CHECK UPDATES";
-    [ObservableProperty] private string _ytDlpBadgeText = "LATEST";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(UpdateButtonText))] private bool _hasUpdate;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(UpdateButtonText)), NotifyCanExecuteChangedFor(nameof(CheckUpdatesCommand))]
+    private bool _isToolsBusy;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(UpdateButtonText))] private bool _isUpdatingTools;
+    [ObservableProperty] private string _ytDlpBadgeText = "CHECKING";
     [ObservableProperty] private bool _isYtDlpUpdated = true;
+    [ObservableProperty] private bool _isYtDlpAvailable;
+    [ObservableProperty] private bool _isFfmpegAvailable;
+    [ObservableProperty] private string _ffmpegBadgeText = "CHECKING";
+    private int _toolOperationVersion;
+
+    public string UpdateButtonText => IsToolsBusy
+        ? IsUpdatingTools ? "UPDATING…" : "CHECKING…"
+        : HasUpdate ? "UPDATE NOW" : "CHECK UPDATES";
 
     // Storage
     [ObservableProperty] private string _downloadsPath = string.Empty;
@@ -199,27 +209,45 @@ public partial class SettingsViewModel : ObservableObject
         StatusMessage = "Settings reset to defaults.";
     }
 
-    [RelayCommand]
+    private bool CanCheckUpdates() => !IsToolsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanCheckUpdates))]
     private async Task CheckUpdates()
     {
-        StatusMessage = HasUpdate ? "Updating tools…" : "Checking for updates…";
-        var log = new Progress<string>(m => StatusMessage = m);
-
-        if (HasUpdate)
+        if (IsToolsBusy) return;
+        var updating = HasUpdate;
+        if (updating && _coordinator.ActiveJobCount > 0)
         {
-            var result = await _tools.UpdateAllToolsAsync(log);
-            await RefreshSystemInfoAsync();
-            StatusMessage = result.IsSuccess ? "All tools updated to latest version." : $"Update failed: {result.Error}";
+            StatusMessage = "Finish or pause active downloads before updating tools.";
+            return;
         }
-        else
+        var operation = ++_toolOperationVersion;
+        IsUpdatingTools = updating;
+        IsToolsBusy = true;
+        StatusMessage = updating ? "Updating tools…" : "Checking for updates…";
+        var log = new Progress<string>(message =>
         {
-            var info = await _tools.CheckForUpdatesAsync();
-            ApplyUpdateInfo(info);
-            await RefreshSystemInfoAsync();
-            StatusMessage = info.UpdateAvailable
-                ? $"Update available: yt-dlp {info.LatestYtDlpVersion}"
-                : "All tools are up to date.";
+            if (IsToolsBusy && operation == _toolOperationVersion) StatusMessage = message;
+        });
+        try
+        {
+            if (updating)
+            {
+                var result = await _tools.UpdateAllToolsAsync(log);
+                await RefreshSystemInfoAsync();
+                StatusMessage = result.IsFailure ? $"Update failed: {result.Error}"
+                    : HasUpdate ? "Tools refreshed, but updates are still available. Check your configured tool paths."
+                    : "Tools updated.";
+            }
+            else
+            {
+                var info = await _tools.CheckForUpdatesAsync();
+                await RefreshSystemInfoAsync(info);
+                StatusMessage = info.UpdateAvailable ? "Tool updates are available." : "All tools are up to date.";
+            }
         }
+        catch (Exception ex) { StatusMessage = updating ? $"Update failed: {ex.Message}" : $"Update check failed: {ex.Message}"; }
+        finally { IsToolsBusy = false; IsUpdatingTools = false; }
     }
 
     [RelayCommand]
@@ -280,16 +308,35 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    private async Task RefreshSystemInfoAsync()
+    private async Task InitializeSystemInfoAsync()
+    {
+        IsToolsBusy = true;
+        try { await RefreshSystemInfoAsync(); }
+        catch (Exception ex)
+        {
+            YtDlpBadgeText = "UNKNOWN";
+            FfmpegBadgeText = "UNKNOWN";
+            YtDlpVersion = "unavailable";
+            FfmpegVersion = "unavailable";
+            StatusMessage = $"Could not load tool information: {ex.Message}";
+        }
+        finally { IsToolsBusy = false; }
+    }
+
+    private async Task RefreshSystemInfoAsync(ToolUpdateInfo? freshUpdateInfo = null)
     {
         var statuses = await _tools.GetStatusAsync();
         var yt = statuses.FirstOrDefault(s => s.Name == "yt-dlp");
         var ff = statuses.FirstOrDefault(s => s.Name == "ffmpeg");
+        IsYtDlpAvailable = yt?.Available == true;
+        IsFfmpegAvailable = ff?.Available == true;
         YtDlpVersion = yt?.Version ?? (yt?.Available == true ? "installed" : "not found");
         FfmpegVersion = ExtractFfmpegVersion(ff?.Version) ?? (ff?.Available == true ? "installed" : "not found");
 
-        var updateInfo = _tools.LastUpdateInfo;
-        if (updateInfo.LastChecked == DateTimeOffset.MinValue)
+        var updateInfo = freshUpdateInfo ?? _tools.LastUpdateInfo;
+        if (updateInfo.LastChecked == DateTimeOffset.MinValue
+            || !string.Equals(updateInfo.CurrentYtDlpVersion, yt?.Version, StringComparison.Ordinal)
+            || !string.Equals(updateInfo.CurrentFfmpegVersion, ff?.Version, StringComparison.Ordinal))
         {
             updateInfo = await _tools.CheckForUpdatesAsync();
         }
@@ -305,7 +352,12 @@ public partial class SettingsViewModel : ObservableObject
             LastChecked = Formatting.ShortDate(info.LastChecked);
         }
 
-        if (info.YtDlpUpdateAvailable)
+        if (!IsYtDlpAvailable)
+        {
+            YtDlpBadgeText = "MISSING";
+            IsYtDlpUpdated = false;
+        }
+        else if (info.YtDlpUpdateAvailable)
         {
             YtDlpBadgeText = $"NEW ({info.LatestYtDlpVersion})";
             IsYtDlpUpdated = false;
@@ -316,7 +368,7 @@ public partial class SettingsViewModel : ObservableObject
             IsYtDlpUpdated = true;
         }
 
-        UpdateButtonText = info.UpdateAvailable ? "UPDATE NOW" : "CHECK UPDATES";
+        FfmpegBadgeText = IsFfmpegAvailable ? "READY" : "MISSING";
     }
 
     private static string? ExtractFfmpegVersion(string? raw)

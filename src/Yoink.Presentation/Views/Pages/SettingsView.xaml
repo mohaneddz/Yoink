@@ -14,6 +14,57 @@
         <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
         <conv:EnumEqualsToVisibilityConverter x:Key="EnumEqualsToVisibility"/>
 
+        <Style x:Key="ToolUpdateButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="UpdateBackground" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="UpdateContent" Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="UpdateBackground" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="UpdateContent" Property="Opacity" Value="0.75"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="UpdateBackground" Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding HasUpdate}" Value="True"/>
+                        <Condition Binding="{Binding IsToolsBusy}" Value="False"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource OrangePrimaryBrush}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource OrangePrimaryBrush}"/>
+                </MultiDataTrigger>
+                <DataTrigger Binding="{Binding IsToolsBusy}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SurfaceSecondaryBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </DataTrigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="{DynamicResource SurfaceSecondaryBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="SectionNavItem" TargetType="RadioButton">
             <Setter Property="Height" Value="42"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -396,7 +447,7 @@
                             <TextBlock Text="Yoink Version" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <TextBlock Text="{Binding AppVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
-                                <Border Background="{DynamicResource SurfaceSecondaryBrush}" Padding="6,2"><TextBlock Text="LATEST" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+
                             </StackPanel>
                         </Grid>
                         <Grid Margin="0,0,0,10">
@@ -433,50 +484,36 @@
                             <TextBlock Text="FFmpeg" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <TextBlock Text="{Binding FfmpegVersion}" FontWeight="SemiBold" FontSize="12" Margin="0,0,8,0"/>
-                                <Border Background="{DynamicResource SurfaceSecondaryBrush}" Padding="6,2" CornerRadius="2"><TextBlock Text="OK" FontSize="9" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></Border>
+                                <Border Background="{DynamicResource SurfaceSecondaryBrush}" Padding="6,2" CornerRadius="2">
+                                    <TextBlock Text="{Binding FfmpegBadgeText}" FontSize="9" FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsFfmpegAvailable}" Value="True">
+                                                        <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding FfmpegBadgeText}" Value="MISSING">
+                                                        <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
                             </StackPanel>
                         </Grid>
                         <Grid Margin="0,0,0,14">
                             <TextBlock Text="Last Checked" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <TextBlock Text="{Binding LastChecked}" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Right"/>
                         </Grid>
-                        <Button Padding="12,11" Command="{Binding CheckUpdatesCommand}">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasUpdate}" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource OrangePrimaryBrush}"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                            <Setter Property="BorderThickness" Value="0"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
+                        <Button x:Name="UpdateToolsButton" Style="{StaticResource ToolUpdateButton}" Padding="12,11"
+                                Command="{Binding CheckUpdatesCommand}" ToolTip="Check for and install tool updates">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Path Data="{StaticResource IconRefresh}" Width="13" Height="13" Margin="0,0,8,0">
-                                    <Path.Style>
-                                        <Style TargetType="Path" BasedOn="{StaticResource Icon}">
-                                            <Setter Property="Stroke" Value="{DynamicResource TextPrimaryBrush}"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HasUpdate}" Value="True">
-                                                    <Setter Property="Stroke" Value="White"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Path.Style>
-                                </Path>
-                                <TextBlock Text="{Binding UpdateButtonText}" FontWeight="Bold" FontSize="12">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HasUpdate}" Value="True">
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="13" Height="13" Margin="0,0,8,0"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <TextBlock Text="{Binding UpdateButtonText}" FontWeight="Bold" FontSize="12"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
