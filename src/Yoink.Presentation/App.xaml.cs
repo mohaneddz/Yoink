@@ -12,6 +12,8 @@ namespace Yoink.Presentation;
 public partial class App : System.Windows.Application
 {
     private IHost? _host;
+    private SingleInstanceService? _instance;
+    private TrayService? _tray;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -21,6 +23,13 @@ public partial class App : System.Windows.Application
 
         try
         {
+            _instance = new SingleInstanceService();
+            if (!_instance.IsPrimary)
+            {
+                if (!e.Args.Contains("--background", StringComparer.OrdinalIgnoreCase)) _instance.ActivateExisting();
+                Shutdown();
+                return;
+            }
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices(ConfigureServices)
                 .Build();
@@ -32,14 +41,29 @@ public partial class App : System.Windows.Application
             // Load settings and prepare the database before any page binds to data.
             var settings = services.GetRequiredService<ISettingsService>();
             await settings.LoadAsync();
+            try
+            {
+                services.GetRequiredService<IWindowsStartupService>().Apply(settings.Current.StartWithWindows, settings.Current.StartMinimized);
+            }
+            catch (Exception ex) { AppLog.Warn($"Could not update Windows startup: {ex.Message}"); }
             ThemeManager.ApplyTheme(settings.Current.Theme);
             AppLog.Verbose = settings.Current.DiagnosticLogging || settings.Current.VerboseOutput;
             await services.InitializeYoinkDatabaseAsync();
-            await services.GetRequiredService<DownloadCoordinator>().RestoreAsync();
+            await services.GetRequiredService<DownloadCoordinator>().RestoreAsync(settings.Current.ResumeInterruptedDownloads);
 
             var mainWindow = services.GetRequiredService<MainWindow>();
+            MainWindow = mainWindow;
+            mainWindow.Closed += (_, _) => Shutdown();
             services.GetRequiredService<ShellViewModel>().Initialize();
-            mainWindow.Show();
+            try { _tray = new TrayService(mainWindow, services.GetRequiredService<DownloadCoordinator>(), settings); }
+            catch (Exception ex) { AppLog.Error("Could not create system tray icon.", ex); }
+            var startHidden = settings.Current.StartMinimized || e.Args.Contains("--background", StringComparer.OrdinalIgnoreCase);
+            if (!startHidden || _tray is null) mainWindow.Show();
+            _instance.Listen(() => Dispatcher.BeginInvoke(() =>
+            {
+                if (_tray is not null) _tray.ShowWindow();
+                else { mainWindow.Show(); mainWindow.Activate(); }
+            }));
 
             AppLog.Info("Yoink started.");
 
@@ -140,15 +164,26 @@ public partial class App : System.Windows.Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _tray?.Dispose();
+        _instance?.Dispose();
         _host?.StopAsync().GetAwaiter().GetResult();
         _host?.Dispose();
         base.OnExit(e);
+    }
+
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        if (MainWindow is MainWindow window) window.PrepareForSessionEnd();
+        _host?.Services.GetRequiredService<DownloadCoordinator>().PauseAll();
+        base.OnSessionEnding(e);
+        Shutdown();
     }
 
     private static void ConfigureServices(IServiceCollection services)
     {
         services.AddYoinkInfrastructure();
         services.AddSingleton<ISystemAccess, SystemAccess>();
+        services.AddSingleton<IWindowsStartupService, WindowsStartupService>();
         services.AddSingleton<DownloadCoordinator>();
         services.AddSingleton<ChannelWatcherService>();
 

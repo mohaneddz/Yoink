@@ -15,6 +15,9 @@ public partial class MainWindow : Window
 {
     private readonly DownloadCoordinator _coordinator;
     private readonly ISettingsService _settingsService;
+    private bool _exitRequested;
+    private bool _sessionEnding;
+    public bool TrayAvailable { get; set; }
 
     public MainWindow(ShellViewModel shellViewModel, DownloadCoordinator coordinator, ISettingsService settingsService)
     {
@@ -99,6 +102,14 @@ public partial class MainWindow : Window
     {
         SaveWindowGeometry();
 
+        if (_sessionEnding) { _coordinator.PauseAll(); return; }
+        if (!_exitRequested && TrayAvailable && _settingsService.Current.CloseToTray)
+        {
+            e.Cancel = true;
+            Hide();
+            return;
+        }
+
         var active = _coordinator.ActiveJobCount;
         if (active == 0)
         {
@@ -112,6 +123,7 @@ public partial class MainWindow : Window
         {
             case ExitChoice.Return:
                 e.Cancel = true;
+                _exitRequested = false;
                 break;
             case ExitChoice.PauseAndExit:
                 _coordinator.PauseAll();
@@ -121,6 +133,16 @@ public partial class MainWindow : Window
                 break;
         }
     }
+
+    public void RequestExit()
+    {
+        _exitRequested = true;
+        Show();
+        if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+        Close();
+    }
+
+    public void PrepareForSessionEnd() => _sessionEnding = true;
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
@@ -132,6 +154,8 @@ public partial class MainWindow : Window
     /// <summary>Swap the maximize/restore glyph and tooltip to match the current window state.</summary>
     private void OnStateChanged(object? sender, EventArgs e)
     {
+        if (WindowState == WindowState.Minimized && TrayAvailable && _settingsService.Current.MinimizeToTray)
+            Hide();
         var maximized = WindowState == WindowState.Maximized;
         if (MaximizeGlyph is Path glyph && TryFindResource(maximized ? "IconRestore" : "IconSquare") is Geometry data)
         {

@@ -134,6 +134,49 @@
                                 </StackPanel>
                                 <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding SoundNotifications}" HorizontalAlignment="Right"/>
                             </Grid>
+                            <TextBlock Text="BACKGROUND &amp; STARTUP" Style="{StaticResource CardSectionTitle}"/>
+                            <Grid Margin="0,0,0,18">
+                                <StackPanel Margin="0,0,64,0">
+                                    <TextBlock Text="Close to system tray" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Keep downloads running when the window is closed." Style="{StaticResource SettingHint}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding CloseToTray}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,18">
+                                <StackPanel Margin="0,0,64,0">
+                                    <TextBlock Text="Minimize to system tray" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Hide the taskbar window when minimized." Style="{StaticResource SettingHint}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding MinimizeToTray}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,18">
+                                <StackPanel Margin="0,0,64,0">
+                                    <TextBlock Text="Start with Windows" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Launch Yoink automatically when you sign in." Style="{StaticResource SettingHint}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding StartWithWindows}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,18">
+                                <StackPanel Margin="0,0,64,0">
+                                    <TextBlock Text="Start minimized to tray" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Launch quietly in the background." Style="{StaticResource SettingHint}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding StartMinimized}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,18">
+                                <StackPanel Margin="0,0,64,0">
+                                    <TextBlock Text="Resume interrupted downloads on startup" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Continue downloads interrupted by an app restart; manually paused jobs stay paused." Style="{StaticResource SettingHint}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding ResumeInterruptedDownloads}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,18">
+                                <StackPanel Margin="0,0,64,0">
+                                    <TextBlock Text="Keep PC awake during downloads" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Allow the display to sleep while active downloads continue." Style="{StaticResource SettingHint}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding PreventSleepWhileDownloading}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -149,8 +192,18 @@
                             <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SimultaneousOptions}" SelectedItem="{Binding SimultaneousDownloads}" Margin="0,0,0,18"/>
 
                             <TextBlock Text="Download speed limit" Style="{StaticResource SettingTitle}"/>
-                            <TextBlock Text="Throttle total download speed (0 = unlimited)." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
+                            <TextBlock Text="Limit each download speed (0 = unlimited)." Style="{StaticResource SettingHint}" Margin="0,0,0,6"/>
                             <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding SpeedLimitOptions}" SelectedItem="{Binding DownloadSpeedLimit}"/>
+                            <TextBlock Text="Parallel fragments per download" Style="{StaticResource SettingTitle}" Margin="0,18,0,0"/>
+                            <TextBlock Text="Download HLS/DASH segments in parallel. SOCKS proxy downloads use at most 4." Style="{StaticResource SettingHint}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding FragmentOptions}" SelectedItem="{Binding ConcurrentFragments}" Margin="0,0,0,18"/>
+                            <Grid>
+                                <StackPanel Margin="0,0,64,0">
+                                    <TextBlock Text="Quick start using recent inspection" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Reuse fresh download links and refresh automatically if they expire." Style="{StaticResource SettingHint}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding ReuseRecentInspection}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            </Grid>
                         </StackPanel>
                     </Border>
                 </StackPanel>

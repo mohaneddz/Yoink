@@ -68,10 +68,10 @@ public sealed class DownloadCoordinator
 
     /// <summary>
     /// Loads persisted queue rows from a previous session. Call once at startup, before the Queue
-    /// page can be shown. Jobs that were actively running when the app last closed are restored as
-    /// Paused (the process itself did not survive) so the user can resume them explicitly.
+    /// page can be shown. Interrupted jobs stay paused unless startup recovery is enabled;
+    /// explicitly paused jobs are never automatically resumed.
     /// </summary>
-    public async Task RestoreAsync()
+    public async Task RestoreAsync(bool resumeInterrupted = false)
     {
         IReadOnlyList<QueueJobEntity> saved;
         try
@@ -118,8 +118,8 @@ public sealed class DownloadCoordinator
                 Notes = entity.Notes,
                 Progress = entity.Progress,
                 RetryCount = entity.RetryCount,
-                Status = wasActive ? QueueJobStatus.Paused : MapPersistedStatus(entity.Status),
-                StatusDetailText = wasActive ? "Paused — interrupted by app restart" : entity.StatusDetailText,
+                Status = wasActive ? (resumeInterrupted ? QueueJobStatus.Queued : QueueJobStatus.Paused) : MapPersistedStatus(entity.Status),
+                StatusDetailText = wasActive ? (resumeInterrupted ? "Resuming interrupted download" : "Paused — interrupted by app restart") : entity.StatusDetailText,
                 AddedAtText = Formatting.ShortDate(entity.AddedAt),
                 LastUpdateText = entity.LastUpdateAt is { } lu ? Formatting.ShortDate(lu) : string.Empty,
                 PersistedId = entity.Id
@@ -145,9 +145,7 @@ public sealed class DownloadCoordinator
     /// <summary>Combined download speed of all currently-active jobs, in bytes/second.</summary>
     public double AggregateBytesPerSecond => _speeds.Sum(kv => kv.Value);
 
-    public int ActiveJobCount => Jobs.Count(j => j.Status is QueueJobStatus.DownloadingVideo or QueueJobStatus.DownloadingAudio
-        or QueueJobStatus.DownloadingSubtitles or QueueJobStatus.Merging or QueueJobStatus.Converting
-        or QueueJobStatus.WritingMetadata or QueueJobStatus.Retrying);
+    public int ActiveJobCount => _runtimes.Values.Count(runtime => runtime.Running);
 
     public int PendingJobCount => Jobs.Count(j => j.Status is not (QueueJobStatus.Completed or QueueJobStatus.Cancelled));
 
@@ -239,6 +237,12 @@ public sealed class DownloadCoordinator
         }
 
         Pump();
+    }
+
+    public void ResumePaused()
+    {
+        foreach (var job in Jobs.Where(job => job.Status == QueueJobStatus.Paused).ToList())
+            ResumeJob(job);
     }
 
     public void PauseAll()
@@ -489,6 +493,8 @@ public sealed class DownloadCoordinator
         if (job.Status != QueueJobStatus.Paused)
         {
             job.Status = MapStage(p.Stage);
+            if (p.Stage == DownloadStage.Preparing && !string.IsNullOrWhiteSpace(p.RawLine))
+                job.StatusDetailText = p.RawLine;
         }
 
         if (p.Percent is { } pct)
@@ -560,7 +566,8 @@ public sealed class DownloadCoordinator
 
             case DownloadOutcome.Cancelled:
                 // Paused jobs are cancelled internally; keep them resumable rather than marking cancelled.
-                if (job.Status != QueueJobStatus.Paused)
+                // A quick resume can queue the job before its old process has finished cancelling.
+                if (job.Status is not (QueueJobStatus.Paused or QueueJobStatus.Queued))
                 {
                     job.Status = QueueJobStatus.Cancelled;
                     job.StatusDetailText = "Cancelled";

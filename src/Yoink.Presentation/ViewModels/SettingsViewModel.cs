@@ -17,13 +17,15 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IToolProvisioner _tools;
     private readonly ISystemAccess _system;
     private readonly DownloadCoordinator _coordinator;
+    private readonly IWindowsStartupService _startup;
 
-    public SettingsViewModel(ISettingsService settings, IToolProvisioner tools, ISystemAccess system, DownloadCoordinator coordinator)
+    public SettingsViewModel(ISettingsService settings, IToolProvisioner tools, ISystemAccess system, DownloadCoordinator coordinator, IWindowsStartupService startup)
     {
         _settings = settings;
         _tools = tools;
         _system = system;
         _coordinator = coordinator;
+        _startup = startup;
         LoadFrom(settings.Current);
         _ = RefreshSystemInfoAsync();
     }
@@ -39,6 +41,15 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _downloadSpeedLimit = "0 (Unlimited)";
     [ObservableProperty] private bool _desktopNotifications = true;
     [ObservableProperty] private bool _soundNotifications;
+    [ObservableProperty] private bool _closeToTray;
+    [ObservableProperty] private bool _minimizeToTray;
+    [ObservableProperty] private bool _startWithWindows;
+    [ObservableProperty] private bool _startMinimized;
+    [ObservableProperty] private bool _resumeInterruptedDownloads;
+    [ObservableProperty] private bool _preventSleepWhileDownloading;
+    [ObservableProperty] private bool _reuseRecentInspection;
+    [ObservableProperty] private int _concurrentFragments = 8;
+    public ObservableCollection<int> FragmentOptions { get; } = new() { 1, 2, 4, 8, 16 };
     [ObservableProperty] private string _preferredVideoContainer = "MP4";
     [ObservableProperty] private string _preferredAudioContainer = "M4A";
     [ObservableProperty] private string _preferredVideoQuality = "Best Quality";
@@ -93,6 +104,14 @@ public partial class SettingsViewModel : ObservableObject
         DownloadSpeedLimit = KbpsToLabel(s.DownloadSpeedLimitKbps);
         DesktopNotifications = s.DesktopNotifications;
         SoundNotifications = s.SoundNotifications;
+        CloseToTray = s.CloseToTray;
+        MinimizeToTray = s.MinimizeToTray;
+        StartWithWindows = s.StartWithWindows;
+        StartMinimized = s.StartMinimized;
+        ResumeInterruptedDownloads = s.ResumeInterruptedDownloads;
+        PreventSleepWhileDownloading = s.PreventSleepWhileDownloading;
+        ReuseRecentInspection = s.ReuseRecentInspection;
+        ConcurrentFragments = Math.Clamp(s.ConcurrentFragments, 1, 16);
         PreferredVideoContainer = s.PreferredVideoContainer.ToUpperInvariant();
         PreferredAudioContainer = s.PreferredAudioContainer.ToUpperInvariant();
         PreferredVideoQuality = s.PreferredVideoQuality == "best" ? "Best Quality" : s.PreferredVideoQuality;
@@ -123,6 +142,14 @@ public partial class SettingsViewModel : ObservableObject
         s.DownloadSpeedLimitKbps = LabelToKbps(DownloadSpeedLimit);
         s.DesktopNotifications = DesktopNotifications;
         s.SoundNotifications = SoundNotifications;
+        s.CloseToTray = CloseToTray;
+        s.MinimizeToTray = MinimizeToTray;
+        s.StartWithWindows = StartWithWindows;
+        s.StartMinimized = StartMinimized;
+        s.ResumeInterruptedDownloads = ResumeInterruptedDownloads;
+        s.PreventSleepWhileDownloading = PreventSleepWhileDownloading;
+        s.ReuseRecentInspection = ReuseRecentInspection;
+        s.ConcurrentFragments = Math.Clamp(ConcurrentFragments, 1, 16);
         s.PreferredVideoContainer = PreferredVideoContainer.ToLowerInvariant();
         s.PreferredAudioContainer = PreferredAudioContainer.ToLowerInvariant();
         s.PreferredVideoQuality = PreferredVideoQuality == "Best Quality" ? "best" : PreferredVideoQuality;
@@ -143,6 +170,8 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveChanges()
     {
+        try { _startup.Apply(StartWithWindows, StartMinimized); }
+        catch (Exception ex) { StatusMessage = $"Could not change Windows startup: {ex.Message}"; return; }
         await _settings.SaveAsync(BuildSettings());
         AppLog.Verbose = DiagnosticLogging || VerboseOutput;
         _coordinator.Refresh();
@@ -162,6 +191,8 @@ public partial class SettingsViewModel : ObservableObject
     private async Task ResetDefaults()
     {
         var defaults = new AppSettings();
+        try { _startup.Apply(defaults.StartWithWindows, defaults.StartMinimized); }
+        catch (Exception ex) { StatusMessage = $"Could not reset Windows startup: {ex.Message}"; return; }
         LoadFrom(defaults);
         await _settings.SaveAsync(defaults);
         _coordinator.Refresh();
