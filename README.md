@@ -49,6 +49,18 @@ Keep downloads organized, follow channels for new uploads, review past activity,
 - **Settings & Network** — configure download folder, concurrency, speed limits, preferred containers/quality,
   filename templates, proxy, cookies (for age-restricted or private media), tool paths, appearance, and diagnostics.
 
+### Faster starts and transfers
+
+Fresh inspection results are reused when starting video/audio downloads, avoiding a second webpage lookup. If cached links fail, Yoink automatically fetches fresh links and retries. Prepared download links remain in memory for two minutes.
+
+In **Settings > Downloads**, adjust **Parallel fragments per download** (default: 8) or disable **Quick start using recent inspection**. SOCKS proxy downloads use at most four parallel fragments. These options improve preparation and segmented transfers; actual speed still depends on the source and connection.
+
+### Background operation
+
+Closing the window keeps Yoink running in the system tray by default, including active downloads. Double-click the tray icon to restore the window; right-click it to open Yoink, pause/resume downloads, or explicitly exit. Launching Yoink again restores the existing instance instead of creating another queue owner.
+
+**Settings > General** includes close/minimize-to-tray, start with Windows, start minimized, interrupted-download recovery, notifications, and sleep protection during downloads. Windows startup and interrupted-download recovery are opt-in; enable them and save settings. Manually paused downloads stay paused on startup. Sleep protection allows the display to turn off while downloads continue.
+
 Data (settings, the SQLite database, provisioned tools, and logs) is stored under
 `%LocalAppData%\Yoink`.
 
@@ -124,6 +136,7 @@ initializes the database, and downloads yt-dlp/FFmpeg into `%LocalAppData%\Yoink
 
 ## Troubleshooting
 
+- **Source verification or failed stream discovery** — update the downloader under **Settings > Integrations** and retry. If the source still requires a verified session, configure your cookies file under **Settings > Network**.
 - **"Tools unavailable" on startup** — Yoink couldn't download yt-dlp/FFmpeg. Check your
   internet connection, or set explicit executable paths in **Settings → Integrations**.
 - **Logs** — open **Settings → Advanced → View Logs** (or browse to
