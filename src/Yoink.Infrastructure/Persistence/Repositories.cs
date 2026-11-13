@@ -27,13 +27,25 @@ public sealed class HistoryRepository : IHistoryRepository
     public async Task ClearAsync(CancellationToken ct = default)
     {
         await using var db = await _factory.CreateDbContextAsync(ct).ConfigureAwait(false);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await db.Library.Where(item => db.History.Any(history =>
+            (history.SourceUrl != "" && history.SourceUrl == item.SourceUrl)
+            || (history.OutputPath != "" && history.OutputPath == item.FilePath)))
+            .ExecuteDeleteAsync(ct).ConfigureAwait(false);
         await db.History.ExecuteDeleteAsync(ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
         await using var db = await _factory.CreateDbContextAsync(ct).ConfigureAwait(false);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await db.Library.Where(item => db.History.Any(history => history.Id == id &&
+            ((history.SourceUrl != "" && history.SourceUrl == item.SourceUrl)
+            || (history.OutputPath != "" && history.OutputPath == item.FilePath))))
+            .ExecuteDeleteAsync(ct).ConfigureAwait(false);
         await db.History.Where(x => x.Id == id).ExecuteDeleteAsync(ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 }
 
