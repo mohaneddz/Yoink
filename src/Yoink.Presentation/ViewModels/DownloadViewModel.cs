@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Yoink.Application.Abstractions;
 using Yoink.Application.Downloads;
 using Yoink.Domain.Media;
+using Yoink.Domain.Settings;
 using Yoink.Presentation.Navigation;
 using Yoink.Presentation.Services;
 using Yoink.Presentation.ViewModels.Models;
@@ -602,7 +603,12 @@ public partial class DownloadViewModel : ObservableObject
             QualityOptions.Add($"{h}p");
         }
 
-        Quality = "Best Quality";
+        var key = SourceVideoQuality.SourceKey(SourceUrl);
+        var saved = _settings.Current.SourceVideoQualities;
+        var closest = key is not null && saved is not null && saved.TryGetValue(key, out var preferred)
+            ? SourceVideoQuality.ClosestHeight(heights, preferred)
+            : null;
+        Quality = closest is { } height ? $"{height}p" : "Best Quality";
     }
 
     private void RebuildSubtitleOptions(MediaMetadata m)

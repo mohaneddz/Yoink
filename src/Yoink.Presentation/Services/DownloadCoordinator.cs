@@ -6,6 +6,7 @@ using System.Windows;
 using Yoink.Application.Abstractions;
 using Yoink.Application.Downloads;
 using Yoink.Domain.Entities;
+using Yoink.Domain.Settings;
 using Yoink.Presentation.ViewModels.Models;
 using Yoink.Shared;
 
@@ -585,6 +586,16 @@ public sealed class DownloadCoordinator
         try
         {
             var probe = result.OutputPath is not null ? await _ffmpeg.ProbeAsync(result.OutputPath) : null;
+            if (rt.Kind == DownloadKind.Video && SourceVideoQuality.SourceKey(job.SourceUrl) is { } source)
+            {
+                var height = rt.Request.MaxHeight > 0 ? rt.Request.MaxHeight : probe?.Height ?? 0;
+                if (height > 0)
+                {
+                    _settings.Current.SourceVideoQualities ??= new();
+                    _settings.Current.SourceVideoQualities[source] = height;
+                    await _settings.SaveAsync(_settings.Current);
+                }
+            }
             var resolution = probe is { Width: { } w, Height: { } h } ? $"{w}×{h}" : job.Quality;
 
             await _history.AddAsync(new DownloadHistoryEntry

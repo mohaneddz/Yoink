@@ -15,6 +15,7 @@ public sealed class AppSettings
     public string PreferredVideoContainer { get; set; } = "mp4";
     public string PreferredAudioContainer { get; set; } = "m4a";
     public string PreferredVideoQuality { get; set; } = "best";
+    public Dictionary<string, int> SourceVideoQualities { get; set; } = new();
     public string PreferredAudioQuality { get; set; } = "best";
     public string DefaultSubtitleLanguage { get; set; } = "en";
 
