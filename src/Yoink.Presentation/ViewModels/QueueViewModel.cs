@@ -61,8 +61,8 @@ public partial class QueueViewModel : ObservableObject
 
     public int ActiveCount => Jobs.Count(IsActive);
     /// <summary>All unfinished work, including downloads currently in progress.</summary>
-    public int QueuedCount => Jobs.Count(j => IsActive(j) || j.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting);
-    public int PausedCount => Jobs.Count(j => j.Status == QueueJobStatus.Paused);
+    public int QueuedCount => Jobs.Count(j => IsActive(j) || j.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting or QueueJobStatus.Paused);
+    public int DoneCount => CompletedCount + FailedCount;
     public int CompletedCount => Jobs.Count(j => j.Status == QueueJobStatus.Completed);
     public int FailedCount => Jobs.Count(j => j.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled);
 
@@ -113,10 +113,8 @@ public partial class QueueViewModel : ObservableObject
 
         return SelectedFilter switch
         {
-            QueueFilter.Queued => IsActive(job) || job.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting,
-            QueueFilter.Paused => job.Status == QueueJobStatus.Paused,
-            QueueFilter.Completed => job.Status == QueueJobStatus.Completed,
-            QueueFilter.Failed => job.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled,
+            QueueFilter.Queued => IsActive(job) || job.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting or QueueJobStatus.Paused,
+            QueueFilter.Done => job.Status is QueueJobStatus.Completed or QueueJobStatus.Failed or QueueJobStatus.Cancelled,
             _ => true
         };
     }
@@ -209,7 +207,7 @@ public partial class QueueViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(ActiveCount));
         OnPropertyChanged(nameof(QueuedCount));
-        OnPropertyChanged(nameof(PausedCount));
+        OnPropertyChanged(nameof(DoneCount));
         OnPropertyChanged(nameof(CompletedCount));
         OnPropertyChanged(nameof(FailedCount));
         OnPropertyChanged(nameof(SelectedCount));

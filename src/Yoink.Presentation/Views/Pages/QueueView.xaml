@@ -91,28 +91,12 @@
                     <TextBlock Text="{Binding QueuedCount}" Style="{StaticResource FilterCount}"/>
                 </StackPanel>
             </RadioButton>
-            <RadioButton Style="{StaticResource FilterTabButton}" GroupName="QueueFilter" Margin="0,0,26,0"
-                         Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:QueueFilter.Paused}"
-                         IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Paused, Mode=OneWay}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="PAUSED"/>
-                    <TextBlock Text="{Binding PausedCount}" Style="{StaticResource FilterCount}"/>
-                </StackPanel>
-            </RadioButton>
-            <RadioButton Style="{StaticResource FilterTabButton}" GroupName="QueueFilter" Margin="0,0,26,0"
-                         Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:QueueFilter.Completed}"
-                         IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Completed, Mode=OneWay}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="COMPLETED"/>
-                    <TextBlock Text="{Binding CompletedCount}" Style="{StaticResource FilterCount}"/>
-                </StackPanel>
-            </RadioButton>
             <RadioButton Style="{StaticResource FilterTabButton}" GroupName="QueueFilter"
-                         Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:QueueFilter.Failed}"
-                         IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Failed, Mode=OneWay}">
+                         Command="{Binding SelectFilterCommand}" CommandParameter="{x:Static models:QueueFilter.Done}"
+                         IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Done, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="FAILED"/>
-                    <TextBlock Text="{Binding FailedCount}" Style="{StaticResource FilterCount}"/>
+                    <TextBlock Text="DONE"/>
+                    <TextBlock Text="{Binding DoneCount}" Style="{StaticResource FilterCount}"/>
                 </StackPanel>
             </RadioButton>
         </StackPanel>
