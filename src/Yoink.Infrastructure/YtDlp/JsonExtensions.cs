@@ -20,9 +20,12 @@ internal static class JsonExtensions
     {
         if (el.ValueKind == JsonValueKind.Object && el.TryGetProperty(name, out var p))
         {
-            if (p.ValueKind == JsonValueKind.Number && p.TryGetInt64(out var v))
+            if (p.ValueKind == JsonValueKind.Number)
             {
-                return v;
+                if (p.TryGetInt64(out var v)) return v;
+                // Some manifests encode dimensions and approximate byte counts as decimals.
+                if (p.TryGetDecimal(out var number) && number >= long.MinValue && number <= long.MaxValue)
+                    return (long)number;
             }
 
             if (p.ValueKind == JsonValueKind.String && long.TryParse(p.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var s))
@@ -52,7 +55,8 @@ internal static class JsonExtensions
         return null;
     }
 
-    public static int? GetInt(this JsonElement el, string name) => (int?)el.GetLong(name);
+    public static int? GetInt(this JsonElement el, string name) => el.GetLong(name) is { } value && value >= int.MinValue && value <= int.MaxValue
+        ? (int)value : null;
 
     public static bool GetBool(this JsonElement el, string name)
     {
