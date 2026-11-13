@@ -3,7 +3,12 @@ setlocal
 
 cd /d "%~dp0"
 
-taskkill /F /IM Yoink.exe >nul 2>&1
+tasklist /FI "IMAGENAME eq Yoink.exe" /NH | findstr /I /C:"Yoink.exe" >nul
+if not errorlevel 1 (
+    echo Yoink is still running. Exit from the tray before rebuilding.
+    echo Active downloads have been left running.
+    exit /b 1
+)
 
 echo Restoring packages...
 dotnet restore Yoink.slnx
