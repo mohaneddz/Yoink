@@ -30,6 +30,7 @@ public class InfrastructureCompositionTests
         Assert.NotNull(provider.GetRequiredService<IMediaInspector>());
         Assert.NotNull(provider.GetRequiredService<IDownloadEngine>());
         Assert.NotNull(provider.GetRequiredService<IFfmpegService>());
+        Assert.NotNull(provider.GetRequiredService<IProxyResolver>());
         Assert.NotNull(provider.GetRequiredService<IHistoryRepository>());
         Assert.NotNull(provider.GetRequiredService<ILibraryRepository>());
         Assert.NotNull(provider.GetRequiredService<ISavedChannelRepository>());
