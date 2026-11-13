@@ -11,6 +11,7 @@ namespace Yoink.Infrastructure.Ytdlp;
 /// <summary>Inspects URLs with yt-dlp (<c>-J</c>) and maps the JSON to domain metadata.</summary>
 public sealed partial class YtDlpInspector : IMediaInspector
 {
+    private readonly MediaInspectionCache _cache = new();
     private readonly ProcessRunner _runner;
     private readonly IToolProvisioner _tools;
     private readonly ISettingsService _settings;
@@ -62,7 +63,14 @@ public sealed partial class YtDlpInspector : IMediaInspector
         return MediaSourceKind.Video; // default: attempt as a single video
     }
 
-    public async Task<Result<MediaMetadata>> InspectAsync(string url, CancellationToken ct = default)
+    public Task<Result<MediaMetadata>> InspectAsync(string url, CancellationToken ct = default, bool forceRefresh = false)
+    {
+        var settings = _settings.Current;
+        var key = (url.Trim(), settings.Proxy, settings.CookiesFile);
+        return _cache.GetAsync(key, token => InspectCoreAsync(url, token), forceRefresh, ct);
+    }
+
+    private async Task<Result<MediaMetadata>> InspectCoreAsync(string url, CancellationToken ct)
     {
         var ensure = await _tools.EnsureAsync(ct: ct).ConfigureAwait(false);
         if (ensure.IsFailure)

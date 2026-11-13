@@ -10,7 +10,7 @@ public interface IMediaInspector
     MediaSourceKind DetectKind(string url);
 
     /// <summary>Full single-item inspection (metadata + formats).</summary>
-    Task<Result<MediaMetadata>> InspectAsync(string url, CancellationToken ct = default);
+    Task<Result<MediaMetadata>> InspectAsync(string url, CancellationToken ct = default, bool forceRefresh = false);
 
     /// <summary>Flat playlist/channel listing (entries with basic info, fast).</summary>
     Task<Result<PlaylistMetadata>> InspectPlaylistAsync(string url, int? limit = null, CancellationToken ct = default);
