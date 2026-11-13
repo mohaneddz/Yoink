@@ -97,7 +97,9 @@ public sealed partial class YtDlpInspector : IMediaInspector
 
         try
         {
-            var result = await _runner.RunCaptureAsync(_tools.Paths.YtDlpPath, args, ct).ConfigureAwait(false);
+            var result = await PreparationRetry.RunAsync(
+                () => _runner.RunCaptureAsync(_tools.Paths.YtDlpPath, args, ct),
+                result => !result.Success && PreparationRetry.IsTransient(result.StandardError), ct).ConfigureAwait(false);
             if (!result.Success || string.IsNullOrWhiteSpace(result.StandardOutput))
             {
                 return Result<MediaMetadata>.Failure(FirstError(result.StandardError) ?? "Inspection failed.");
@@ -147,7 +149,9 @@ public sealed partial class YtDlpInspector : IMediaInspector
 
         try
         {
-            var result = await _runner.RunCaptureAsync(_tools.Paths.YtDlpPath, args, ct).ConfigureAwait(false);
+            var result = await PreparationRetry.RunAsync(
+                () => _runner.RunCaptureAsync(_tools.Paths.YtDlpPath, args, ct),
+                result => !result.Success && PreparationRetry.IsTransient(result.StandardError), ct).ConfigureAwait(false);
             if (!result.Success || string.IsNullOrWhiteSpace(result.StandardOutput))
             {
                 return Result<PlaylistMetadata>.Failure(FirstError(result.StandardError) ?? "Playlist inspection failed.");

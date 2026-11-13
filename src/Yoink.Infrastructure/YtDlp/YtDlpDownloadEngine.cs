@@ -48,6 +48,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
         var stage = DownloadStage.Preparing;
         string? lastDestination = null;
         string? lastErrorLine = null;
+        var transferStarted = false;
 
         void HandleLine(string line, bool isError)
         {
@@ -63,6 +64,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
 
             if (line.StartsWith(ProgressPrefix, StringComparison.Ordinal))
             {
+                transferStarted = true;
                 var p = ParseProgress(line, stage);
                 if (p is not null)
                 {
@@ -76,6 +78,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             if (newStage != stage)
             {
                 stage = newStage;
+                transferStarted = true;
             }
 
             var dest = ExtractDestination(line);
@@ -99,25 +102,32 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
             progress.Report(new DownloadProgress { Stage = DownloadStage.Preparing,
                 RawLine = preparedInfoFile is not null ? "Using recently inspected streams…" : "Fetching download links…" });
 
-            var exit = await _runner.RunStreamingAsync(
-                _tools.Paths.YtDlpPath,
-                args,
-                request.OutputFolder,
-                line => HandleLine(line, false),
-                line => HandleLine(line, true),
-                ct).ConfigureAwait(false);
+            Task<int> RunFreshAsync() => PreparationRetry.RunAsync(async () =>
+            {
+                lastErrorLine = null;
+                return await _runner.RunStreamingAsync(_tools.Paths.YtDlpPath,
+                    BuildArguments(request, pathCaptureFile, proxy), request.OutputFolder,
+                    line => HandleLine(line, false), line => HandleLine(line, true), ct).ConfigureAwait(false);
+            }, exitCode => exitCode != 0 && !transferStarted && stage == DownloadStage.Preparing
+                && PreparationRetry.IsTransient(lastErrorLine), ct,
+                attempt => progress.Report(DownloadProgress.Log(
+                    $"Connection interrupted; retrying preparation ({attempt}/3)…", DownloadStage.Preparing)));
+
+            var exit = preparedInfoFile is null
+                ? await RunFreshAsync().ConfigureAwait(false)
+                : await _runner.RunStreamingAsync(_tools.Paths.YtDlpPath, args, request.OutputFolder,
+                    line => HandleLine(line, false), line => HandleLine(line, true), ct).ConfigureAwait(false);
 
             if (exit != 0 && preparedInfoFile is not null)
             {
                 ct.ThrowIfCancellationRequested();
                 _prepared.Remove(request.Url, request.Proxy, request.CookiesFile);
                 lastErrorLine = null;
+                transferStarted = false;
                 stage = DownloadStage.Preparing;
                 progress.Report(DownloadProgress.Log("Refreshing download links and retrying…", stage));
                 // Signed URLs can expire sooner than expected. Fall back once to normal extraction.
-                exit = await _runner.RunStreamingAsync(_tools.Paths.YtDlpPath,
-                    BuildArguments(request, pathCaptureFile, proxy), request.OutputFolder,
-                    line => HandleLine(line, false), line => HandleLine(line, true), ct).ConfigureAwait(false);
+                exit = await RunFreshAsync().ConfigureAwait(false);
             }
 
             var finalPath = ResolveFinalPath(pathCaptureFile, lastDestination);
