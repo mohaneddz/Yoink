@@ -256,6 +256,7 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
 
     private static string BuildVideoSelector(DownloadRequest r)
     {
+        var fallback = BuildAutomaticVideoSelector(r);
         if (!string.IsNullOrWhiteSpace(r.FormatId))
         {
             var audioSelector = NormalizeVideoContainer(r.VideoContainer) switch
@@ -264,9 +265,16 @@ public sealed class YtDlpDownloadEngine : IDownloadEngine
                 "mp4" => $"{r.FormatId}+ba[ext=m4a]/{r.FormatId}+ba/{r.FormatId}",
                 _ => $"{r.FormatId}+ba/{r.FormatId}"
             };
-            return audioSelector;
+            // Stream IDs can change when an extractor refreshes a manifest. Keep the
+            // explicit pick first, then reselect using the requested quality and codec.
+            return $"{audioSelector}/{fallback}";
         }
 
+        return fallback;
+    }
+
+    private static string BuildAutomaticVideoSelector(DownloadRequest r)
+    {
         var height = r.MaxHeight > 0 ? $"[height<=?{r.MaxHeight}]" : string.Empty;
         var codec = MapVideoCodec(r.VideoCodecPreference);
         var codecClause = codec is null ? string.Empty : $"[vcodec^={codec}]";
