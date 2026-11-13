@@ -50,7 +50,6 @@ public partial class QueueViewModel : ObservableObject
         _refreshTimer.Tick += (_, _) =>
         {
             _coordinator.VerifyFilesExist();
-            RefreshCounts();
         };
         _refreshTimer.Start();
     }

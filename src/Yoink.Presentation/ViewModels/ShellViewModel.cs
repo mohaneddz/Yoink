@@ -72,7 +72,8 @@ public partial class ShellViewModel : ObservableObject, INavigationService
     [RelayCommand]
     private void NavigateTo(AppPage page)
     {
-        if (!_pageCache.TryGetValue(page, out var vm))
+        var cached = _pageCache.TryGetValue(page, out var vm);
+        if (!cached)
         {
             vm = _pageResolver(page);
             _pageCache[page] = vm;
@@ -85,8 +86,8 @@ public partial class ShellViewModel : ObservableObject, INavigationService
             Inspector.Content = null;
         }
 
-        if (vm is LibraryViewModel library) _ = library.LoadAsync();
-        if (vm is HistoryViewModel history) _ = history.LoadAsync();
+        if (cached && vm is LibraryViewModel library) _ = library.LoadAsync();
+        if (cached && vm is HistoryViewModel history) _ = history.LoadAsync();
         CurrentPage = page;
         CurrentPageViewModel = vm;
     }
