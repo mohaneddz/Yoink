@@ -177,6 +177,7 @@
                     <TextBlock Text="EXPORT HISTORY" Style="{StaticResource ToolbarLinkText}"/>
                 </StackPanel>
             </Button>
+            <Button Style="{StaticResource ToolbarLink}" Command="{Binding RemoveSelectedCommand}" Content="REMOVE SELECTED" ToolTip="Remove from history and library. Downloaded files are kept."/>
             <Button Style="{StaticResource ToolbarLink}" Command="{Binding ClearHistoryCommand}" Padding="0">
                 <StackPanel Orientation="Horizontal">
                     <Path Data="{StaticResource IconTrash}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource ErrorBrush}" Margin="0,0,6,0"/>

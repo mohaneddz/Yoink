@@ -18,23 +18,6 @@ public sealed class ProxyResolver : IProxyResolver
     /// <summary>Port used by Tor Browser's built-in SOCKS proxy.</summary>
     private const int TorBrowserPort = 9150;
 
-    /// <summary>
-    /// Domains known to be blocked by ISPs in restricted regions (Algeria, etc.).
-    /// Only the registrable domain is needed — subdomains are matched automatically.
-    /// </summary>
-    private static readonly HashSet<string> BlockedDomains = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "pornhub.com",
-        "xvideos.com",
-        "xnxx.com",
-        "xhamster.com",
-        "redtube.com",
-        "youporn.com",
-        "tube8.com",
-        "spankbang.com",
-        "xhamster.desi"
-    };
-
     private readonly TorManager _torManager;
     private readonly ILogger<ProxyResolver> _logger;
 
@@ -75,25 +58,5 @@ public sealed class ProxyResolver : IProxyResolver
     //  Domain matching
     // ──────────────────────────────────────────────────────────────────────
 
-    private static bool NeedsProxy(string url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-            return false;
-
-        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri))
-            return false;
-
-        var host = uri.Host;
-
-        foreach (var domain in BlockedDomains)
-        {
-            if (host.Equals(domain, StringComparison.OrdinalIgnoreCase) ||
-                host.EndsWith("." + domain, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    private static bool NeedsProxy(string url) => Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(url);
 }

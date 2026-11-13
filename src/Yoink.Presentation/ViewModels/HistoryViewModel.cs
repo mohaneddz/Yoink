@@ -23,6 +23,8 @@ public partial class HistoryViewModel : ObservableObject
     private readonly INavigationService _navigation;
     private readonly ISettingsService _settings;
     private readonly List<HistoryRecord> _all = new();
+    private int _loadVersion;
+    private bool _updatingFormats;
 
     public HistoryViewModel(
         InspectorViewModel inspector,
@@ -38,6 +40,7 @@ public partial class HistoryViewModel : ObservableObject
         _coordinator = coordinator;
         _navigation = navigation;
         _settings = settings;
+        settings.Changed += (_, _) => UiDispatcher.Run(ApplyFilters);
         _ = LoadAsync();
     }
 
@@ -59,7 +62,7 @@ public partial class HistoryViewModel : ObservableObject
     partial void OnSearchTextChanged(string value) => ApplyFilters();
     partial void OnResultFilterChanged(string value) => ApplyFilters();
     partial void OnSourceTypeFilterChanged(string value) => ApplyFilters();
-    partial void OnFormatFilterChanged(string value) => ApplyFilters();
+    partial void OnFormatFilterChanged(string value) { if (!_updatingFormats) ApplyFilters(); }
 
     partial void OnSelectedRecordChanged(HistoryRecord? value)
     {
@@ -71,7 +74,11 @@ public partial class HistoryViewModel : ObservableObject
 
     public async Task LoadAsync()
     {
+        var version = ++_loadVersion;
+        Records.Clear();
+        SelectedRecord = null;
         var entries = await _repository.GetAllAsync();
+        if (version != _loadVersion) return;
         _all.Clear();
         var i = 1;
         foreach (var e in entries)
@@ -83,19 +90,29 @@ public partial class HistoryViewModel : ObservableObject
             _all.Add(record);
         }
 
-        FormatOptions.Clear();
-        FormatOptions.Add("All Formats");
-        foreach (var fmt in _all.Select(r => r.Format).Where(f => !string.IsNullOrWhiteSpace(f)).Distinct())
-        {
-            FormatOptions.Add(fmt);
-        }
-
         ApplyFilters();
     }
 
     private void ApplyFilters()
     {
-        IEnumerable<HistoryRecord> query = _all;
+        var visible = _all.Where(r => !_settings.Current.HidePrivateVideos
+            || !Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(r.SourceUrl)).ToList();
+        var formats = new[] { "All Formats" }.Concat(visible.Select(r => r.Format)
+            .Where(f => !string.IsNullOrWhiteSpace(f)).Distinct()).ToArray();
+        if (!FormatOptions.SequenceEqual(formats))
+        {
+            var previous = FormatFilter;
+            _updatingFormats = true;
+            try
+            {
+                FormatOptions.Clear();
+                foreach (var format in formats) FormatOptions.Add(format);
+                FormatFilter = formats.Contains(previous) ? previous : "All Formats";
+            }
+            finally { _updatingFormats = false; }
+        }
+        if (SelectedRecord is not null && !visible.Contains(SelectedRecord)) SelectedRecord = null;
+        IEnumerable<HistoryRecord> query = visible;
 
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
@@ -229,7 +246,7 @@ public partial class HistoryViewModel : ObservableObject
 
         var sb = new StringBuilder();
         sb.AppendLine("Title,Channel,Timestamp,Result,Size,Format,Output");
-        foreach (var r in _all)
+        foreach (var r in Records)
         {
             sb.AppendLine($"{Csv(r.Title)},{Csv(r.Channel)},{Csv(r.TimestampText)},{r.Result},{Csv(r.FileSizeText)},{Csv(r.Format)},{Csv(r.FilePath)}");
         }
@@ -249,11 +266,26 @@ public partial class HistoryViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task RemoveSelected()
+    {
+        if (SelectedRecord is not { } record) return;
+        await _repository.DeleteAsync(record.EntryId);
+        _all.Remove(record);
+        SelectedRecord = null;
+        _inspector.IsOpen = false;
+        _inspector.Content = null;
+        ApplyFilters();
+    }
+
+    [RelayCommand]
     private async Task ClearHistory()
     {
         await _repository.ClearAsync();
         _all.Clear();
         Records.Clear();
+        SelectedRecord = null;
+        _inspector.IsOpen = false;
+        _inspector.Content = null;
     }
 
     private static HistoryRecord Map(DownloadHistoryEntry e, int index)

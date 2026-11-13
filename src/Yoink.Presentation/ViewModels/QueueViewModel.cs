@@ -30,6 +30,12 @@ public partial class QueueViewModel : ObservableObject
 
         _filteredJobs = CollectionViewSource.GetDefaultView(coordinator.Jobs);
         _filteredJobs.Filter = FilterJob;
+        settings.Changed += (_, _) => UiDispatcher.Run(() =>
+        {
+            foreach (var job in Jobs.Where(job => !IsVisible(job))) job.IsSelected = false;
+            if (SelectedJob is not null && !IsVisible(SelectedJob)) SelectedJob = null;
+            RefreshCounts();
+        });
 
         coordinator.Jobs.CollectionChanged += OnJobsCollectionChanged;
         coordinator.JobsChanged += (_, _) => RefreshCounts();
@@ -59,12 +65,15 @@ public partial class QueueViewModel : ObservableObject
 
     public ObservableCollection<int> ConcurrencyOptions { get; } = new() { 1, 2, 3, 4, 5, 6, 8 };
 
-    public int ActiveCount => Jobs.Count(IsActive);
+    private bool IsVisible(QueueJob job) => !_settings.Current.HidePrivateVideos
+        || !Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(job.SourceUrl);
+
+    public int ActiveCount => Jobs.Where(IsVisible).Count(IsActive);
     /// <summary>All unfinished work, including downloads currently in progress.</summary>
-    public int QueuedCount => Jobs.Count(j => IsActive(j) || j.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting or QueueJobStatus.Paused);
+    public int QueuedCount => Jobs.Where(IsVisible).Count(j => IsActive(j) || j.Status is QueueJobStatus.Queued or QueueJobStatus.Waiting or QueueJobStatus.Inspecting or QueueJobStatus.Paused);
     public int DoneCount => CompletedCount + FailedCount;
-    public int CompletedCount => Jobs.Count(j => j.Status == QueueJobStatus.Completed);
-    public int FailedCount => Jobs.Count(j => j.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled);
+    public int CompletedCount => Jobs.Where(IsVisible).Count(j => j.Status == QueueJobStatus.Completed);
+    public int FailedCount => Jobs.Where(IsVisible).Count(j => j.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled);
 
     private static bool IsActive(QueueJob j) => j.Status is QueueJobStatus.DownloadingVideo or QueueJobStatus.DownloadingAudio
         or QueueJobStatus.DownloadingSubtitles or QueueJobStatus.Merging or QueueJobStatus.Converting
@@ -106,7 +115,7 @@ public partial class QueueViewModel : ObservableObject
 
     private bool FilterJob(object obj)
     {
-        if (obj is not QueueJob job)
+        if (obj is not QueueJob job || !IsVisible(job))
         {
             return false;
         }
@@ -146,7 +155,7 @@ public partial class QueueViewModel : ObservableObject
 
     [ObservableProperty] private bool _isAllSelected;
 
-    public int SelectedCount => Jobs.Count(j => j.IsSelected);
+    public int SelectedCount => Jobs.Where(IsVisible).Count(j => j.IsSelected);
     public bool HasSelectedJobs => SelectedCount > 0;
 
     partial void OnIsAllSelectedChanged(bool value)
@@ -161,8 +170,8 @@ public partial class QueueViewModel : ObservableObject
 
     [RelayCommand] private void StartAll() => _coordinator.StartAll();
     [RelayCommand] private void PauseAll() => _coordinator.PauseAll();
-    [RelayCommand] private void ClearCompleted() => _coordinator.ClearCompleted();
-    [RelayCommand] private void ClearFailed() => _coordinator.ClearFailed();
+    [RelayCommand] private void ClearCompleted() => _coordinator.RemoveJobs(Jobs.Where(IsVisible).Where(job => job.Status == QueueJobStatus.Completed).ToList());
+    [RelayCommand] private void ClearFailed() => _coordinator.RemoveJobs(Jobs.Where(IsVisible).Where(job => job.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled).ToList());
     [RelayCommand] private void RetryFailed() => _coordinator.RetryFailed();
     [RelayCommand] private void ToggleJob(QueueJob job) => _coordinator.ToggleJob(job);
     [RelayCommand] private void PauseJob(QueueJob job) => _coordinator.PauseJob(job);
@@ -173,7 +182,7 @@ public partial class QueueViewModel : ObservableObject
     [RelayCommand]
     private void DeleteSelected()
     {
-        var selected = Jobs.Where(j => j.IsSelected).ToList();
+        var selected = Jobs.Where(IsVisible).Where(j => j.IsSelected).ToList();
         _coordinator.RemoveJobs(selected);
         IsAllSelected = false;
         OnPropertyChanged(nameof(SelectedCount));
@@ -183,14 +192,14 @@ public partial class QueueViewModel : ObservableObject
     [RelayCommand]
     private void PauseSelected()
     {
-        var selected = Jobs.Where(j => j.IsSelected).ToList();
+        var selected = Jobs.Where(IsVisible).Where(j => j.IsSelected).ToList();
         _coordinator.PauseJobs(selected);
     }
 
     [RelayCommand]
     private void ResumeSelectedBatch()
     {
-        var selected = Jobs.Where(j => j.IsSelected).ToList();
+        var selected = Jobs.Where(IsVisible).Where(j => j.IsSelected).ToList();
         _coordinator.ResumeJobs(selected);
     }
 

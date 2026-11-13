@@ -4,6 +4,7 @@ namespace Yoink.Domain.Settings;
 public sealed class AppSettings
 {
     // General
+    public bool HidePrivateVideos { get; set; }
     public string DefaultDownloadFolder { get; set; } =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Videos", "Yoink");
     public int SimultaneousDownloads { get; set; } = 3;

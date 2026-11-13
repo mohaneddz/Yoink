@@ -66,6 +66,7 @@ public sealed class TrayService : IDisposable
         foreach (var job in _downloads.Jobs.Where(IsTerminal))
         {
             if (!_notified.Add(job)) continue;
+            if (_settings.Current.HidePrivateVideos && Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(job.SourceUrl)) continue;
             var success = job.Status == QueueJobStatus.Completed;
             if (_settings.Current.DesktopNotifications)
                 _icon.ShowBalloonTip(4000, success ? "Download completed" : "Download failed",
@@ -79,7 +80,8 @@ public sealed class TrayService : IDisposable
     private void UpdateBackgroundState()
     {
         var active = _downloads.ActiveJobCount;
-        _icon.Text = active > 0 ? $"Yoink - {active} active download(s)" : "Yoink";
+        var visibleActive = _downloads.VisibleActiveJobCount;
+        _icon.Text = visibleActive > 0 ? $"Yoink - {visibleActive} active download(s)" : "Yoink";
         var preventSleep = active > 0 && _settings.Current.PreventSleepWhileDownloading;
         if (preventSleep == _preventingSleep) return;
         _preventingSleep = preventSleep;

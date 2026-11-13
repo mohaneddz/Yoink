@@ -85,15 +85,17 @@ public partial class ShellViewModel : ObservableObject, INavigationService
             Inspector.Content = null;
         }
 
+        if (vm is LibraryViewModel library) _ = library.LoadAsync();
+        if (vm is HistoryViewModel history) _ = history.LoadAsync();
         CurrentPage = page;
         CurrentPageViewModel = vm;
     }
 
     private void UpdateStatusStrip()
     {
-        StatusStrip.ActiveDownloads = _coordinator.ActiveJobCount;
-        StatusStrip.FilesInQueue = _coordinator.PendingJobCount;
-        StatusStrip.TotalSpeedMbps = _coordinator.AggregateBytesPerSecond / 1_048_576.0;
+        StatusStrip.ActiveDownloads = _coordinator.VisibleActiveJobCount;
+        StatusStrip.FilesInQueue = _coordinator.VisiblePendingJobCount;
+        StatusStrip.TotalSpeedMbps = _coordinator.VisibleBytesPerSecond / 1_048_576.0;
         StatusStrip.StorageFreeTb = GetFreeSpaceTb(_settings.Current.DefaultDownloadFolder);
     }
 

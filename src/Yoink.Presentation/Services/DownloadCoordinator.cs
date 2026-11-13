@@ -145,6 +145,14 @@ public sealed class DownloadCoordinator
     /// <summary>Combined download speed of all currently-active jobs, in bytes/second.</summary>
     public double AggregateBytesPerSecond => _speeds.Sum(kv => kv.Value);
 
+    public bool IsVisible(QueueJob job) => !_settings.Current.HidePrivateVideos
+        || !Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(job.SourceUrl);
+    public double VisibleBytesPerSecond => _speeds.Where(kv => IsVisible(kv.Key)).Sum(kv => kv.Value);
+    public int VisibleActiveJobCount => _runtimes.Count(kv => kv.Value.Running && IsVisible(kv.Key));
+    public int VisiblePendingJobCount => Jobs.Count(job => IsVisible(job)
+        && job.Status is not (QueueJobStatus.Completed or QueueJobStatus.Cancelled));
+
+
     public int ActiveJobCount => _runtimes.Values.Count(runtime => runtime.Running);
 
     public int PendingJobCount => Jobs.Count(j => j.Status is not (QueueJobStatus.Completed or QueueJobStatus.Cancelled));

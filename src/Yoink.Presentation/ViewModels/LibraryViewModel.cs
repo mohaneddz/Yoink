@@ -17,19 +17,23 @@ public partial class LibraryViewModel : ObservableObject
     private readonly ISavedChannelRepository _channels;
     private readonly ISystemAccess _system;
     private readonly IFfmpegService _ffmpeg;
+    private readonly ISettingsService _settings;
     private readonly List<LibraryItem> _all = new();
     private const int RecentDownloadsLimit = 5;
+    private int _loadVersion;
 
     public LibraryViewModel(
         ILibraryRepository repository,
         ISavedChannelRepository channels,
         ISystemAccess system,
-        IFfmpegService ffmpeg)
+        IFfmpegService ffmpeg, ISettingsService settings)
     {
         _repository = repository;
         _channels = channels;
         _system = system;
         _ffmpeg = ffmpeg;
+        _settings = settings;
+        settings.Changed += (_, _) => UiDispatcher.Run(() => { ApplyView(); _ = BuildGroupsAsync(); });
         _ = LoadAsync();
     }
 
@@ -61,7 +65,13 @@ public partial class LibraryViewModel : ObservableObject
 
     public async Task LoadAsync()
     {
+        var version = ++_loadVersion;
+        RecentDownloads.Clear();
+        Channels.Clear();
+        Playlists.Clear();
+        SelectedItem = null;
         var entries = await _repository.GetAllAsync();
+        if (version != _loadVersion) return;
         _all.Clear();
         foreach (var e in entries)
         {
@@ -72,9 +82,12 @@ public partial class LibraryViewModel : ObservableObject
         ApplyView();
     }
 
+    private bool IsVisible(LibraryItem item) => !_settings.Current.HidePrivateVideos
+        || !Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(item.SourceUrl);
+
     private void ApplyView()
     {
-        IEnumerable<LibraryItem> query = _all.Where(i => MatchesFilter(i.Kind, SelectedFilter));
+        IEnumerable<LibraryItem> query = _all.Where(IsVisible).Where(i => MatchesFilter(i.Kind, SelectedFilter));
 
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
@@ -112,7 +125,7 @@ public partial class LibraryViewModel : ObservableObject
         var channelMap = savedChannels.ToDictionary(c => c.Name, c => c.AvatarUrl, StringComparer.OrdinalIgnoreCase);
 
         Channels.Clear();
-        foreach (var group in _all.Where(i => !string.IsNullOrWhiteSpace(i.Channel))
+        foreach (var group in _all.Where(IsVisible).Where(i => !string.IsNullOrWhiteSpace(i.Channel))
                      .GroupBy(i => i.Channel).OrderByDescending(g => g.Count()))
         {
             channelMap.TryGetValue(group.Key, out var avatarUrl);
@@ -135,7 +148,7 @@ public partial class LibraryViewModel : ObservableObject
         }
 
         Playlists.Clear();
-        foreach (var group in _all.Where(i => !string.IsNullOrWhiteSpace(i.FilePath))
+        foreach (var group in _all.Where(IsVisible).Where(i => !string.IsNullOrWhiteSpace(i.FilePath))
                      .GroupBy(i => Path.GetFileName(Path.GetDirectoryName(i.FilePath) ?? string.Empty))
                      .Where(g => !string.IsNullOrWhiteSpace(g.Key))
                      .OrderByDescending(g => g.Count()))

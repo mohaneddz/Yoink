@@ -107,6 +107,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _diagnosticLogging;
     [ObservableProperty] private bool _verboseOutput;
 
+    [ObservableProperty] private bool _hidePrivateVideos;
+
     private void LoadFrom(AppSettings s)
     {
         DefaultDownloadFolder = s.DefaultDownloadFolder;
@@ -121,6 +123,7 @@ public partial class SettingsViewModel : ObservableObject
         ResumeInterruptedDownloads = s.ResumeInterruptedDownloads;
         PreventSleepWhileDownloading = s.PreventSleepWhileDownloading;
         ReuseRecentInspection = s.ReuseRecentInspection;
+        HidePrivateVideos = s.HidePrivateVideos;
         ConcurrentFragments = Math.Clamp(s.ConcurrentFragments, 1, 16);
         PreferredVideoContainer = s.PreferredVideoContainer.ToUpperInvariant();
         PreferredAudioContainer = s.PreferredAudioContainer.ToUpperInvariant();
@@ -159,6 +162,7 @@ public partial class SettingsViewModel : ObservableObject
         s.ResumeInterruptedDownloads = ResumeInterruptedDownloads;
         s.PreventSleepWhileDownloading = PreventSleepWhileDownloading;
         s.ReuseRecentInspection = ReuseRecentInspection;
+        s.HidePrivateVideos = HidePrivateVideos;
         s.ConcurrentFragments = Math.Clamp(ConcurrentFragments, 1, 16);
         s.PreferredVideoContainer = PreferredVideoContainer.ToLowerInvariant();
         s.PreferredAudioContainer = PreferredAudioContainer.ToLowerInvariant();
