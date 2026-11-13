@@ -4,6 +4,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
@@ -18,6 +19,8 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="System.Net.Http" />
+    <Using Include="System.IO" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +28,7 @@
     <ProjectReference Include="..\..\src\Yoink.Application\Yoink.Application.csproj" />
     <ProjectReference Include="..\..\src\Yoink.Infrastructure\Yoink.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Yoink.Shared\Yoink.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Yoink.Presentation\Yoink.Presentation.csproj" />
   </ItemGroup>
 
 </Project>

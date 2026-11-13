@@ -140,13 +140,13 @@
                         <TextBlock Text="{Binding DescriptionPreview}" Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,12"/>
                         <StackPanel Orientation="Horizontal">
                             <Border Style="{StaticResource Badge}" Margin="0,0,8,0"><TextBlock Text="VIDEO" Style="{StaticResource BadgeText}"/></Border>
-                            <Border Background="#FFE8281E" Padding="8,3" Margin="0,0,8,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <Path Data="{StaticResource IconPlay}" Fill="White" Width="8" Height="8" Stretch="Uniform" Margin="0,0,5,0"/>
-                                    <TextBlock Text="YOUTUBE" FontSize="11" FontWeight="Bold" Foreground="White"/>
-                                </StackPanel>
+                            <Border Style="{StaticResource Badge}" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding SourceDisplayName}" Style="{StaticResource BadgeText}"/>
                             </Border>
-                            <Border Style="{StaticResource Badge}" Margin="0,0,8,0"><TextBlock Text="4K" Style="{StaticResource BadgeText}"/></Border>
+                            <Border Style="{StaticResource Badge}" Margin="0,0,8,0"
+                                    Visibility="{Binding HasVideoResolution, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="{Binding MaximumResolutionText}" Style="{StaticResource BadgeText}"/>
+                            </Border>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Path Data="{StaticResource IconSubtitles}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextMutedBrush}" Margin="0,0,6,0"/>
                                 <TextBlock Text="{Binding SubtitleAvailabilityText}" Style="{StaticResource MetaText}"/>
@@ -471,7 +471,7 @@
                                 </RadioButton>
                             </StackPanel>
                             <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" Command="{Binding RefreshStreamsCommand}"
-                                    IsEnabled="{Binding IsRefreshingStreams, Converter={StaticResource InverseBoolConverter}}" ToolTip="Refresh streams only">
+                                    ToolTip="Fetch fresh streams (keeps your quality selection)">
                                 <Path Data="{StaticResource IconRefresh}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{DynamicResource TextMutedBrush}"/>
                             </Button>
                         </Grid>

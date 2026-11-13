@@ -78,6 +78,16 @@ public partial class DownloadViewModel : ObservableObject
 
     private Task? _currentInspectTask;
     private int _inspectionVersion;
+    private CancellationTokenSource? _inspectionCts;
+
+    public string SourceDisplayName => SourceVideoQuality.SourceKey(_metadata?.WebpageUrl ?? SourceUrl)?.ToUpperInvariant() ?? "MEDIA";
+    public string MaximumResolutionText => _metadata?.Formats.Where(f => f.HasVideo).Max(f => f.Height) is > 0 and var height
+        ? $"{height}p" : string.Empty;
+    public bool HasVideoResolution => !string.IsNullOrEmpty(MaximumResolutionText);
+    public bool CanRefreshStreams => !IsInspecting && !IsRefreshingStreams && !string.IsNullOrWhiteSpace(SourceUrl);
+
+    partial void OnIsInspectingChanged(bool value) => RefreshStreamsCommand.NotifyCanExecuteChanged();
+    partial void OnIsRefreshingStreamsChanged(bool value) => RefreshStreamsCommand.NotifyCanExecuteChanged();
 
     // ---- Media preview ----
     [ObservableProperty] private string _title = string.Empty;
@@ -184,7 +194,7 @@ public partial class DownloadViewModel : ObservableObject
     // Choosing a quality preset clears any explicit stream pick so the height-based selector applies.
     partial void OnQualityChanged(string value)
     {
-        if (SelectedVideoStream is not null && SelectedVideoStream.Resolution != value)
+        if (SelectedVideoStream is not null && SelectedVideoStream.Height != ParseHeight(value))
         {
             SelectedVideoStream = null;
         }
@@ -201,21 +211,28 @@ public partial class DownloadViewModel : ObservableObject
 
         // Do not show a speculative URL-based type while inspection is in flight.
         _inspectionVersion++;
+        _inspectionCts?.Cancel();
+        _currentInspectTask = null;
         IsInspecting = false;
+        IsRefreshingStreams = false;
         HasInspectedMedia = false;
         DetectedType = DetectedSourceType.Invalid;
         ThumbnailUrl = string.Empty;
         ClearStreams();
         _metadata = null;
+        NotifyMediaBadges();
+        RefreshStreamsCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(StreamCountText));
         if (!string.IsNullOrWhiteSpace(value) && Uri.TryCreate(value.Trim(), UriKind.Absolute, out _))
         {
-            _currentInspectTask = Inspect();
+            _currentInspectTask = InspectMediaAsync(debounce: true);
         }
     }
 
     [RelayCommand]
-    private async Task Inspect()
+    private Task Inspect() => _currentInspectTask = InspectMediaAsync();
+
+    private async Task InspectMediaAsync(bool debounce = false, bool refresh = false)
     {
         if (string.IsNullOrWhiteSpace(SourceUrl))
         {
@@ -223,89 +240,69 @@ public partial class DownloadViewModel : ObservableObject
             return;
         }
 
+        _inspectionCts?.Cancel();
+        using var cancellation = new CancellationTokenSource();
+        _inspectionCts = cancellation;
         var sourceUrl = SourceUrl.Trim();
-        var inspectionVersion = _inspectionVersion;
-        IsInspecting = true;
-        StatusMessage = "Fetching media details…";
+        var inspectionVersion = ++_inspectionVersion;
+        IsInspecting = !refresh;
+        IsRefreshingStreams = refresh;
+        StatusMessage = refresh ? "Refreshing available streams..." : "Fetching media details...";
         try
         {
-            var result = await _inspector.InspectAsync(sourceUrl);
-
-            // A prior inspection may finish after the user pastes another URL. Its metadata must
-            // not repopulate the page or overwrite the newer inspection's state.
-            if (inspectionVersion != _inspectionVersion)
+            // Typing or replacing a URL should launch only the final lookup.
+            if (debounce) await Task.Delay(300, cancellation.Token);
+            var result = await _inspector.InspectAsync(sourceUrl, cancellation.Token, forceRefresh: refresh);
+            if (inspectionVersion != _inspectionVersion) return;
+            if (result.IsSuccess && !result.Value!.Formats.Any(f => f.HasVideo || f.HasAudio))
             {
-                return;
+                StatusMessage = "No streams returned; retrying discovery once...";
+                await Task.Delay(350, cancellation.Token);
+                result = await _inspector.InspectAsync(sourceUrl, cancellation.Token, forceRefresh: true);
+                if (inspectionVersion != _inspectionVersion) return;
             }
 
             if (result.IsFailure)
             {
-                var err = result.Error ?? "Inspection failed.";
-                if (err.Contains("timed out", StringComparison.OrdinalIgnoreCase)
-                    || err.Contains("geo", StringComparison.OrdinalIgnoreCase)
-                    || err.Contains("blocked", StringComparison.OrdinalIgnoreCase)
-                    || err.Contains("login", StringComparison.OrdinalIgnoreCase)
-                    || err.Contains("403", StringComparison.OrdinalIgnoreCase))
+                var error = result.Error ?? "Inspection failed.";
+                StatusMessage = error.Contains("PhantomJS", StringComparison.OrdinalIgnoreCase)
+                    ? "The source requires browser verification. Try a different proxy connection or provide a cookies file in Settings."
+                    : error;
+                if (!refresh)
                 {
-                    StatusMessage = $"{err} — Tip: If this site is age-restricted or blocked by your network/ISP, configure a Proxy or Cookies file in Settings → Network.";
+                    HasInspectedMedia = false;
+                    ThumbnailUrl = string.Empty;
                 }
-                else
-                {
-                    StatusMessage = err;
-                }
-
-                HasInspectedMedia = false;
-                ThumbnailUrl = string.Empty;
                 return;
             }
 
-            ApplyMetadata(result.Value!);
+            ApplyMetadata(result.Value!, preserveSelection: refresh);
             HasInspectedMedia = true;
-            StatusMessage = string.Empty;
+            StatusMessage = VideoStreams.Count == 0 && AudioStreams.Count == 0
+                ? "No downloadable streams returned. Try refreshing streams."
+                : refresh ? "Streams refreshed." : string.Empty;
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            // Superseded URL lookups stop their external process instead of competing for bandwidth.
+        }
+        catch (Exception ex)
+        {
+            if (inspectionVersion == _inspectionVersion) StatusMessage = ex.Message;
         }
         finally
         {
+            if (ReferenceEquals(_inspectionCts, cancellation)) _inspectionCts = null;
             if (inspectionVersion == _inspectionVersion)
             {
                 IsInspecting = false;
+                IsRefreshingStreams = false;
             }
         }
     }
 
-    [RelayCommand]
-    private async Task RefreshStreams()
-    {
-        if (string.IsNullOrWhiteSpace(SourceUrl) || IsRefreshingStreams)
-        {
-            return;
-        }
-
-        var sourceUrl = SourceUrl.Trim();
-        IsRefreshingStreams = true;
-        try
-        {
-            var result = await _inspector.InspectAsync(sourceUrl);
-            if (result.IsFailure)
-            {
-                StatusMessage = result.Error ?? "Could not refresh streams.";
-                return;
-            }
-
-            // Refresh the format/track catalog without replacing any displayed media-card data.
-            if (!string.Equals(sourceUrl, SourceUrl.Trim(), StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            _metadata = result.Value!;
-            RebuildStreams(result.Value!);
-            StatusMessage = "Streams refreshed.";
-        }
-        finally
-        {
-            IsRefreshingStreams = false;
-        }
-    }
+    [RelayCommand(CanExecute = nameof(CanRefreshStreams))]
+    private Task RefreshStreams() => _currentInspectTask = InspectMediaAsync(refresh: true);
 
     [RelayCommand]
     private async Task StartDownload()
@@ -471,9 +468,10 @@ public partial class DownloadViewModel : ObservableObject
         return true;
     }
 
-    private void ApplyMetadata(MediaMetadata m)
+    private void ApplyMetadata(MediaMetadata m, bool preserveSelection = false)
     {
         _metadata = m;
+        NotifyMediaBadges();
         Title = m.Title;
         ThumbnailUrl = m.ThumbnailUrl ?? string.Empty;
         ChannelName = m.Channel ?? m.Uploader ?? string.Empty;
@@ -491,7 +489,7 @@ public partial class DownloadViewModel : ObservableObject
         SubtitleAvailabilityText = subCount > 0 ? $"Subtitles available ({subCount})" : "No subtitles";
 
         RebuildSubtitleOptions(m);
-        RebuildQualityOptions(m);
+        RebuildQualityOptions(m, preserveSelection);
         RebuildStreams(m);
     }
 
@@ -510,6 +508,9 @@ public partial class DownloadViewModel : ObservableObject
 
     private void RebuildStreams(MediaMetadata m)
     {
+        var previousVideo = SelectedVideoStream;
+        var previousAudio = SelectedAudioStream;
+        var previousSubtitle = SelectedSubtitleStream;
         ClearStreams();
         var videoFormats = m.Formats
             .Where(f => f.HasVideo && f.Height is > 0)
@@ -541,7 +542,7 @@ public partial class DownloadViewModel : ObservableObject
                 AudioCodec = f.HasAudio ? ShortCodec(f.AudioCodec) : "AUTO",
                 Fps = (int)Math.Round(f.Fps ?? 0),
                 Hdr = f.IsHdr,
-                Size = Formatting.Bytes(f.EffectiveSizeBytes),
+                Size = FormatStreamSize(f, m.DurationSeconds),
                 IsRecommended = ReferenceEquals(f, best)
             });
         }
@@ -575,7 +576,7 @@ public partial class DownloadViewModel : ObservableObject
                 Format = ResolveAudioOutputLabel(f),
                 VideoCodec = "—",
                 AudioCodec = ShortCodec(f.AudioCodec),
-                Size = Formatting.Bytes(f.EffectiveSizeBytes),
+                Size = FormatStreamSize(f, m.DurationSeconds),
                 IsRecommended = ReferenceEquals(f, audioFormats.FirstOrDefault())
             });
         }
@@ -587,12 +588,39 @@ public partial class DownloadViewModel : ObservableObject
         {
             SubtitleStreams.Add(CreateSubtitleStream(code, false));
         }
+        var targetHeight = previousVideo?.Height ?? ParseHeight(Quality);
+        var closestHeight = targetHeight > 0
+            ? SourceVideoQuality.ClosestHeight(VideoStreams.Select(stream => stream.Height), targetHeight)
+            : null;
+        SelectedVideoStream = VideoStreams.FirstOrDefault(stream => stream.FormatId == previousVideo?.FormatId)
+            ?? (closestHeight is { } height ? VideoStreams.FirstOrDefault(stream => stream.Height == height) : null)
+            ?? VideoStreams.FirstOrDefault(stream => stream.IsRecommended) ?? VideoStreams.FirstOrDefault();
+        SelectedAudioStream = AudioStreams.FirstOrDefault(stream => stream.FormatId == previousAudio?.FormatId)
+            ?? AudioStreams.FirstOrDefault(stream => stream.IsRecommended) ?? AudioStreams.FirstOrDefault();
+        SelectedSubtitleStream = SubtitleStreams.FirstOrDefault(stream => stream.LanguageCode == previousSubtitle?.LanguageCode)
+            ?? SubtitleStreams.FirstOrDefault(stream => stream.LanguageCode == SubtitleLanguage);
         OnPropertyChanged(nameof(StreamCountText));
         OnPropertyChanged(nameof(SelectedStreamText));
     }
 
-    private void RebuildQualityOptions(MediaMetadata m)
+    private void NotifyMediaBadges()
     {
+        OnPropertyChanged(nameof(SourceDisplayName));
+        OnPropertyChanged(nameof(MaximumResolutionText));
+        OnPropertyChanged(nameof(HasVideoResolution));
+    }
+
+    private static string FormatStreamSize(MediaFormat format, double? duration)
+    {
+        var size = format.EstimateSizeBytes(duration);
+        return size is > 0
+            ? (format.FilesizeBytes is > 0 ? string.Empty : "\u2248 ") + Formatting.Bytes(size)
+            : "\u2014";
+    }
+
+    private void RebuildQualityOptions(MediaMetadata m, bool preserveSelection)
+    {
+        var previousHeight = SelectedVideoStream?.Height ?? ParseHeight(Quality);
         var heights = m.Formats.Where(f => f.HasVideo && f.Height is > 0)
             .OrderBy(f => IsWatermarked(f) ? 1 : 0)
             .Select(f => f.Height!.Value).Distinct().OrderByDescending(h => h).ToList();
@@ -605,9 +633,9 @@ public partial class DownloadViewModel : ObservableObject
 
         var key = SourceVideoQuality.SourceKey(SourceUrl);
         var saved = _settings.Current.SourceVideoQualities;
-        var closest = key is not null && saved is not null && saved.TryGetValue(key, out var preferred)
-            ? SourceVideoQuality.ClosestHeight(heights, preferred)
-            : null;
+        var preferred = preserveSelection ? previousHeight
+            : key is not null && saved is not null && saved.TryGetValue(key, out var remembered) ? remembered : 0;
+        var closest = preferred > 0 ? SourceVideoQuality.ClosestHeight(heights, preferred) : null;
         Quality = closest is { } height ? $"{height}p" : "Best Quality";
     }
 
