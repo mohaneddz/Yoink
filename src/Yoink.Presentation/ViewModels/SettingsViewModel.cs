@@ -81,6 +81,10 @@ public partial class SettingsViewModel : ObservableObject
 
     // System info
     [ObservableProperty] private string _appVersion = "1.0.0";
+    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(CheckAppUpdatesCommand))] private bool _isCheckingAppUpdates;
+    [ObservableProperty] private string _appUpdateMessage = string.Empty;
+    [ObservableProperty] private bool _hasAppUpdate;
+    private string? _appReleaseUrl;
     [ObservableProperty] private string _ytDlpVersion = "checking…";
     [ObservableProperty] private string _ffmpegVersion = "checking…";
     [ObservableProperty] private string _lastChecked = "—";
@@ -266,6 +270,35 @@ public partial class SettingsViewModel : ObservableObject
         }
         catch (Exception ex) { StatusMessage = updating ? $"Update failed: {ex.Message}" : $"Update check failed: {ex.Message}"; }
         finally { IsToolsBusy = false; IsUpdatingTools = false; }
+    }
+
+    private bool CanCheckAppUpdates() => !IsCheckingAppUpdates;
+
+    [RelayCommand(CanExecute = nameof(CanCheckAppUpdates))]
+    private async Task CheckAppUpdates()
+    {
+        IsCheckingAppUpdates = true;
+        AppUpdateMessage = "Checking Yoink releases…";
+        try
+        {
+            var info = await AppReleaseChecker.CheckAsync(Version.Parse(AppVersion));
+            AppUpdateMessage = info.Message;
+            HasAppUpdate = info.UpdateAvailable;
+            _appReleaseUrl = info.ReleaseUrl;
+        }
+        catch (Exception ex)
+        {
+            AppUpdateMessage = $"Could not check app releases: {ex.Message}";
+            HasAppUpdate = false;
+            _appReleaseUrl = null;
+        }
+        finally { IsCheckingAppUpdates = false; }
+    }
+
+    [RelayCommand]
+    private void OpenAppRelease()
+    {
+        if (_appReleaseUrl is not null) _system.OpenUrl(_appReleaseUrl);
     }
 
     [RelayCommand]

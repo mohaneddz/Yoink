@@ -482,6 +482,11 @@
 
                             </StackPanel>
                         </Grid>
+                        <Button Style="{StaticResource SecondaryButton}" Content="CHECK YOINK RELEASES" Command="{Binding CheckAppUpdatesCommand}" Padding="12,9" Margin="0,0,0,8"/>
+                        <ProgressBar IsIndeterminate="True" Height="3" Margin="0,0,0,8" Visibility="{Binding IsCheckingAppUpdates, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <TextBlock Text="{Binding AppUpdateMessage}" Style="{StaticResource MetaText}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <Button Style="{StaticResource SecondaryButton}" Content="OPEN YOINK RELEASE" Command="{Binding OpenAppReleaseCommand}" Padding="12,9" Margin="0,0,0,12"
+                                Visibility="{Binding HasAppUpdate, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <Grid Margin="0,0,0,10">
                             <TextBlock Text="yt-dlp Version" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

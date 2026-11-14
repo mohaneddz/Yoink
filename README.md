@@ -64,6 +64,8 @@ Closing the window keeps Yoink running in the system tray by default, including 
 
 Desktop notifications can be enabled separately for completed and failed downloads. Background channel checks can be paused globally; each saved channel retains its own check interval. Failed checks remain due for another attempt.
 
+**Settings > System Info** can check for a newer published Yoink release and open its release page. This is a manual check; releases are installed by the user.
+
 History supports date, result, source, and format filters. Export opens a save dialog and exports the currently filtered records.
 
 Data (settings, the SQLite database, provisioned tools, and logs) is stored under
