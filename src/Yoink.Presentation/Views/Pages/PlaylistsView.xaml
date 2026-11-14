@@ -14,6 +14,7 @@
     <UserControl.Resources>
         <conv:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
         <conv:PlaylistAvailabilityToBrushConverter x:Key="AvailabilityBrushConverter"/>
+        <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <ContextMenu x:Key="PlaylistBatchMenu">
@@ -43,6 +44,8 @@
         <StackPanel>
             <shared:PageHeaderView HeaderTitle="PLAYLISTS" HeaderTagline="BATCH. ORGANIZE. DOWNLOAD."/>
             <TextBlock Style="{StaticResource StatusMessageText}" Text="{Binding StatusMessage}" Margin="0,0,0,14"/>
+            <ProgressBar Style="{StaticResource IndeterminateProgress}" IsIndeterminate="True" Margin="0,0,0,14"
+                         Visibility="{Binding IsInspecting, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
             <!-- Source bar -->
             <Grid Margin="0,0,0,20">
@@ -58,9 +61,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="#FFE8281E" Width="22" Height="16" Margin="12,0,10,0" VerticalAlignment="Center">
-                            <Path Data="{StaticResource IconPlay}" Fill="White" Width="9" Height="9" Stretch="Uniform"/>
-                        </Border>
+                        <Path Grid.Column="0" Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="19" Height="19" Stroke="{DynamicResource TextMutedBrush}" Margin="12,0,10,0" VerticalAlignment="Center"/>
                         <TextBox Grid.Column="1" Text="{Binding PlaylistUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11"
                                  Tag="Paste a playlist URL (YouTube, SoundCloud, Bandcamp, etc.)..."/>
                     </Grid>
@@ -81,10 +82,8 @@
                     <StackPanel>
                         <TextBlock Text="TYPE DETECTED" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                         <StackPanel Orientation="Horizontal">
-                            <Border Background="#FFE8281E" Width="18" Height="13" Margin="0,0,8,0"
-                                    Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Path Data="{StaticResource IconPlay}" Fill="White" Width="7" Height="7" Stretch="Uniform"/>
-                            </Border>
+                            <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{DynamicResource OrangePrimaryBrush}" Margin="0,0,8,0"
+                                  Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             <TextBlock Text="{Binding DetectedTypeDisplay}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{StaticResource SuccessBrush}" Margin="10,0,0,0" VerticalAlignment="Center"
                                   Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -93,7 +92,9 @@
                 </Border>
             </Grid>
 
-            <Grid>
+            <TextBlock Text="Paste a playlist link and choose Inspect to see its entries." Style="{StaticResource MetaText}" Margin="0,12,0,0"
+                       Visibility="{Binding HasPlaylist, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+            <Grid Visibility="{Binding HasPlaylist, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="20"/>
@@ -121,8 +122,6 @@
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                     <Ellipse Width="18" Height="18" Fill="{StaticResource OrangePrimaryBrush}"/>
                                     <TextBlock Text="{Binding Creator}" Foreground="{StaticResource OrangePrimaryBrush}" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" VerticalAlignment="Center"
-                                          Visibility="{Binding CreatorVerified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                     <Path Data="{StaticResource IconFilm}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextMutedBrush}" Margin="0,0,5,0"/>
@@ -277,8 +276,6 @@
                             <TextBlock Text="VIDEO QUALITY" Style="{StaticResource FieldLabel}"/>
                             <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding VideoQualityOptions}" SelectedItem="{Binding VideoQuality}" Margin="0,0,0,12"/>
 
-                            <TextBlock Text="AUDIO QUALITY" Style="{StaticResource FieldLabel}"/>
-                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding AudioQualityOptions}" SelectedItem="{Binding AudioQuality}" Margin="0,0,0,12"/>
 
                             <Grid Margin="0,0,0,12">
                                 <StackPanel>
@@ -324,7 +321,7 @@
                             </StackPanel>
 
                             <TextBlock Text="NUMBERING PATTERN" Style="{StaticResource FieldLabel}"/>
-                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding NumberingOptions}" SelectedItem="{Binding NumberingPattern}"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding NumberingOptions}" SelectedItem="{Binding NumberingPattern}" ToolTip="Controls the playlist index token in the naming template."/>
                         </StackPanel>
                     </Border>
 
@@ -336,7 +333,6 @@
                             <Grid Margin="0,0,0,10"><TextBlock Text="Unavailable" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding UnavailableCount}" FontWeight="Bold" HorizontalAlignment="Right"/></Grid>
                             <Grid Margin="0,0,0,10"><TextBlock Text="Selected" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding SelectedCount}" FontWeight="Bold" HorizontalAlignment="Right"/></Grid>
                             <Grid Margin="0,0,0,10"><TextBlock Text="Total duration (est.)" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding TotalDurationText}" FontWeight="Bold" HorizontalAlignment="Right"/></Grid>
-                            <Grid><TextBlock Text="Required space (est.)" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding RequiredSpaceText}" FontWeight="Bold" HorizontalAlignment="Right"/></Grid>
                         </StackPanel>
                     </Border>
                 </StackPanel>

@@ -27,6 +27,7 @@ public partial class PlaylistsViewModel : ObservableObject
     private readonly INavigationService _navigation;
     private readonly ILibraryRepository _library;
     private readonly ICollectionView _filteredEntries;
+    private int _urlVersion;
 
     public PlaylistsViewModel(
         IMediaInspector inspector,
@@ -52,12 +53,12 @@ public partial class PlaylistsViewModel : ObservableObject
     [ObservableProperty] private string _playlistThumbnailUrl = string.Empty;
     [ObservableProperty] private string _playlistTitle = "No playlist loaded";
     [ObservableProperty] private string _creator = string.Empty;
-    [ObservableProperty] private bool _creatorVerified;
     [ObservableProperty] private string _videoCountText = "0 videos";
     [ObservableProperty] private string _totalDurationText = "—";
     [ObservableProperty] private string _visibility = "—";
     [ObservableProperty] private string _description = string.Empty;
     [ObservableProperty] private bool _isInspecting;
+    [ObservableProperty] private bool _hasPlaylist;
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isDetectedTypeValid;
 
@@ -74,7 +75,6 @@ public partial class PlaylistsViewModel : ObservableObject
 
     [ObservableProperty] private string _commonFormat = "MP4";
     [ObservableProperty] private string _videoQuality = "Best Quality";
-    [ObservableProperty] private string _audioQuality = "Best";
     [ObservableProperty] private string _subtitleLanguage = "English";
     [ObservableProperty] private bool _embedSubtitles = true;
     [ObservableProperty] private string _namingTemplate = "%(playlist_index)02d - %(title)s [%(id)s].%(ext)s";
@@ -88,8 +88,6 @@ public partial class PlaylistsViewModel : ObservableObject
     public ObservableCollection<string> FormatOptions { get; } = new() { "MP4", "MKV", "WEBM" };
     public ObservableCollection<string> VideoQualityOptions { get; } =
         new() { "Best Quality", "2160p", "1440p", "1080p", "720p", "480p", "360p" };
-    public ObservableCollection<string> AudioQualityOptions { get; } =
-        new() { "Best", "320 kbps", "256 kbps", "192 kbps", "128 kbps" };
     public ObservableCollection<string> SubtitleOptions { get; } = new() { "None", "English" };
     public ObservableCollection<string> NumberingOptions { get; } =
         new() { "Sequential (01, 02, 03)", "Plain (1, 2, 3)", "None" };
@@ -98,7 +96,6 @@ public partial class PlaylistsViewModel : ObservableObject
     public int AvailableCount => Entries.Count(e => e.Availability == PlaylistEntryAvailability.Available);
     public int UnavailableCount => Entries.Count(e => e.Availability != PlaylistEntryAvailability.Available);
     public int SelectedCount => Entries.Count(e => e.IsSelected);
-    public string RequiredSpaceText => "—";
     public string EstimatedDurationText => TotalDurationText;
 
     private void OnEntryPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -149,10 +146,12 @@ public partial class PlaylistsViewModel : ObservableObject
         }
 
         IsInspecting = true;
+        var version = _urlVersion;
         StatusMessage = "Inspecting playlist…";
         try
         {
             var result = await _inspector.InspectPlaylistAsync(PlaylistUrl);
+            if (version != _urlVersion) return;
             if (result.IsFailure)
             {
                 StatusMessage = result.Error ?? "Playlist inspection failed.";
@@ -161,6 +160,10 @@ public partial class PlaylistsViewModel : ObservableObject
 
             ApplyPlaylist(result.Value!);
             StatusMessage = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            if (version == _urlVersion) StatusMessage = $"Could not inspect playlist: {ex.Message}";
         }
         finally
         {
@@ -179,6 +182,20 @@ public partial class PlaylistsViewModel : ObservableObject
 
         IsDetectedTypeValid = !string.IsNullOrWhiteSpace(value) && (value.Contains("list=", StringComparison.OrdinalIgnoreCase) || value.Contains("/playlist", StringComparison.OrdinalIgnoreCase) || _inspector.DetectKind(value) == MediaSourceKind.Playlist);
         OnPropertyChanged(nameof(DetectedTypeDisplay));
+        _urlVersion++;
+        if (HasPlaylist || IsInspecting)
+        {
+            HasPlaylist = false;
+            PlaylistThumbnailUrl = string.Empty;
+            PlaylistTitle = "No playlist loaded";
+            Creator = string.Empty;
+            VideoCountText = "0 videos";
+            TotalDurationText = "—";
+            foreach (var entry in Entries) entry.PropertyChanged -= OnEntryPropertyChanged;
+            Entries.Clear();
+            RaiseCountsChanged();
+            StatusMessage = "Link changed. Inspect it to load the new playlist.";
+        }
     }
 
     [RelayCommand]
@@ -287,7 +304,7 @@ public partial class PlaylistsViewModel : ObservableObject
                 VideoContainer = CommonFormat.ToLowerInvariant(),
                 AudioContainer = settings.PreferredAudioContainer,
                 OutputFolder = folder,
-                FilenameTemplate = "%(title)s [%(id)s].%(ext)s",
+                FilenameTemplate = PlaylistFileNaming.Resolve(NamingTemplate, entry.Index, NumberingPattern),
                 EmbedSubtitles = EmbedSubtitles && SubtitleLanguage != "None",
                 EmbedMetadata = true,
                 SubtitleLanguages = SubtitleLanguage == "None" ? "en.*" : $"{MapLang(SubtitleLanguage)}.*",
@@ -340,7 +357,7 @@ public partial class PlaylistsViewModel : ObservableObject
                 Duration = Formatting.Duration(e.DurationSeconds),
                 Channel = e.Uploader ?? m.Uploader ?? string.Empty,
                 Availability = MapAvailability(e.Availability),
-                Format = "Best",
+                Format = "Auto",
                 ThumbnailUrl = e.ThumbnailUrl ?? string.Empty,
                 IsSelected = true
             };
@@ -350,6 +367,12 @@ public partial class PlaylistsViewModel : ObservableObject
         }
 
         _filteredEntries.SafeRefresh();
+        HasPlaylist = true;
+        RaiseCountsChanged();
+    }
+
+    private void RaiseCountsChanged()
+    {
         OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(AvailableCount));
         OnPropertyChanged(nameof(UnavailableCount));

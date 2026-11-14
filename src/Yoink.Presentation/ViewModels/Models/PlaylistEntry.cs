@@ -21,6 +21,6 @@ public partial class PlaylistEntry : ObservableObject
     [ObservableProperty] private string _duration = string.Empty;
     [ObservableProperty] private string _channel = string.Empty;
     [ObservableProperty] private PlaylistEntryAvailability _availability = PlaylistEntryAvailability.Available;
-    [ObservableProperty] private string _format = "Best (4K)";
+    [ObservableProperty] private string _format = "Auto";
     [ObservableProperty] private bool _previouslyDownloaded;
 }
