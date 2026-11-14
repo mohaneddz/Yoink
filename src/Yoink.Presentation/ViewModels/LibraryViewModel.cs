@@ -77,11 +77,14 @@ public partial class LibraryViewModel : ObservableObject
         {
             var entries = await _repository.GetAllAsync();
             if (version != _loadVersion) return;
+            var mapped = await Task.Run(() => entries.Select(Map).ToList());
+            if (version != _loadVersion) return;
             _all.Clear();
-            foreach (var e in entries) _all.Add(Map(e));
+            _all.AddRange(mapped);
+            ApplyView();
+            _ = RefreshMissingFilesAsync(mapped, version);
             await BuildGroupsAsync();
             if (version != _loadVersion) return;
-            ApplyView();
             StatusMessage = $"Library ready · {_all.Count} item{(_all.Count == 1 ? "" : "s")}.";
         }
         catch (Exception ex)
@@ -91,6 +94,14 @@ public partial class LibraryViewModel : ObservableObject
             EmptyMessage = "Could not load the library. Use Rescan library to try again.";
         }
         finally { if (version == _loadVersion) IsLoading = false; }
+    }
+
+    private async Task RefreshMissingFilesAsync(IReadOnlyList<LibraryItem> items, int version)
+    {
+        // Disk and network paths can stall. Check them after the library is visible.
+        var missing = await Task.Run(() => items.Where(item => !File.Exists(item.FilePath)).ToArray());
+        if (version != _loadVersion) return;
+        foreach (var item in missing) item.IsMissing = true;
     }
 
     private bool IsVisible(LibraryItem item) => !_settings.Current.HidePrivateVideos
@@ -382,7 +393,7 @@ public partial class LibraryViewModel : ObservableObject
             ResolutionText = string.IsNullOrWhiteSpace(e.ResolutionText) ? "—" : e.ResolutionText,
             FrameRateText = e.Fps is { } f ? $"{f:0} FPS" : "—",
             SourceUrl = e.SourceUrl,
-            IsMissing = !File.Exists(e.FilePath)
+            IsMissing = false
         };
 
         foreach (var tag in (e.TagsCsv ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
