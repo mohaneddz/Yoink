@@ -16,7 +16,7 @@ namespace Yoink.Infrastructure.Proxy;
 public sealed class TorManager : IDisposable
 {
     private const string TorExpertBundleUrl =
-        "https://dist.torproject.org/torbrowser/16.0/tor-expert-bundle-windows-x86_64-16.0.tar.gz";
+        "https://archive.torproject.org/tor-package-archive/torbrowser/16.0/tor-expert-bundle-windows-x86_64-16.0.tar.gz";
 
     /// <summary>Port chosen to avoid collisions with Tor Browser (9150) or a system Tor (9050).</summary>
     public const int SocksPort = 9152;

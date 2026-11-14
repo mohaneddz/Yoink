@@ -43,7 +43,16 @@ public sealed class ProxyResolver : IProxyResolver
         }
 
         // Tier 2: start (or reuse) the managed headless Tor daemon
-        var started = await _torManager.EnsureRunningAsync(null, ct).ConfigureAwait(false);
+        bool started;
+        try
+        {
+            started = await _torManager.EnsureRunningAsync(null, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Managed Tor setup failed for {Url}", url);
+            started = false;
+        }
         if (started)
         {
             _logger.LogInformation("Using managed Tor proxy on port {Port}", TorManager.SocksPort);
