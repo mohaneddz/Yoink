@@ -36,6 +36,65 @@ public class MediaInspectionCacheTests
     }
 
     [Fact]
+    public async Task Different_urls_inspect_concurrently()
+    {
+        var cache = new MediaInspectionCache();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var started = 0;
+        async Task<Result<MediaMetadata>> Inspect(CancellationToken ct)
+        {
+            Interlocked.Increment(ref started);
+            await release.Task.WaitAsync(ct);
+            return Result<MediaMetadata>.Success(Media());
+        }
+
+        var first = cache.GetAsync(Key, Inspect, false, default);
+        var second = cache.GetAsync(("https://example.com/another", "", ""), Inspect, false, default);
+        Assert.Equal(2, started);
+        release.SetResult();
+        await Task.WhenAll(first, second);
+    }
+
+    [Fact]
+    public async Task Cache_duration_can_be_disabled_or_extended()
+    {
+        var clock = new TestClock();
+        var cache = new MediaInspectionCache(clock);
+        var calls = 0;
+        Task<Result<MediaMetadata>> Inspect(CancellationToken _)
+        {
+            calls++;
+            return Task.FromResult(Result<MediaMetadata>.Success(Media()));
+        }
+
+        await cache.GetAsync(Key, Inspect, false, default, 0);
+        await cache.GetAsync(Key, Inspect, false, default, 0);
+        Assert.Equal(2, calls);
+        await cache.GetAsync(Key, Inspect, false, default, 5);
+        clock.Now = clock.Now.AddMinutes(3);
+        await cache.GetAsync(Key, Inspect, false, default, 5);
+        Assert.Equal(3, calls);
+    }
+
+    [Fact]
+    public async Task Forced_refresh_cannot_be_overwritten_by_older_in_flight_result()
+    {
+        var cache = new MediaInspectionCache();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var old = cache.GetAsync(Key, async ct =>
+        {
+            await release.Task.WaitAsync(ct);
+            return Result<MediaMetadata>.Success(Media());
+        }, false, default);
+        var freshMedia = Media();
+        var fresh = await cache.GetAsync(Key, _ => Task.FromResult(Result<MediaMetadata>.Success(freshMedia)), true, default);
+        release.SetResult();
+        await old;
+        var cached = await cache.GetAsync(Key, _ => throw new Exception("Should reuse fresh result"), false, default);
+        Assert.Same(fresh.Value, cached.Value);
+    }
+
+    [Fact]
     public async Task Forced_refresh_and_connection_settings_bypass_cached_metadata()
     {
         var cache = new MediaInspectionCache();
