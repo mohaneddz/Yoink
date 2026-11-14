@@ -55,7 +55,8 @@ public partial class App : System.Windows.Application
             MainWindow = mainWindow;
             mainWindow.Closed += (_, _) => Shutdown();
             services.GetRequiredService<ShellViewModel>().Initialize();
-            try { _tray = new TrayService(mainWindow, services.GetRequiredService<DownloadCoordinator>(), settings); }
+            try { _tray = new TrayService(mainWindow, services.GetRequiredService<DownloadCoordinator>(), settings,
+                services.GetRequiredService<ChannelWatcherService>()); }
             catch (Exception ex) { AppLog.Error("Could not create system tray icon.", ex); }
             var startHidden = settings.Current.StartMinimized || e.Args.Contains("--background", StringComparer.OrdinalIgnoreCase);
             if (!startHidden || _tray is null) mainWindow.Show();

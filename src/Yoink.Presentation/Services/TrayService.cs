@@ -14,6 +14,7 @@ public sealed class TrayService : IDisposable
     private readonly MainWindow _window;
     private readonly DownloadCoordinator _downloads;
     private readonly ISettingsService _settings;
+    private readonly ChannelWatcherService _channels;
     private readonly Forms.NotifyIcon _icon;
     private readonly Forms.ContextMenuStrip _menu;
     private readonly Icon _image;
@@ -21,11 +22,12 @@ public sealed class TrayService : IDisposable
     private readonly HashSet<QueueJob> _notified = new();
     private bool _preventingSleep;
 
-    public TrayService(MainWindow window, DownloadCoordinator downloads, ISettingsService settings)
+    public TrayService(MainWindow window, DownloadCoordinator downloads, ISettingsService settings, ChannelWatcherService channels)
     {
         _window = window;
         _downloads = downloads;
         _settings = settings;
+        _channels = channels;
         using var stream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Yoink;component/app.ico"))!.Stream;
         using var image = new Icon(stream);
         _image = (Icon)image.Clone();
@@ -41,6 +43,7 @@ public sealed class TrayService : IDisposable
         _icon.BalloonTipClicked += (_, _) => OnUi(ShowWindow);
         foreach (var job in downloads.Jobs.Where(IsTerminal)) _notified.Add(job);
         _downloads.JobsChanged += OnJobsChanged;
+        _channels.NewUploadsFound += OnNewUploadsFound;
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _timer.Tick += (_, _) => OnJobsChanged(this, EventArgs.Empty);
         _timer.Start();
@@ -95,6 +98,21 @@ public sealed class TrayService : IDisposable
         ? "Open Yoink for details."
         : title.Length <= 90 ? title : title[..87] + "...";
 
+    private void OnNewUploadsFound(string channelName, string channelUrl, int count)
+    {
+        if (!_window.Dispatcher.CheckAccess())
+        {
+            OnUi(() => OnNewUploadsFound(channelName, channelUrl, count));
+            return;
+        }
+        if (!_settings.Current.DesktopNotifications || !_settings.Current.NotifyOnNewUploads) return;
+        if (_settings.Current.HidePrivateVideos && Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(channelUrl)) return;
+        _icon.ShowBalloonTip(5000,
+            count == 1 ? "New channel upload" : $"{count} new channel uploads",
+            $"{ShortTitle(channelName)} has {count} new upload{(count == 1 ? "" : "s")}. Open Yoink to review.",
+            Forms.ToolTipIcon.Info);
+    }
+
     private void UpdateBackgroundState()
     {
         var active = _downloads.ActiveJobCount;
@@ -110,6 +128,7 @@ public sealed class TrayService : IDisposable
     {
         _timer.Stop();
         _downloads.JobsChanged -= OnJobsChanged;
+        _channels.NewUploadsFound -= OnNewUploadsFound;
         _window.TrayAvailable = false;
         if (_preventingSleep) SetThreadExecutionState(0x80000000u);
         _icon.Visible = false;

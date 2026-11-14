@@ -63,6 +63,7 @@ Closing the window keeps Yoink running in the system tray by default, including 
 **Settings > General** includes close/minimize-to-tray, start with Windows, start minimized, interrupted-download recovery, notifications, and sleep protection during downloads. Windows startup and interrupted-download recovery are opt-in; enable them and save settings. Manually paused downloads stay paused on startup. Sleep protection allows the display to turn off while downloads continue.
 
 Desktop notifications can be enabled separately for completed and failed downloads. Background channel checks can be paused globally; each saved channel retains its own check interval. Failed checks remain due for another attempt.
+Channel checks remember recent upload IDs and can notify when new videos appear. The first check of an existing channel establishes a baseline and does not announce its older uploads. **Settings > General** can disable these channel alerts independently.
 
 **Settings > System Info** can check for a newer published Yoink release and open its release page. This is a manual check; releases are installed by the user.
 

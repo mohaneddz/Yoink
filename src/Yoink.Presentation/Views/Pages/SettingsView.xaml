@@ -192,6 +192,13 @@
                                 </StackPanel>
                                 <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding NotifyOnFailure}" HorizontalAlignment="Right"/>
                             </Grid>
+                            <Grid Margin="0,0,0,14" IsEnabled="{Binding DesktopNotifications}">
+                                <StackPanel HorizontalAlignment="Left">
+                                    <TextBlock Text="New channel uploads" Style="{StaticResource SettingTitle}"/>
+                                    <TextBlock Text="Notify when a saved channel has new videos." Style="{StaticResource SettingHint}"/>
+                                </StackPanel>
+                                <ToggleButton Style="{StaticResource ToggleSwitch}" IsChecked="{Binding NotifyOnNewUploads}" HorizontalAlignment="Right"/>
+                            </Grid>
                             <Grid Margin="0,0,0,20">
                                 <StackPanel HorizontalAlignment="Left">
                                     <TextBlock Text="Sound notifications" Style="{StaticResource SettingTitle}"/>

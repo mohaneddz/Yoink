@@ -42,6 +42,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _desktopNotifications = true;
     [ObservableProperty] private bool _notifyOnCompletion = true;
     [ObservableProperty] private bool _notifyOnFailure = true;
+    [ObservableProperty] private bool _notifyOnNewUploads = true;
     [ObservableProperty] private bool _soundNotifications;
     [ObservableProperty] private bool _closeToTray;
     [ObservableProperty] private bool _minimizeToTray;
@@ -127,6 +128,7 @@ public partial class SettingsViewModel : ObservableObject
         DesktopNotifications = s.DesktopNotifications;
         NotifyOnCompletion = s.NotifyOnCompletion;
         NotifyOnFailure = s.NotifyOnFailure;
+        NotifyOnNewUploads = s.NotifyOnNewUploads;
         SoundNotifications = s.SoundNotifications;
         CloseToTray = s.CloseToTray;
         MinimizeToTray = s.MinimizeToTray;
@@ -170,6 +172,7 @@ public partial class SettingsViewModel : ObservableObject
         s.DesktopNotifications = DesktopNotifications;
         s.NotifyOnCompletion = NotifyOnCompletion;
         s.NotifyOnFailure = NotifyOnFailure;
+        s.NotifyOnNewUploads = NotifyOnNewUploads;
         s.SoundNotifications = SoundNotifications;
         s.CloseToTray = CloseToTray;
         s.MinimizeToTray = MinimizeToTray;
