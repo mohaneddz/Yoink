@@ -25,6 +25,7 @@ public partial class HistoryViewModel : ObservableObject
     private readonly List<HistoryRecord> _all = new();
     private int _loadVersion;
     private bool _updatingFormats;
+    private bool _updatingSources;
 
     public HistoryViewModel(
         InspectorViewModel inspector,
@@ -48,6 +49,8 @@ public partial class HistoryViewModel : ObservableObject
     [ObservableProperty] private string _dateRangeText = "All time";
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private string _statusMessage = string.Empty;
+    [ObservableProperty] private string _emptyMessage = "Completed and failed downloads will be recorded here.";
+    [ObservableProperty] private string _emptyTitle = "No download history yet";
     public ObservableCollection<string> DateRangeOptions { get; } = new() { "All time", "Today", "Past 7 days", "Past 30 days", "This year" };
     [ObservableProperty] private string _resultFilter = "All Results";
     [ObservableProperty] private string _sourceTypeFilter = "All Sources";
@@ -57,7 +60,7 @@ public partial class HistoryViewModel : ObservableObject
     public ObservableCollection<string> ResultFilterOptions { get; } =
         new() { "All Results", "Success", "Failed", "Cancelled", "Partial" };
     public ObservableCollection<string> SourceTypeOptions { get; } =
-        new() { "All Sources", "YouTube", "Vimeo", "Other" };
+        new() { "All Sources" };
     public ObservableCollection<string> FormatOptions { get; } = new() { "All Formats" };
 
     [ObservableProperty] private HistoryRecord? _selectedRecord;
@@ -65,7 +68,7 @@ public partial class HistoryViewModel : ObservableObject
     partial void OnSearchTextChanged(string value) => ApplyFilters();
     partial void OnDateRangeTextChanged(string value) => ApplyFilters();
     partial void OnResultFilterChanged(string value) => ApplyFilters();
-    partial void OnSourceTypeFilterChanged(string value) => ApplyFilters();
+    partial void OnSourceTypeFilterChanged(string value) { if (!_updatingSources) ApplyFilters(); }
     partial void OnFormatFilterChanged(string value) { if (!_updatingFormats) ApplyFilters(); }
 
     partial void OnSelectedRecordChanged(HistoryRecord? value)
@@ -106,6 +109,20 @@ public partial class HistoryViewModel : ObservableObject
     {
         var visible = _all.Where(r => !_settings.Current.HidePrivateVideos
             || !Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(r.SourceUrl)).ToList();
+        var sources = new[] { "All Sources" }.Concat(visible.Select(r => SourceHost(r.SourceUrl))
+            .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(host => host, StringComparer.OrdinalIgnoreCase)).ToArray();
+        if (!SourceTypeOptions.SequenceEqual(sources))
+        {
+            var previous = SourceTypeFilter;
+            _updatingSources = true;
+            try
+            {
+                SourceTypeOptions.Clear();
+                foreach (var source in sources) SourceTypeOptions.Add(source);
+                SourceTypeFilter = sources.Contains(previous) ? previous : "All Sources";
+            }
+            finally { _updatingSources = false; }
+        }
         var formats = new[] { "All Formats" }.Concat(visible.Select(r => r.Format)
             .Where(f => !string.IsNullOrWhiteSpace(f)).Distinct()).ToArray();
         if (!FormatOptions.SequenceEqual(formats))
@@ -148,7 +165,7 @@ public partial class HistoryViewModel : ObservableObject
 
         if (SourceTypeFilter != "All Sources")
         {
-            query = query.Where(r => MatchesSource(r.SourceUrl, SourceTypeFilter));
+            query = query.Where(r => string.Equals(SourceHost(r.SourceUrl), SourceTypeFilter, StringComparison.OrdinalIgnoreCase));
         }
 
         if (FormatFilter != "All Formats")
@@ -161,15 +178,16 @@ public partial class HistoryViewModel : ObservableObject
         {
             Records.Add(r);
         }
+        if (SelectedRecord is not null && !Records.Contains(SelectedRecord)) SelectedRecord = null;
+        EmptyMessage = _all.Count == 0
+            ? "Completed and failed downloads will be recorded here."
+            : "No records match these filters. Choose another date or clear the filters.";
+        EmptyTitle = _all.Count == 0 ? "No download history yet" : "No matching records";
     }
 
-    private static bool MatchesSource(string url, string filter) => filter switch
-    {
-        "YouTube" => url.Contains("youtu", StringComparison.OrdinalIgnoreCase),
-        "Vimeo" => url.Contains("vimeo", StringComparison.OrdinalIgnoreCase),
-        "Other" => !url.Contains("youtu", StringComparison.OrdinalIgnoreCase) && !url.Contains("vimeo", StringComparison.OrdinalIgnoreCase),
-        _ => true
-    };
+    private static string SourceHost(string url) => Uri.TryCreate(url, UriKind.Absolute, out var uri)
+        ? uri.Host.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? uri.Host[4..] : uri.Host
+        : "Unknown source";
 
     [RelayCommand]
     private void RetrySelected()

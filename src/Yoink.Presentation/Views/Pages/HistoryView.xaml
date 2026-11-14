@@ -180,8 +180,8 @@
           <Grid>
             <ProgressBar IsIndeterminate="True" Height="3" VerticalAlignment="Top" Panel.ZIndex="2" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             <shared:EmptyStateView IconData="{StaticResource IconClock}"
-                                   Title="No download history yet"
-                                   Subtitle="Completed and failed downloads will be recorded here."
+                                   Title="{Binding EmptyTitle}"
+                                   Subtitle="{Binding EmptyMessage}"
                                    Visibility="{Binding Records.Count, Converter={StaticResource CountToVisibility}}"/>
             <DataGrid Visibility="{Binding Records.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}"
                       ItemsSource="{Binding Records}" SelectedItem="{Binding SelectedRecord}" Style="{StaticResource FlatDataGrid}"
