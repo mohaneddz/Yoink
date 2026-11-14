@@ -202,6 +202,7 @@ public partial class ChannelsViewModel : ObservableObject
                 Handle = meta.Uploader ?? string.Empty,
                 Verified = false,
                 VideoCount = meta.Entries.Count,
+                RecentUploadIdsJson = ChannelUploadTracker.Compare(null, meta.Entries).Snapshot,
                 SubscriberCount = meta.SubscriberCount ?? 0,
                 Description = meta.Description ?? string.Empty,
                 AvatarUrl = meta.ThumbnailUrl ?? string.Empty,

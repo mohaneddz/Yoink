@@ -16,6 +16,8 @@ public sealed class SavedChannelEntry
     public string Country { get; set; } = string.Empty;
     public DateTimeOffset AddedAt { get; set; } = DateTimeOffset.Now;
     public DateTimeOffset? LastCheckedAt { get; set; }
+    /// <summary>Recent upload IDs from the last successful check, as a JSON array.</summary>
+    public string RecentUploadIdsJson { get; set; } = "[]";
 
     /// <summary>How often to re-check this channel for new uploads (spec §7.4 "Change check frequency").</summary>
     public int CheckFrequencyHours { get; set; } = 6;

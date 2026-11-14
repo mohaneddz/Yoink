@@ -63,7 +63,15 @@ public static class DependencyInjection
         }
         catch
         {
-            // Column already exists or table does not exist yet
+            // Column already exists or table does not exist yet.
+        }
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE Channels ADD COLUMN RecentUploadIdsJson TEXT NOT NULL DEFAULT '[]'").ConfigureAwait(false);
+        }
+        catch
+        {
+            // Column already exists or table does not exist yet.
         }
     }
 }

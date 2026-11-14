@@ -15,6 +15,7 @@ public sealed class ChannelWatcherService
     private readonly ISavedChannelRepository _repository;
     private readonly IMediaInspector _inspector;
     private readonly ISettingsService _settings;
+    public event Action<string, string, int>? NewUploadsFound;
 
     public ChannelWatcherService(ISavedChannelRepository repository, IMediaInspector inspector, ISettingsService settings)
     {
@@ -80,15 +81,18 @@ public sealed class ChannelWatcherService
                 continue;
             }
 
+            var newCount = 0;
             try
             {
-                var result = await _inspector.InspectPlaylistAsync(channel.ChannelUrl, limit: 10).ConfigureAwait(false);
+                var result = await _inspector.InspectPlaylistAsync(UploadsUrl(channel.ChannelUrl), limit: 30).ConfigureAwait(false);
                 if (result.IsFailure)
                 {
                     AppLog.Error($"Failed to check channel '{channel.Name}': {result.Error}");
                     continue;
                 }
-                channel.VideoCount = Math.Max(channel.VideoCount, result.Value!.Entries.Count);
+                var comparison = ChannelUploadTracker.Compare(channel.RecentUploadIdsJson, result.Value!.Entries);
+                channel.RecentUploadIdsJson = comparison.Snapshot;
+                newCount = comparison.NewCount;
             }
             catch (Exception ex)
             {
@@ -101,11 +105,21 @@ public sealed class ChannelWatcherService
             try
             {
                 await _repository.UpdateAsync(channel, ct).ConfigureAwait(false);
+                if (newCount > 0) NewUploadsFound?.Invoke(channel.Name, channel.ChannelUrl, newCount);
             }
             catch (Exception ex)
             {
                 AppLog.Error($"Failed to save check result for channel '{channel.Name}'.", ex);
             }
         }
+    }
+
+    private static string UploadsUrl(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            !(uri.Host.Equals("youtube.com", StringComparison.OrdinalIgnoreCase) ||
+              uri.Host.EndsWith(".youtube.com", StringComparison.OrdinalIgnoreCase))) return url;
+        var trimmed = url.TrimEnd('/');
+        return trimmed.EndsWith("/videos", StringComparison.OrdinalIgnoreCase) ? trimmed : trimmed + "/videos";
     }
 }
