@@ -103,6 +103,7 @@ public partial class ChannelsViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadMore()
     {
+        if (IsBusy) return;
         if (SelectedChannel is not null)
         {
             _uploadLimit += 50;
@@ -152,6 +153,7 @@ public partial class ChannelsViewModel : ObservableObject
     [RelayCommand]
     private async Task AddChannel()
     {
+        if (IsBusy) return;
         var raw = TextSanitizer.TruncateToSingleLine(AddChannelUrl);
         if (string.IsNullOrWhiteSpace(raw))
         {
@@ -406,6 +408,26 @@ public partial class ChannelsViewModel : ObservableObject
         }
 
         Enqueue(latest, start: true);
+        _navigation.Navigate(AppPage.Queue);
+    }
+
+    [RelayCommand]
+    private void DownloadUpload(ChannelUpload? upload)
+    {
+        if (upload is null) return;
+        if (string.IsNullOrWhiteSpace(upload.Url)) { StatusMessage = "This upload has no downloadable URL."; return; }
+        Enqueue(upload, start: true);
+        StatusMessage = $"Downloading {upload.Title}…";
+        _navigation.Navigate(AppPage.Queue);
+    }
+
+    [RelayCommand]
+    private void QueueUpload(ChannelUpload? upload)
+    {
+        if (upload is null) return;
+        if (string.IsNullOrWhiteSpace(upload.Url)) { StatusMessage = "This upload has no downloadable URL."; return; }
+        Enqueue(upload, start: false);
+        StatusMessage = $"Added {upload.Title} to queue.";
         _navigation.Navigate(AppPage.Queue);
     }
 

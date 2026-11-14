@@ -58,13 +58,15 @@
         <!-- Per-upload actions. PlacementTarget.Tag carries the page VM. -->
         <ContextMenu x:Key="UploadRowMenu">
             <MenuItem Header="Download"
-                      Command="{Binding PlacementTarget.Tag.DownloadLatestCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                      Command="{Binding PlacementTarget.Tag.DownloadUploadCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
                     <Path Data="{StaticResource IconDownload}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem Header="Add to queue"
-                      Command="{Binding PlacementTarget.Tag.AddSelectedToQueueCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                      Command="{Binding PlacementTarget.Tag.QueueUploadCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                 <MenuItem.Icon>
                     <Path Data="{StaticResource IconClipboard}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{DynamicResource TextPrimaryBrush}"/>
                 </MenuItem.Icon>
@@ -90,6 +92,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -100,7 +103,6 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="170"/>
-                <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0" Height="42">
                 <TextBox Text="{Binding AddChannelUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FieldTextBox}" BorderThickness="0"
@@ -116,15 +118,15 @@
                     <TextBlock Text="ADD CHANNEL" Foreground="White" FontWeight="Bold"/>
                 </StackPanel>
             </Button>
-            <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Command="{Binding AddChannelCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconSearch}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
-                    <TextBlock Text="INSPECT" FontWeight="Bold"/>
-                </StackPanel>
-            </Button>
         </Grid>
 
-        <Grid Grid.Row="2">
+        <StackPanel Grid.Row="2" Margin="0,0,0,14">
+            <TextBlock Style="{StaticResource StatusMessageText}" Text="{Binding StatusMessage}" Margin="0,0,0,6"/>
+            <ProgressBar Style="{StaticResource IndeterminateProgress}" IsIndeterminate="True"
+                         Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="280"/>
                 <ColumnDefinition Width="20"/>
@@ -163,7 +165,6 @@
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13" TextTrimming="CharacterEllipsis"/>
-                                                <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="11" Height="11" Stroke="{StaticResource SuccessBrush}" Margin="5,0,0,0" Visibility="{Binding Verified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                             </StackPanel>
                                             <TextBlock Text="{Binding SubscriberCountText}" Style="{StaticResource MetaText}" FontSize="11"/>
                                         </StackPanel>
@@ -192,7 +193,6 @@
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="17"/>
-                                    <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" Visibility="{Binding Verified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 </StackPanel>
                                 <TextBlock Text="{Binding HandleMeta}" Style="{StaticResource MetaText}"/>
                             </StackPanel>
@@ -337,7 +337,6 @@
                         <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15"/>
-                                <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource SuccessBrush}" Margin="5,0,0,0" Visibility="{Binding Verified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             </StackPanel>
                             <TextBlock Text="{Binding Handle}" Style="{StaticResource MetaText}"/>
                         </StackPanel>
