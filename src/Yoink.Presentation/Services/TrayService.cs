@@ -63,19 +63,35 @@ public sealed class TrayService : IDisposable
     {
         if (!_window.Dispatcher.CheckAccess()) { OnUi(() => OnJobsChanged(sender, e)); return; }
         _notified.RemoveWhere(job => !_downloads.Jobs.Contains(job) || !IsTerminal(job));
+        var completed = new List<QueueJob>();
+        var failed = new List<QueueJob>();
         foreach (var job in _downloads.Jobs.Where(IsTerminal))
         {
             if (!_notified.Add(job)) continue;
             if (_settings.Current.HidePrivateVideos && Yoink.Domain.Media.SourcePrivacy.IsPrivateSource(job.SourceUrl)) continue;
-            var success = job.Status == QueueJobStatus.Completed;
-            if (_settings.Current.DesktopNotifications)
-                _icon.ShowBalloonTip(4000, success ? "Download completed" : "Download failed",
-                    success ? "Your file is ready in the download folder." : "Open Yoink to review the download and retry.",
-                    success ? Forms.ToolTipIcon.Info : Forms.ToolTipIcon.Warning);
-            if (success && _settings.Current.SoundNotifications) SystemSounds.Asterisk.Play();
+            if (job.Status == QueueJobStatus.Completed) completed.Add(job);
+            else failed.Add(job);
+        }
+        if (completed.Count > 0 && _settings.Current.SoundNotifications) SystemSounds.Asterisk.Play();
+        if (_settings.Current.DesktopNotifications && (completed.Count > 0 || failed.Count > 0))
+        {
+            // Windows only displays one tray balloon at a time. Summarize a batch instead of
+            // replacing each notification with the next job in the same queue update.
+            var title = failed.Count > 0
+                ? failed.Count == 1 ? "Download failed" : $"{failed.Count} downloads failed"
+                : completed.Count == 1 ? "Download completed" : $"{completed.Count} downloads completed";
+            var detail = failed.Count == 1 ? ShortTitle(failed[0].Title)
+                : completed.Count == 1 && failed.Count == 0 ? ShortTitle(completed[0].Title)
+                : $"{completed.Count} completed, {failed.Count} failed. Open Yoink for details.";
+            _icon.ShowBalloonTip(5000, title, detail,
+                failed.Count > 0 ? Forms.ToolTipIcon.Warning : Forms.ToolTipIcon.Info);
         }
         UpdateBackgroundState();
     }
+
+    private static string ShortTitle(string title) => string.IsNullOrWhiteSpace(title)
+        ? "Open Yoink for details."
+        : title.Length <= 90 ? title : title[..87] + "...";
 
     private void UpdateBackgroundState()
     {
