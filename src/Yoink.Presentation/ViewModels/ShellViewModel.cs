@@ -20,6 +20,8 @@ public partial class ShellViewModel : ObservableObject, INavigationService
     private readonly DownloadCoordinator _coordinator;
     private readonly ISettingsService _settings;
     private readonly DispatcherTimer _statusTimer;
+    private DateTime _lastStorageCheck = DateTime.MinValue;
+    private bool _storageCheckRunning;
 
     public ShellViewModel(
         Func<AppPage, object> pageResolver,
@@ -50,6 +52,7 @@ public partial class ShellViewModel : ObservableObject, INavigationService
 
     [ObservableProperty] private AppPage _currentPage;
     [ObservableProperty] private object? _currentPageViewModel;
+    [ObservableProperty] private bool _isInitializing = true;
 
     public SystemStatusViewModel SystemStatus { get; }
     public StatusStripViewModel StatusStrip { get; }
@@ -97,7 +100,20 @@ public partial class ShellViewModel : ObservableObject, INavigationService
         StatusStrip.ActiveDownloads = _coordinator.VisibleActiveJobCount;
         StatusStrip.FilesInQueue = _coordinator.VisiblePendingJobCount;
         StatusStrip.TotalSpeedMbps = _coordinator.VisibleBytesPerSecond / 1_048_576.0;
-        StatusStrip.StorageFreeTb = GetFreeSpaceTb(_settings.Current.DefaultDownloadFolder);
+        if (!_storageCheckRunning && DateTime.UtcNow - _lastStorageCheck > TimeSpan.FromSeconds(30))
+            _ = UpdateStorageAsync();
+    }
+
+    private async Task UpdateStorageAsync()
+    {
+        _storageCheckRunning = true;
+        _lastStorageCheck = DateTime.UtcNow;
+        try
+        {
+            var folder = _settings.Current.DefaultDownloadFolder;
+            StatusStrip.StorageFreeTb = await Task.Run(() => GetFreeSpaceTb(folder));
+        }
+        finally { _storageCheckRunning = false; }
     }
 
     private static double GetFreeSpaceTb(string folder)

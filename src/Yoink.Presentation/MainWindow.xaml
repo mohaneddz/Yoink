@@ -6,6 +6,7 @@
         xmlns:controls="clr-namespace:Yoink.Presentation.Controls"
         xmlns:conv="clr-namespace:Yoink.Presentation.Converters"
         xmlns:nav="clr-namespace:Yoink.Presentation.Navigation"
+        xmlns:shared="clr-namespace:Yoink.Presentation.Views.Shared"
         mc:Ignorable="d"
         Title="Yoink" Height="960" Width="1440" MinHeight="640" MinWidth="1080"
         Icon="app.ico"
@@ -201,6 +202,14 @@
                     </StackPanel>
                 </StackPanel>
 
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Panel.ZIndex="10" Background="{DynamicResource SurfacePrimaryBrush}"
+                Visibility="{Binding IsInitializing, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel Margin="48,32">
+                <TextBlock Text="GETTING THINGS READY" FontSize="22" FontWeight="Bold" Margin="24,0,0,8"/>
+                <TextBlock Text="Restoring your downloads and library…" Foreground="{DynamicResource TextMutedBrush}" Margin="24,0,0,16"/>
+                <shared:SkeletonRowsView/>
             </StackPanel>
         </Border>
     </Grid>

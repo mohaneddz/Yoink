@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Threading;
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Yoink.Application.Abstractions;
@@ -23,6 +25,7 @@ public partial class App : System.Windows.Application
 
         try
         {
+            var startupTimer = Stopwatch.StartNew();
             _instance = new SingleInstanceService();
             if (!_instance.IsPrimary)
             {
@@ -38,7 +41,7 @@ public partial class App : System.Windows.Application
 
             var services = _host.Services;
 
-            // Load settings and prepare the database before any page binds to data.
+            // The shell only needs settings; show it before database and queue work.
             var settings = services.GetRequiredService<ISettingsService>();
             await settings.LoadAsync();
             try
@@ -48,24 +51,28 @@ public partial class App : System.Windows.Application
             catch (Exception ex) { AppLog.Warn($"Could not update Windows startup: {ex.Message}"); }
             ThemeManager.ApplyTheme(settings.Current.Theme);
             AppLog.Verbose = settings.Current.DiagnosticLogging || settings.Current.VerboseOutput;
-            await services.InitializeYoinkDatabaseAsync();
-            await services.GetRequiredService<DownloadCoordinator>().RestoreAsync(settings.Current.ResumeInterruptedDownloads);
-
             var mainWindow = services.GetRequiredService<MainWindow>();
             MainWindow = mainWindow;
             mainWindow.Closed += (_, _) => Shutdown();
-            services.GetRequiredService<ShellViewModel>().Initialize();
+            var shell = services.GetRequiredService<ShellViewModel>();
+            shell.Initialize();
             try { _tray = new TrayService(mainWindow, services.GetRequiredService<DownloadCoordinator>(), settings,
                 services.GetRequiredService<ChannelWatcherService>()); }
             catch (Exception ex) { AppLog.Error("Could not create system tray icon.", ex); }
             var startHidden = settings.Current.StartMinimized || e.Args.Contains("--background", StringComparer.OrdinalIgnoreCase);
             if (!startHidden || _tray is null) mainWindow.Show();
+            AppLog.Info($"Shell shown after {startupTimer.ElapsedMilliseconds} ms.");
             _instance.Listen(() => Dispatcher.BeginInvoke(() =>
             {
                 if (_tray is not null) _tray.ShowWindow();
                 else { mainWindow.Show(); mainWindow.Activate(); }
             }));
-
+            // Let WPF render the shell and its skeleton before starting storage work.
+            await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+            await services.InitializeYoinkDatabaseAsync();
+            await services.GetRequiredService<DownloadCoordinator>().RestoreAsync(settings.Current.ResumeInterruptedDownloads);
+            shell.IsInitializing = false;
+            AppLog.Info($"Startup data ready after {startupTimer.ElapsedMilliseconds} ms.");
             AppLog.Info("Yoink started.");
 
             // Provision yt-dlp/ffmpeg in the background so first launch isn't blocked.
