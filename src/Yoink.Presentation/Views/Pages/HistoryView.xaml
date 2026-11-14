@@ -178,6 +178,8 @@
 
         <Border Grid.Row="4" Style="{StaticResource Card}" Padding="0">
           <Grid>
+            <shared:SkeletonRowsView Panel.ZIndex="3" Background="{DynamicResource CardBackgroundBrush}"
+                                     Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             <ProgressBar IsIndeterminate="True" Height="3" VerticalAlignment="Top" Panel.ZIndex="2" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             <shared:EmptyStateView IconData="{StaticResource IconClock}"
                                    Title="{Binding EmptyTitle}"

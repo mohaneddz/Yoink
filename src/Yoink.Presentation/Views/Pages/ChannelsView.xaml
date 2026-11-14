@@ -175,6 +175,8 @@
                     </ItemsControl>
                 </ScrollViewer>
             </DockPanel>
+            <shared:SkeletonRowsView Grid.Column="0" Panel.ZIndex="2" Background="{DynamicResource SurfacePrimaryBrush}"
+                                     Visibility="{Binding IsLoadingChannels, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
             <!-- Channel detail + uploads (center) -->
             <DockPanel Grid.Column="2">

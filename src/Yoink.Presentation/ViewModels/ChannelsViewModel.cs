@@ -54,6 +54,7 @@ public partial class ChannelsViewModel : ObservableObject
     [ObservableProperty] private string _addChannelUrl = string.Empty;
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isBusy;
+    [ObservableProperty] private bool _isLoadingChannels;
 
     private readonly ICollectionView _uploadsView;
     private int _uploadLimit = 50;
@@ -128,12 +129,15 @@ public partial class ChannelsViewModel : ObservableObject
 
     public async Task LoadAsync()
     {
-        var entries = await _repository.GetAllAsync();
-        Channels.Clear();
-        foreach (var e in entries)
+        IsLoadingChannels = true;
+        try
         {
-            Channels.Add(Map(e));
+            var entries = await _repository.GetAllAsync();
+            Channels.Clear();
+            foreach (var e in entries) Channels.Add(Map(e));
         }
+        catch (Exception ex) { StatusMessage = $"Could not load channels: {ex.Message}"; }
+        finally { IsLoadingChannels = false; }
 
         if (Channels.Count > 0)
         {
