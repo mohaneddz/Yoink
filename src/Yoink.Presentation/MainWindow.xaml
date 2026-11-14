@@ -67,13 +67,13 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button x:Name="MinimizeButton" Style="{StaticResource CaptionButton}" Width="46" Height="52" Click="MinimizeButton_Click" ToolTip="Minimize">
+                    <Button x:Name="MinimizeButton" Style="{StaticResource CaptionButton}" Width="46" Height="52" Click="MinimizeButton_Click" ToolTip="Minimize" AutomationProperties.Name="Minimize window">
                         <Path Data="{StaticResource IconMinus}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White"/>
                     </Button>
-                    <Button x:Name="MaximizeButton" Style="{StaticResource CaptionButton}" Width="46" Height="52" Click="MaximizeButton_Click" ToolTip="Maximize">
+                    <Button x:Name="MaximizeButton" Style="{StaticResource CaptionButton}" Width="46" Height="52" Click="MaximizeButton_Click" ToolTip="Maximize" AutomationProperties.Name="Maximize or restore window">
                         <Path x:Name="MaximizeGlyph" Data="{StaticResource IconSquare}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="White"/>
                     </Button>
-                    <Button x:Name="CloseButton" Style="{StaticResource CloseCaptionButton}" Width="46" Height="52" Click="CloseButton_Click" ToolTip="Close">
+                    <Button x:Name="CloseButton" Style="{StaticResource CloseCaptionButton}" Width="46" Height="52" Click="CloseButton_Click" ToolTip="Close" AutomationProperties.Name="Close window">
                         <Path Data="{StaticResource IconClose}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="White"/>
                     </Button>
                 </StackPanel>

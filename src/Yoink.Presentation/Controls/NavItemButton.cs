@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Automation;
+using System.Windows.Data;
 using System.Windows.Media;
 
 namespace Yoink.Presentation.Controls;
@@ -7,6 +9,8 @@ namespace Yoink.Presentation.Controls;
 /// <summary>Sidebar navigation row: icon + label, with an active-state accent bar and orange highlight.</summary>
 public sealed class NavItemButton : Button
 {
+    public NavItemButton() => SetBinding(AutomationProperties.NameProperty, new Binding(nameof(Label)) { Source = this });
+
     static NavItemButton()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(NavItemButton), new FrameworkPropertyMetadata(typeof(NavItemButton)));
