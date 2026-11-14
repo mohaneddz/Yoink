@@ -33,6 +33,7 @@
             <Separator/>
             <MenuItem Header="Clear search" Command="{Binding PlacementTarget.DataContext.ClearSearchCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
             <MenuItem Header="Rescan library" Command="{Binding PlacementTarget.DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="Remove checked records" Command="{Binding PlacementTarget.DataContext.RemoveSelectedRecordsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
         </ContextMenu>
 
         <Style x:Key="LibraryCard" TargetType="Border">
@@ -170,14 +171,20 @@
 
             <shared:EmptyStateView Grid.Column="0" IconData="{StaticResource IconArchive}"
                                    Title="Your library is empty"
-                                   Subtitle="Downloaded media will be organized here once you complete a download."
+                                   Subtitle="{Binding EmptyMessage}"
                                    Visibility="{Binding RecentDownloads.Count, Converter={StaticResource CountToVisibility}}"/>
             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto"
                           Visibility="{Binding RecentDownloads.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}">
                 <StackPanel>
                     <TextBlock Style="{StaticResource GroupHeader}">
-                        <Run Text="Recent Downloads ("/><Run Text="{Binding RecentDownloads.Count, Mode=OneWay}"/><Run Text=")"/>
+                        <Run Text="Library ("/><Run Text="{Binding RecentDownloads.Count, Mode=OneWay}"/><Run Text=")"/>
                     </TextBlock>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Style="{StaticResource SecondaryButton}" Content="REMOVE CHECKED RECORDS" Command="{Binding RemoveSelectedRecordsCommand}" Padding="10,7" Margin="0,0,12,0"/>
+                        <Button Style="{StaticResource SecondaryButton}" Content="RESCAN LIBRARY" Command="{Binding RefreshCommand}" Padding="10,7"/>
+                    </StackPanel>
+                    <ProgressBar IsIndeterminate="True" Height="3" Margin="0,0,0,10" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource MetaText}" Margin="0,0,0,12"/>
 
                     <!-- Grid View (Card tiles) -->
                     <ItemsControl ItemsSource="{Binding RecentDownloads}" Margin="0,0,0,24"
@@ -377,6 +384,7 @@
                         <TextBlock Text="FILE DETAILS" Style="{StaticResource SectionTitleText}" FontSize="12" Margin="0,0,0,10"/>
                         <TextBlock Text="PATH" Style="{StaticResource FieldLabel}"/>
                         <TextBlock Text="{Binding FilePath}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                        <TextBlock Text="File missing from this location" Foreground="{DynamicResource TextMutedBrush}" FontWeight="Bold" Margin="0,0,0,10" Visibility="{Binding IsMissing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <Grid Margin="0,0,0,8"><TextBlock Text="File Size" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding FileSizeText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
                         <Grid Margin="0,0,0,8"><TextBlock Text="Video Codec" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding VideoCodec}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>
                         <Grid Margin="0,0,0,8"><TextBlock Text="Resolution" Style="{StaticResource MetaText}" HorizontalAlignment="Left"/><TextBlock Text="{Binding ResolutionText}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right"/></Grid>

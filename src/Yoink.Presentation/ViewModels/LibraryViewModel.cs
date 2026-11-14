@@ -19,7 +19,6 @@ public partial class LibraryViewModel : ObservableObject
     private readonly IFfmpegService _ffmpeg;
     private readonly ISettingsService _settings;
     private readonly List<LibraryItem> _all = new();
-    private const int RecentDownloadsLimit = 5;
     private int _loadVersion;
 
     public LibraryViewModel(
@@ -42,6 +41,8 @@ public partial class LibraryViewModel : ObservableObject
     [ObservableProperty] private LibraryMediaFilter _selectedFilter = LibraryMediaFilter.Video;
     [ObservableProperty] private LibraryViewMode _viewMode = LibraryViewMode.Grid;
     [ObservableProperty] private string _statusMessage = string.Empty;
+    [ObservableProperty] private bool _isLoading;
+    [ObservableProperty] private string _emptyMessage = "Downloaded media will appear here.";
 
     public ObservableCollection<LibraryItem> RecentDownloads { get; } = new();
     public ObservableCollection<LibraryGroupSummary> Playlists { get; } = new();
@@ -66,20 +67,26 @@ public partial class LibraryViewModel : ObservableObject
     public async Task LoadAsync()
     {
         var version = ++_loadVersion;
-        RecentDownloads.Clear();
-        Channels.Clear();
-        Playlists.Clear();
-        SelectedItem = null;
-        var entries = await _repository.GetAllAsync();
-        if (version != _loadVersion) return;
-        _all.Clear();
-        foreach (var e in entries)
+        IsLoading = true;
+        StatusMessage = "Scanning library…";
+        try
         {
-            _all.Add(Map(e));
+            var entries = await _repository.GetAllAsync();
+            if (version != _loadVersion) return;
+            _all.Clear();
+            foreach (var e in entries) _all.Add(Map(e));
+            await BuildGroupsAsync();
+            if (version != _loadVersion) return;
+            ApplyView();
+            StatusMessage = $"Library ready · {_all.Count} item{(_all.Count == 1 ? "" : "s")}.";
         }
-
-        await BuildGroupsAsync();
-        ApplyView();
+        catch (Exception ex)
+        {
+            if (version != _loadVersion) return;
+            StatusMessage = $"Could not load library: {ex.Message}";
+            EmptyMessage = "Could not load the library. Use Rescan library to try again.";
+        }
+        finally { if (version == _loadVersion) IsLoading = false; }
     }
 
     private bool IsVisible(LibraryItem item) => !_settings.Current.HidePrivateVideos
@@ -108,7 +115,7 @@ public partial class LibraryViewModel : ObservableObject
         };
 
         RecentDownloads.Clear();
-        foreach (var i in query.Take(RecentDownloadsLimit))
+        foreach (var i in query)
         {
             RecentDownloads.Add(i);
         }
@@ -117,6 +124,9 @@ public partial class LibraryViewModel : ObservableObject
         {
             SelectedItem = RecentDownloads.FirstOrDefault();
         }
+        EmptyMessage = _all.Count == 0
+            ? "Downloaded media will appear here once a download completes."
+            : "No media matches these filters. Try another type or clear the search.";
     }
 
     private async Task BuildGroupsAsync()
@@ -175,19 +185,25 @@ public partial class LibraryViewModel : ObservableObject
     [RelayCommand]
     private void Play()
     {
-        if (SelectedItem is not null)
-        {
-            _system.PlayFile(SelectedItem.FilePath);
-        }
+        OpenSelectedFile();
     }
 
     [RelayCommand]
     private void OpenFile()
     {
-        if (SelectedItem is not null)
+        OpenSelectedFile();
+    }
+
+    private void OpenSelectedFile()
+    {
+        if (SelectedItem is null) return;
+        if (!File.Exists(SelectedItem.FilePath))
         {
-            _system.PlayFile(SelectedItem.FilePath);
+            SelectedItem.IsMissing = true;
+            StatusMessage = "File is missing. Reveal its folder or remove this record from the library.";
+            return;
         }
+        _system.PlayFile(SelectedItem.FilePath);
     }
 
     [RelayCommand]
@@ -196,6 +212,8 @@ public partial class LibraryViewModel : ObservableObject
         if (SelectedItem is not null)
         {
             _system.RevealInExplorer(SelectedItem.FilePath);
+            if (!File.Exists(SelectedItem.FilePath))
+                StatusMessage = "File is missing. Opened its original folder if it still exists.";
         }
     }
 
@@ -213,6 +231,7 @@ public partial class LibraryViewModel : ObservableObject
     {
         if (SelectedItem is null || !File.Exists(SelectedItem.FilePath))
         {
+            StatusMessage = "Select an existing file before converting.";
             return;
         }
 
@@ -261,8 +280,24 @@ public partial class LibraryViewModel : ObservableObject
         }
 
         _all.Remove(SelectedItem);
-        RecentDownloads.Remove(SelectedItem);
-        _ = BuildGroupsAsync();
+        ApplyView();
+        await BuildGroupsAsync();
+        StatusMessage = "Removed the record from your library. The file was not deleted.";
+    }
+
+    [RelayCommand]
+    private async Task RemoveSelectedRecords()
+    {
+        var selected = RecentDownloads.Where(i => i.IsSelected).ToArray();
+        if (selected.Length == 0) { StatusMessage = "Select items to remove first."; return; }
+        foreach (var item in selected)
+        {
+            if (item.EntryId > 0) await _repository.DeleteAsync(item.EntryId);
+            _all.Remove(item);
+        }
+        ApplyView();
+        await BuildGroupsAsync();
+        StatusMessage = $"Removed {selected.Length} library record{(selected.Length == 1 ? "" : "s")}. Files were not deleted.";
     }
 
     private static LibraryItem Map(LibraryEntry e)
