@@ -22,6 +22,7 @@ public sealed class AppSettings
     public bool StartMinimized { get; set; }
     public bool ResumeInterruptedDownloads { get; set; }
     public bool PreventSleepWhileDownloading { get; set; } = true;
+    public bool EnableChannelChecks { get; set; } = true;
 
     // Formats
     public string PreferredVideoContainer { get; set; } = "mp4";

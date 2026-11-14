@@ -49,6 +49,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _startMinimized;
     [ObservableProperty] private bool _resumeInterruptedDownloads;
     [ObservableProperty] private bool _preventSleepWhileDownloading;
+    [ObservableProperty] private bool _enableChannelChecks = true;
     [ObservableProperty] private bool _reuseRecentInspection;
     [ObservableProperty] private int _concurrentFragments = 8;
     public ObservableCollection<int> FragmentOptions { get; } = new() { 1, 2, 4, 8, 16 };
@@ -129,6 +130,7 @@ public partial class SettingsViewModel : ObservableObject
         StartMinimized = s.StartMinimized;
         ResumeInterruptedDownloads = s.ResumeInterruptedDownloads;
         PreventSleepWhileDownloading = s.PreventSleepWhileDownloading;
+        EnableChannelChecks = s.EnableChannelChecks;
         ReuseRecentInspection = s.ReuseRecentInspection;
         HidePrivateVideos = s.HidePrivateVideos;
         ConcurrentFragments = Math.Clamp(s.ConcurrentFragments, 1, 16);
@@ -171,6 +173,7 @@ public partial class SettingsViewModel : ObservableObject
         s.StartMinimized = StartMinimized;
         s.ResumeInterruptedDownloads = ResumeInterruptedDownloads;
         s.PreventSleepWhileDownloading = PreventSleepWhileDownloading;
+        s.EnableChannelChecks = EnableChannelChecks;
         s.ReuseRecentInspection = ReuseRecentInspection;
         s.HidePrivateVideos = HidePrivateVideos;
         s.ConcurrentFragments = Math.Clamp(ConcurrentFragments, 1, 16);

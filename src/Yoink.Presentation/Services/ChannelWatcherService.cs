@@ -14,11 +14,13 @@ public sealed class ChannelWatcherService
 
     private readonly ISavedChannelRepository _repository;
     private readonly IMediaInspector _inspector;
+    private readonly ISettingsService _settings;
 
-    public ChannelWatcherService(ISavedChannelRepository repository, IMediaInspector inspector)
+    public ChannelWatcherService(ISavedChannelRepository repository, IMediaInspector inspector, ISettingsService settings)
     {
         _repository = repository;
         _inspector = inspector;
+        _settings = settings;
     }
 
     /// <summary>Starts the background loop. Fire-and-forget: failures are logged, never thrown to the caller.</summary>
@@ -59,11 +61,13 @@ public sealed class ChannelWatcherService
 
     private async Task CheckDueChannelsAsync(CancellationToken ct)
     {
+        if (!_settings.Current.EnableChannelChecks) return;
         var channels = await _repository.GetAllAsync(ct).ConfigureAwait(false);
         var now = DateTimeOffset.Now;
 
         foreach (var channel in channels)
         {
+            if (!_settings.Current.EnableChannelChecks) return;
             if (string.IsNullOrWhiteSpace(channel.ChannelUrl))
             {
                 continue;
@@ -79,14 +83,17 @@ public sealed class ChannelWatcherService
             try
             {
                 var result = await _inspector.InspectPlaylistAsync(channel.ChannelUrl, limit: 10).ConfigureAwait(false);
-                if (result.IsSuccess)
+                if (result.IsFailure)
                 {
-                    channel.VideoCount = Math.Max(channel.VideoCount, result.Value!.Entries.Count);
+                    AppLog.Error($"Failed to check channel '{channel.Name}': {result.Error}");
+                    continue;
                 }
+                channel.VideoCount = Math.Max(channel.VideoCount, result.Value!.Entries.Count);
             }
             catch (Exception ex)
             {
                 AppLog.Error($"Failed to check channel '{channel.Name}'.", ex);
+                continue;
             }
 
             channel.LastCheckedAt = now;
