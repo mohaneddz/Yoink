@@ -56,22 +56,26 @@ public static class DependencyInjection
         await using var db = await factory.CreateDbContextAsync().ConfigureAwait(false);
         await db.Database.EnsureCreatedAsync().ConfigureAwait(false);
 
-        // Ensure backward-compatible migrations for any missing SQLite columns
-        try
-        {
+        // Check schema before applying the legacy additions; duplicate ALTER exceptions
+        // were being thrown and caught on every normal launch.
+        if (!await HasColumnAsync(db, "Queue", "ThumbnailUrl").ConfigureAwait(false))
             await db.Database.ExecuteSqlRawAsync("ALTER TABLE Queue ADD COLUMN ThumbnailUrl TEXT DEFAULT ''").ConfigureAwait(false);
-        }
-        catch
-        {
-            // Column already exists or table does not exist yet.
-        }
+        if (!await HasColumnAsync(db, "Channels", "RecentUploadIdsJson").ConfigureAwait(false))
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE Channels ADD COLUMN RecentUploadIdsJson TEXT NOT NULL DEFAULT '[]'").ConfigureAwait(false);
+    }
+
+    private static async Task<bool> HasColumnAsync(YoinkDbContext db, string table, string column)
+    {
+        await db.Database.OpenConnectionAsync().ConfigureAwait(false);
         try
         {
-            await db.Database.ExecuteSqlRawAsync("ALTER TABLE Channels ADD COLUMN RecentUploadIdsJson TEXT NOT NULL DEFAULT '[]'").ConfigureAwait(false);
+            await using var command = db.Database.GetDbConnection().CreateCommand();
+            command.CommandText = $"PRAGMA table_info('{table}')";
+            await using var reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+            while (await reader.ReadAsync().ConfigureAwait(false))
+                if (string.Equals(reader.GetString(1), column, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
         }
-        catch
-        {
-            // Column already exists or table does not exist yet.
-        }
+        finally { await db.Database.CloseConnectionAsync().ConfigureAwait(false); }
     }
 }
