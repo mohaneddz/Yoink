@@ -354,8 +354,6 @@
                                 <Image images:CachedImage.Source="{Binding ChannelAvatarUrl}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </Grid>
                             <TextBlock Text="{Binding Channel}" Foreground="{StaticResource OrangePrimaryBrush}" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                            <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" VerticalAlignment="Center"
-                                  Visibility="{Binding ChannelVerified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         </StackPanel>
 
                         <UniformGrid Columns="2" Margin="0,0,0,16">

@@ -25,7 +25,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="40,0,40,24">
         <StackPanel>
 
-            <shared:PageHeaderView HeaderTitle="DOWNLOAD" HeaderTagline="UNIVERSAL MEDIA DOWNLOADER • HIGHEST QUALITY, NO WATERMARKS"/>
+            <shared:PageHeaderView HeaderTitle="DOWNLOAD" HeaderTagline="PASTE A LINK, CHOOSE YOUR FORMAT, AND SAVE"/>
 
             <!-- Source bar -->
             <Grid Margin="0,0,0,20" Height="54">
@@ -43,9 +43,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="#FFE8281E" Width="22" Height="16" Margin="12,0,10,0" VerticalAlignment="Center">
-                            <Path Data="{StaticResource IconPlay}" Fill="White" Width="9" Height="9" Stretch="Uniform"/>
-                        </Border>
+                        <Path Grid.Column="0" Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="19" Height="19" Stroke="{DynamicResource TextMutedBrush}" Margin="12,0,10,0" VerticalAlignment="Center"/>
                         <TextBox Grid.Column="1" Text="{Binding SourceUrl, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource FieldTextBox}" BorderThickness="0" Padding="0,11" VerticalAlignment="Center"
                                  Tag="Paste any video, social, or media URL (YouTube, TikTok, Instagram, Twitter/X, direct link)..."/>
@@ -73,10 +71,8 @@
                     <StackPanel>
                         <TextBlock Text="TYPE DETECTED" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                         <StackPanel Orientation="Horizontal">
-                            <Border Background="#FFE8281E" Width="18" Height="13" Margin="0,0,8,0"
-                                    Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Path Data="{StaticResource IconPlay}" Fill="White" Width="7" Height="7" Stretch="Uniform"/>
-                            </Border>
+                            <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="15" Height="15" Stroke="{DynamicResource OrangePrimaryBrush}" Margin="0,0,8,0"
+                                  Visibility="{Binding IsDetectedTypeValid, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             <TextBlock Text="{Binding DetectedTypeDisplay}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="15" Height="15"
                                   Stroke="{StaticResource SuccessBrush}" Margin="10,0,0,0" VerticalAlignment="Center"
@@ -91,9 +87,7 @@
                     Visibility="{Binding IsInspecting, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Border Background="#FFE8281E" Width="22" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
-                            <Path Data="{StaticResource IconPlay}" Fill="White" Width="9" Height="9" Stretch="Uniform"/>
-                        </Border>
+                        <Path Data="{StaticResource IconLink}" Style="{StaticResource Icon}" Width="19" Height="19" Stroke="{DynamicResource OrangePrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                         <TextBlock Text="FETCHING MEDIA INFORMATION…" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource OrangePrimaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
                     <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,8" Style="{StaticResource IndeterminateProgress}"/>
@@ -128,8 +122,6 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                             <Ellipse Width="22" Height="22" Fill="{StaticResource OrangePrimaryBrush}"/>
                             <TextBlock Text="{Binding ChannelName}" Foreground="{StaticResource OrangePrimaryBrush}" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                            <Path Data="{StaticResource IconCheckCircle}" Style="{StaticResource Icon}" Width="13" Height="13" Stroke="{StaticResource SuccessBrush}" Margin="6,0,0,0" VerticalAlignment="Center"
-                                  Visibility="{Binding ChannelVerified, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                             <TextBlock Text="{Binding DurationText}" Style="{StaticResource MetaText}"/>

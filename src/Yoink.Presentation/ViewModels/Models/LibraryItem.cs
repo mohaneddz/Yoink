@@ -14,7 +14,6 @@ public partial class LibraryItem : ObservableObject
     [ObservableProperty] private string _title = string.Empty;
     [ObservableProperty] private string _channel = string.Empty;
     [ObservableProperty] private string _channelAvatarUrl = string.Empty;
-    [ObservableProperty] private bool _channelVerified;
     public string ChannelInitial => !string.IsNullOrWhiteSpace(Channel) ? Channel.Substring(0, 1).ToUpperInvariant() : "C";
     [ObservableProperty] private string _format = "MP4";
     [ObservableProperty] private string _quality = "1080p";

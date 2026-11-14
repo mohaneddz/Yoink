@@ -93,7 +93,6 @@ public partial class DownloadViewModel : ObservableObject
     [ObservableProperty] private string _title = string.Empty;
     [ObservableProperty] private string _thumbnailUrl = string.Empty;
     [ObservableProperty] private string _channelName = string.Empty;
-    [ObservableProperty] private bool _channelVerified;
     [ObservableProperty] private string _durationText = "—";
     [ObservableProperty] private string _viewCountText = "—";
     [ObservableProperty] private string _uploadedAgoText = "—";
@@ -475,7 +474,6 @@ public partial class DownloadViewModel : ObservableObject
         Title = m.Title;
         ThumbnailUrl = m.ThumbnailUrl ?? string.Empty;
         ChannelName = m.Channel ?? m.Uploader ?? string.Empty;
-        ChannelVerified = m.ChannelFollowerCount is > 100_000;
         DurationText = Formatting.Duration(m.DurationSeconds);
         ViewCountText = m.ViewCount is { } vc ? $"{Formatting.Count(vc)} views" : "—";
         ViewCountFullText = Formatting.FullCount(m.ViewCount);
