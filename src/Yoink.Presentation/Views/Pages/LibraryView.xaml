@@ -26,6 +26,7 @@
         </Style>
 
         <ContextMenu x:Key="LibraryFilterMenu">
+            <MenuItem Header="All media" Command="{Binding PlacementTarget.DataContext.SelectMediaFilterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{x:Static models:LibraryMediaFilter.All}"/>
             <MenuItem Header="Videos" Command="{Binding PlacementTarget.DataContext.SelectMediaFilterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{x:Static models:LibraryMediaFilter.Video}"/>
             <MenuItem Header="Audio" Command="{Binding PlacementTarget.DataContext.SelectMediaFilterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{x:Static models:LibraryMediaFilter.Audio}"/>
             <MenuItem Header="Subtitles" Command="{Binding PlacementTarget.DataContext.SelectMediaFilterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{x:Static models:LibraryMediaFilter.Subtitles}"/>
@@ -127,6 +128,11 @@
 
         <!-- Media type tabs -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,16">
+            <RadioButton Style="{StaticResource FilterTabButton}" GroupName="MediaFilter" Margin="0,0,26,0"
+                         Command="{Binding SelectMediaFilterCommand}" CommandParameter="{x:Static models:LibraryMediaFilter.All}"
+                         IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=All, Mode=OneWay}">
+                <TextBlock Text="ALL"/>
+            </RadioButton>
             <RadioButton Style="{StaticResource FilterTabButton}" GroupName="MediaFilter" Margin="0,0,26,0"
                          Command="{Binding SelectMediaFilterCommand}" CommandParameter="{x:Static models:LibraryMediaFilter.Video}"
                          IsChecked="{Binding SelectedFilter, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Video, Mode=OneWay}">
@@ -380,6 +386,10 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        <TextBox Text="{Binding DataContext.SelectedTagsText, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FieldTextBox}" Tag="Tags separated by commas" Margin="0,0,0,8"/>
+                        <Button Style="{StaticResource SecondaryButton}" Content="SAVE TAGS" Padding="12,8" Margin="0,0,0,16"
+                                Command="{Binding DataContext.SaveTagsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
                         <TextBlock Text="FILE DETAILS" Style="{StaticResource SectionTitleText}" FontSize="12" Margin="0,0,0,10"/>
                         <TextBlock Text="PATH" Style="{StaticResource FieldLabel}"/>
@@ -400,6 +410,8 @@
                                 Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource SecondaryButton}" Content="REVEAL IN FOLDER" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
                                 Command="{Binding DataContext.RevealInFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        <Button Style="{StaticResource SecondaryButton}" Content="LOCATE MOVED FILE" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
+                                Command="{Binding DataContext.LocateFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource SecondaryButton}" Content="COPY SOURCE URL" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"
                                 Command="{Binding DataContext.CopySourceUrlCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                         <Button Style="{StaticResource SecondaryButton}" Content="CONVERT VIDEO" Padding="12,10" Margin="0,0,0,8" HorizontalContentAlignment="Left"

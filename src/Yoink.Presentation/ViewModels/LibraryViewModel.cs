@@ -38,7 +38,7 @@ public partial class LibraryViewModel : ObservableObject
 
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private string _sortBy = "Date Downloaded (Newest)";
-    [ObservableProperty] private LibraryMediaFilter _selectedFilter = LibraryMediaFilter.Video;
+    [ObservableProperty] private LibraryMediaFilter _selectedFilter = LibraryMediaFilter.All;
     [ObservableProperty] private LibraryViewMode _viewMode = LibraryViewMode.Grid;
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isLoading;
@@ -53,6 +53,10 @@ public partial class LibraryViewModel : ObservableObject
     };
 
     [ObservableProperty] private LibraryItem? _selectedItem;
+    [ObservableProperty] private string _selectedTagsText = string.Empty;
+
+    partial void OnSelectedItemChanged(LibraryItem? value) =>
+        SelectedTagsText = value is null ? string.Empty : string.Join(", ", value.Tags);
 
     partial void OnSearchTextChanged(string value) => ApplyView();
     partial void OnSortByChanged(string value) => ApplyView();
@@ -175,6 +179,7 @@ public partial class LibraryViewModel : ObservableObject
 
     private static bool MatchesFilter(DownloadKind kind, LibraryMediaFilter filter) => filter switch
     {
+        LibraryMediaFilter.All => true,
         LibraryMediaFilter.Video => kind == DownloadKind.Video,
         LibraryMediaFilter.Audio => kind == DownloadKind.Audio,
         LibraryMediaFilter.Subtitles => kind == DownloadKind.Subtitles,
@@ -298,6 +303,59 @@ public partial class LibraryViewModel : ObservableObject
         ApplyView();
         await BuildGroupsAsync();
         StatusMessage = $"Removed {selected.Length} library record{(selected.Length == 1 ? "" : "s")}. Files were not deleted.";
+    }
+
+    [RelayCommand]
+    private async Task SaveTags()
+    {
+        if (SelectedItem is not { } item) return;
+        var tags = SelectedTagsText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase).Take(20).ToArray();
+        if (tags.Any(tag => tag.Length > 40))
+        {
+            StatusMessage = "Keep each tag under 40 characters.";
+            return;
+        }
+        var entry = await _repository.FindByPathAsync(item.FilePath);
+        if (entry is null) { StatusMessage = "This library record is no longer available. Rescan and try again."; return; }
+        entry.TagsCsv = string.Join(',', tags);
+        await _repository.UpsertAsync(entry);
+        item.Tags.Clear();
+        foreach (var tag in tags) item.Tags.Add(tag);
+        SelectedTagsText = entry.TagsCsv;
+        StatusMessage = "Tags saved.";
+        ApplyView();
+    }
+
+    [RelayCommand]
+    private async Task LocateFile()
+    {
+        if (SelectedItem is not { } item) return;
+        var path = _system.PickFile(initialPath: Path.GetDirectoryName(item.FilePath));
+        if (path is null) return;
+        if (string.Equals(path, item.FilePath, StringComparison.OrdinalIgnoreCase))
+        {
+            StatusMessage = "This record already points to that file.";
+            return;
+        }
+        if (!File.Exists(path)) { StatusMessage = "Choose an existing file."; return; }
+        var duplicate = await _repository.FindByPathAsync(path);
+        if (duplicate is not null && duplicate.Id != item.EntryId)
+        {
+            StatusMessage = "That file is already in the library.";
+            return;
+        }
+        var entry = await _repository.FindByPathAsync(item.FilePath);
+        if (entry is null) { StatusMessage = "This library record is no longer available. Rescan and try again."; return; }
+        var oldId = entry.Id;
+        entry.Id = 0;
+        entry.FilePath = path;
+        entry.FileSizeBytes = new FileInfo(path).Length;
+        await _repository.UpsertAsync(entry);
+        if (oldId > 0) await _repository.DeleteAsync(oldId);
+        await LoadAsync();
+        SelectedItem = RecentDownloads.FirstOrDefault(i => i.FilePath == path);
+        StatusMessage = "File location updated.";
     }
 
     private static LibraryItem Map(LibraryEntry e)
