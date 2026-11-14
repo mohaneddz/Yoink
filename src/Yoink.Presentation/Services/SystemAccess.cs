@@ -101,6 +101,18 @@ public sealed class SystemAccess : ISystemAccess
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
 
+    public string? PickSaveFile(string filter, string defaultFileName)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = filter,
+            FileName = defaultFileName,
+            AddExtension = true,
+            OverwritePrompt = true
+        };
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
     private static void TryStart(ProcessStartInfo psi)
     {
         try

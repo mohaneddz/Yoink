@@ -46,6 +46,9 @@ public partial class HistoryViewModel : ObservableObject
 
     [ObservableProperty] private string _searchText = string.Empty;
     [ObservableProperty] private string _dateRangeText = "All time";
+    [ObservableProperty] private bool _isLoading;
+    [ObservableProperty] private string _statusMessage = string.Empty;
+    public ObservableCollection<string> DateRangeOptions { get; } = new() { "All time", "Today", "Past 7 days", "Past 30 days", "This year" };
     [ObservableProperty] private string _resultFilter = "All Results";
     [ObservableProperty] private string _sourceTypeFilter = "All Sources";
     [ObservableProperty] private string _formatFilter = "All Formats";
@@ -60,6 +63,7 @@ public partial class HistoryViewModel : ObservableObject
     [ObservableProperty] private HistoryRecord? _selectedRecord;
 
     partial void OnSearchTextChanged(string value) => ApplyFilters();
+    partial void OnDateRangeTextChanged(string value) => ApplyFilters();
     partial void OnResultFilterChanged(string value) => ApplyFilters();
     partial void OnSourceTypeFilterChanged(string value) => ApplyFilters();
     partial void OnFormatFilterChanged(string value) { if (!_updatingFormats) ApplyFilters(); }
@@ -75,22 +79,27 @@ public partial class HistoryViewModel : ObservableObject
     public async Task LoadAsync()
     {
         var version = ++_loadVersion;
-        Records.Clear();
-        SelectedRecord = null;
-        var entries = await _repository.GetAllAsync();
-        if (version != _loadVersion) return;
-        _all.Clear();
-        var i = 1;
-        foreach (var e in entries)
+        IsLoading = true;
+        StatusMessage = "Loading history…";
+        try
         {
-            var record = Map(e, i++);
-            record.RetryAction = () => { SelectedRecord = record; RetrySelected(); };
-            record.CopyUrlAction = () => { SelectedRecord = record; CopySourceUrl(); };
-            record.OpenFolderAction = () => { SelectedRecord = record; OpenFolder(); };
-            _all.Add(record);
+            var entries = await _repository.GetAllAsync();
+            if (version != _loadVersion) return;
+            _all.Clear();
+            var i = 1;
+            foreach (var e in entries)
+            {
+                var record = Map(e, i++);
+                record.RetryAction = () => { SelectedRecord = record; RetrySelected(); };
+                record.CopyUrlAction = () => { SelectedRecord = record; CopySourceUrl(); };
+                record.OpenFolderAction = () => { SelectedRecord = record; OpenFolder(); };
+                _all.Add(record);
+            }
+            ApplyFilters();
+            StatusMessage = $"History ready · {_all.Count} record{(_all.Count == 1 ? "" : "s")}.";
         }
-
-        ApplyFilters();
+        catch (Exception ex) { if (version == _loadVersion) StatusMessage = $"Could not load history: {ex.Message}"; }
+        finally { if (version == _loadVersion) IsLoading = false; }
     }
 
     private void ApplyFilters()
@@ -113,6 +122,15 @@ public partial class HistoryViewModel : ObservableObject
         }
         if (SelectedRecord is not null && !visible.Contains(SelectedRecord)) SelectedRecord = null;
         IEnumerable<HistoryRecord> query = visible;
+        var today = DateTimeOffset.Now.Date;
+        query = DateRangeText switch
+        {
+            "Today" => query.Where(r => r.Timestamp.LocalDateTime.Date >= today),
+            "Past 7 days" => query.Where(r => r.Timestamp >= DateTimeOffset.Now.AddDays(-7)),
+            "Past 30 days" => query.Where(r => r.Timestamp >= DateTimeOffset.Now.AddDays(-30)),
+            "This year" => query.Where(r => r.Timestamp.LocalDateTime.Year == DateTime.Now.Year),
+            _ => query
+        };
 
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
@@ -228,17 +246,18 @@ public partial class HistoryViewModel : ObservableObject
             return;
         }
 
-        var file = _system.PickFile("Log files (*.log)|*.log|Text files (*.txt)|*.txt");
+        var file = _system.PickSaveFile("Log files (*.log)|*.log|Text files (*.txt)|*.txt", "yoink-download.log");
         if (file is not null)
         {
-            File.WriteAllText(file, string.Join(Environment.NewLine, SelectedRecord.LogLines));
+            try { File.WriteAllText(file, string.Join(Environment.NewLine, SelectedRecord.LogLines)); StatusMessage = $"Log saved to {file}"; }
+            catch (Exception ex) { StatusMessage = $"Could not save log: {ex.Message}"; }
         }
     }
 
     [RelayCommand]
     private void ExportHistory()
     {
-        var file = _system.PickFile("CSV files (*.csv)|*.csv");
+        var file = _system.PickSaveFile("CSV files (*.csv)|*.csv", "yoink-history.csv");
         if (file is null)
         {
             return;
@@ -251,7 +270,8 @@ public partial class HistoryViewModel : ObservableObject
             sb.AppendLine($"{Csv(r.Title)},{Csv(r.Channel)},{Csv(r.TimestampText)},{r.Result},{Csv(r.FileSizeText)},{Csv(r.Format)},{Csv(r.FilePath)}");
         }
 
-        File.WriteAllText(file, sb.ToString());
+        try { File.WriteAllText(file, sb.ToString(), Encoding.UTF8); StatusMessage = $"Exported {Records.Count} records to {file}"; }
+        catch (Exception ex) { StatusMessage = $"Could not export history: {ex.Message}"; }
     }
 
     private static string Csv(string value) => $"\"{value.Replace("\"", "\"\"")}\"";
@@ -259,6 +279,7 @@ public partial class HistoryViewModel : ObservableObject
     [RelayCommand]
     private void ClearFilters()
     {
+        DateRangeText = "All time";
         ResultFilter = "All Results";
         SourceTypeFilter = "All Sources";
         FormatFilter = "All Formats";
@@ -297,6 +318,7 @@ public partial class HistoryViewModel : ObservableObject
             Title = e.Title,
             Channel = e.Channel,
             TimestampText = Formatting.ShortDate(e.Timestamp),
+            Timestamp = e.Timestamp,
             Result = MapResult(e.Outcome),
             Output = string.IsNullOrWhiteSpace(e.OutputPath) ? "—" : Path.GetDirectoryName(e.OutputPath) ?? e.OutputPath,
             FilePath = e.OutputPath,

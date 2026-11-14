@@ -15,4 +15,7 @@ public interface ISystemAccess
 
     /// <summary>Show a file picker; returns null if cancelled.</summary>
     string? PickFile(string? filter = null, string? initialPath = null);
+
+    /// <summary>Show a save dialog; returns null if cancelled.</summary>
+    string? PickSaveFile(string filter, string defaultFileName);
 }

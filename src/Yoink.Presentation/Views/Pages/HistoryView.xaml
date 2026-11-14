@@ -103,18 +103,7 @@
                              Tag="Search history by title, channel, or URL..."/>
                 </Grid>
             </Border>
-            <Border Grid.Column="2" Style="{StaticResource Card}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Path Grid.Column="0" Data="{StaticResource IconCalendar}" Style="{StaticResource Icon}" Width="14" Height="14" Stroke="{DynamicResource TextMutedBrush}" Margin="14,0,10,0"/>
-                    <TextBlock Grid.Column="1" Text="{Binding DateRangeText}" FontSize="13" VerticalAlignment="Center"/>
-                    <Path Grid.Column="2" Data="{StaticResource IconChevronDown}" Style="{StaticResource Icon}" Width="12" Height="12" Stroke="{DynamicResource TextMutedBrush}" Margin="0,0,14,0"/>
-                </Grid>
-            </Border>
+            <ComboBox Grid.Column="2" Style="{StaticResource FieldComboBox}" ItemsSource="{Binding DateRangeOptions}" SelectedItem="{Binding DateRangeText}" ToolTip="Filter history by date"/>
         </Grid>
 
         <!-- Filters -->
@@ -184,10 +173,12 @@
                     <TextBlock Text="CLEAR HISTORY" Style="{StaticResource ToolbarLinkText}" Foreground="{StaticResource ErrorBrush}"/>
                 </StackPanel>
             </Button>
+            <TextBlock Text="{Binding StatusMessage}" Style="{StaticResource MetaText}" VerticalAlignment="Center" Margin="16,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="320"/>
         </StackPanel>
 
         <Border Grid.Row="4" Style="{StaticResource Card}" Padding="0">
           <Grid>
+            <ProgressBar IsIndeterminate="True" Height="3" VerticalAlignment="Top" Panel.ZIndex="2" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             <shared:EmptyStateView IconData="{StaticResource IconClock}"
                                    Title="No download history yet"
                                    Subtitle="Completed and failed downloads will be recorded here."

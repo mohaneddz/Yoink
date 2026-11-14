@@ -14,6 +14,7 @@ public partial class HistoryRecord : ObservableObject
     [ObservableProperty] private string _title = string.Empty;
     [ObservableProperty] private string _channel = string.Empty;
     [ObservableProperty] private string _timestampText = string.Empty;
+    [ObservableProperty] private DateTimeOffset _timestamp;
     [ObservableProperty] private HistoryResult _result;
     [ObservableProperty] private string _output = string.Empty;
     [ObservableProperty] private string _filePath = string.Empty;
