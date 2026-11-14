@@ -171,10 +171,10 @@
         <Border Grid.Row="3" Style="{StaticResource Card}" Padding="0">
           <Grid>
             <shared:EmptyStateView IconData="{StaticResource IconInbox}"
-                                   Title="Your queue is empty"
-                                   Subtitle="Downloads you start from the Download page will appear here."
-                                   Visibility="{Binding Jobs.Count, Converter={StaticResource CountToVisibility}}"/>
-            <DataGrid Visibility="{Binding Jobs.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}"
+                                   Title="{Binding EmptyTitle}"
+                                   Subtitle="{Binding EmptyMessage}"
+                                   Visibility="{Binding VisibleJobCount, Converter={StaticResource CountToVisibility}}"/>
+            <DataGrid Visibility="{Binding VisibleJobCount, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}"
                       ItemsSource="{Binding FilteredJobs}" SelectedItem="{Binding SelectedJob}"
                       Style="{StaticResource FlatDataGrid}" RowStyle="{StaticResource QueueRowStyle}"
                       IsReadOnly="True"

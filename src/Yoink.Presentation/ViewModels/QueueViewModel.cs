@@ -73,6 +73,11 @@ public partial class QueueViewModel : ObservableObject
     public int DoneCount => CompletedCount + FailedCount;
     public int CompletedCount => Jobs.Where(IsVisible).Count(j => j.Status == QueueJobStatus.Completed);
     public int FailedCount => Jobs.Where(IsVisible).Count(j => j.Status is QueueJobStatus.Failed or QueueJobStatus.Cancelled);
+    public int VisibleJobCount => SelectedFilter == QueueFilter.Queued ? QueuedCount : DoneCount;
+    public string EmptyTitle => SelectedFilter == QueueFilter.Queued ? "No queued downloads" : "No finished downloads";
+    public string EmptyMessage => SelectedFilter == QueueFilter.Queued
+        ? "Start a download or resume a paused job to see it here."
+        : "Completed and failed downloads will appear here.";
 
     private static bool IsActive(QueueJob j) => j.Status is QueueJobStatus.DownloadingVideo or QueueJobStatus.DownloadingAudio
         or QueueJobStatus.DownloadingSubtitles or QueueJobStatus.Merging or QueueJobStatus.Converting
@@ -127,7 +132,13 @@ public partial class QueueViewModel : ObservableObject
         };
     }
 
-    partial void OnSelectedFilterChanged(QueueFilter value) => _filteredJobs.SafeRefresh();
+    partial void OnSelectedFilterChanged(QueueFilter value)
+    {
+        _filteredJobs.SafeRefresh();
+        OnPropertyChanged(nameof(VisibleJobCount));
+        OnPropertyChanged(nameof(EmptyTitle));
+        OnPropertyChanged(nameof(EmptyMessage));
+    }
 
     partial void OnMaxConcurrentChanged(int value)
     {
@@ -218,6 +229,7 @@ public partial class QueueViewModel : ObservableObject
         OnPropertyChanged(nameof(DoneCount));
         OnPropertyChanged(nameof(CompletedCount));
         OnPropertyChanged(nameof(FailedCount));
+        OnPropertyChanged(nameof(VisibleJobCount));
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(HasSelectedJobs));
         _filteredJobs.SafeRefresh();
