@@ -18,5 +18,5 @@ if errorlevel 1 (
 )
 
 echo [Yoink] Launching Yoink...
-start "" "src\Yoink.Presentation\bin\Debug\net8.0-windows\Yoink.exe"
+start "" "src\Yoink.Presentation\bin\Debug\net10.0-windows\Yoink.exe"
 exit /b 0

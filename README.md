@@ -67,7 +67,7 @@ Data (settings, the SQLite database, provisioned tools, and logs) is stored unde
 ## Requirements
 
 - **Windows 10/11 (x64)**
-- To build from source: **.NET 8 SDK**
+- To build and test from source: **.NET 10 SDK**
 
 The published, self-contained build bundles the .NET runtime, so end users do **not** need
 .NET installed. yt-dlp and FFmpeg are downloaded automatically on first run.
@@ -115,7 +115,7 @@ Produces a single self-contained `Yoink.exe` (no external dependencies):
 publish.bat
 ```
 
-Output: `src\Yoink.Presentation\bin\Release\net8.0-windows\win-x64\publish\Yoink.exe`
+Output: `src\Yoink.Presentation\bin\Release\net10.0-windows\win-x64\publish\Yoink.exe`
 
 The same profile can be invoked via the CLI:
 

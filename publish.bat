@@ -9,7 +9,7 @@ if errorlevel 1 goto :failed
 
 echo.
 echo Publish succeeded.
-echo Output: src\Yoink.Presentation\bin\Release\net8.0-windows\win-x64\publish\Yoink.exe
+echo Output: src\Yoink.Presentation\bin\Release\net10.0-windows\win-x64\publish\Yoink.exe
 exit /b 0
 
 :failed

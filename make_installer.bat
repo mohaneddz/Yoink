@@ -11,7 +11,7 @@ if not exist "dist" mkdir dist
 
 echo.
 echo [2/2] Building Windows Installer (YoinkSetup.msi)...
-wix build .\installer\Package.wxs -d SourceDir=".\src\Yoink.Presentation\bin\Release\net8.0-windows\win-x64\publish" -d AppIconPath=".\src\Yoink.Presentation\app.ico" -o ".\dist\YoinkSetup.msi"
+wix build .\installer\Package.wxs -d SourceDir=".\src\Yoink.Presentation\bin\Release\net10.0-windows\win-x64\publish" -d AppIconPath=".\src\Yoink.Presentation\app.ico" -o ".\dist\YoinkSetup.msi"
 if errorlevel 1 goto :failed
 
 echo.
