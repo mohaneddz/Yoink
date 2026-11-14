@@ -1,7 +1,7 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Package Name="Yoink"
            Manufacturer="Yoink"
-           Version="1.0.0.0"
+           Version="$(var.AppVersion)"
            UpgradeCode="4F82B9B3-3C71-4E7B-8A3F-2A9C91B86C45"
            Scope="perMachine">
 
@@ -40,7 +40,7 @@
 
       <Component Id="ProgramMenuFolderComponent" Guid="E6B4A5D1-21B3-4F8C-98A6-11C23A45B6D7">
         <RemoveFolder Id="CleanUpProgramMenuFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
-        <RegistryValue Root="HKCU" Key="Software\Yoink" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+        <RegistryValue Root="HKLM" Key="Software\Yoink" Name="installed" Type="integer" Value="1" KeyPath="yes" />
       </Component>
     </ComponentGroup>
 

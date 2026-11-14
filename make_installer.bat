@@ -9,9 +9,12 @@ if errorlevel 1 goto :failed
 
 if not exist "dist" mkdir dist
 
+for /f "delims=" %%v in ('dotnet msbuild ".\src\Yoink.Presentation\Yoink.Presentation.csproj" -getProperty:Version') do set "APP_VERSION=%%v"
+if not defined APP_VERSION goto :failed
+
 echo.
 echo [2/2] Building Windows Installer (YoinkSetup.msi)...
-wix build .\installer\Package.wxs -d SourceDir=".\src\Yoink.Presentation\bin\Release\net10.0-windows\win-x64\publish" -d AppIconPath=".\src\Yoink.Presentation\app.ico" -o ".\dist\YoinkSetup.msi"
+wix build .\installer\Package.wxs -d SourceDir=".\src\Yoink.Presentation\bin\Release\net10.0-windows\win-x64\publish" -d AppIconPath=".\src\Yoink.Presentation\app.ico" -d AppVersion="%APP_VERSION%" -o ".\dist\YoinkSetup.msi"
 if errorlevel 1 goto :failed
 
 echo.

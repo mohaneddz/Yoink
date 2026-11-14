@@ -45,6 +45,7 @@ Keep downloads organized, follow channels for new uploads, review past activity,
 - **Playlists** — expand and selectively download playlist entries.
 - **Channels** — follow channels and browse/download their uploads.
 - **Library** — browse everything you've downloaded, filtered by media type.
+- **Library organization** — search all saved media, edit tags, remove selected records without deleting files, and reconnect records when files move.
 - **History** — full record of past downloads with re-download and export.
 - **Settings & Network** — configure download folder, concurrency, speed limits, preferred containers/quality,
   filename templates, proxy, cookies (for age-restricted or private media), tool paths, appearance, and diagnostics.
@@ -60,6 +61,10 @@ In **Settings > Downloads**, adjust **Parallel fragments per download** (default
 Closing the window keeps Yoink running in the system tray by default, including active downloads. Double-click the tray icon to restore the window; right-click it to open Yoink, pause/resume downloads, or explicitly exit. Launching Yoink again restores the existing instance instead of creating another queue owner.
 
 **Settings > General** includes close/minimize-to-tray, start with Windows, start minimized, interrupted-download recovery, notifications, and sleep protection during downloads. Windows startup and interrupted-download recovery are opt-in; enable them and save settings. Manually paused downloads stay paused on startup. Sleep protection allows the display to turn off while downloads continue.
+
+Desktop notifications can be enabled separately for completed and failed downloads. Background channel checks can be paused globally; each saved channel retains its own check interval. Failed checks remain due for another attempt.
+
+History supports date, result, source, and format filters. Export opens a save dialog and exports the currently filtered records.
 
 Data (settings, the SQLite database, provisioned tools, and logs) is stored under
 `%LocalAppData%\Yoink`.
@@ -104,8 +109,10 @@ dotnet run --project src/Yoink.Presentation/Yoink.Presentation.csproj
 ## Tests
 
 ```bat
-dotnet test Yoink.slnx
+dotnet run --project tests/Yoink.Tests/Yoink.Tests.csproj
 ```
+
+The test project uses the xUnit v3 in-process runner; run its executable directly as above.
 
 ## Publishing a release build
 
