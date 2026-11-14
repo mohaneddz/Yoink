@@ -53,7 +53,7 @@ Keep downloads organized, follow channels for new uploads, review past activity,
 
 Fresh inspection results are reused when starting video/audio downloads, avoiding a second webpage lookup. If cached links fail, Yoink automatically fetches fresh links and retries. Prepared download links remain in memory for two minutes.
 
-In **Settings > Downloads**, adjust **Parallel fragments per download** (default: 8) or disable **Quick start using recent inspection**. SOCKS proxy downloads use at most four parallel fragments. These options improve preparation and segmented transfers; actual speed still depends on the source and connection.
+In **Settings > Downloads**, adjust **Parallel fragments per download** (default: 8), **Inspection cache** (default: 2 minutes), or disable **Quick start using recent inspection**. Setting the inspection cache to 0 always fetches media details again. Inspections of different URLs can run concurrently, while duplicate requests for the same URL share one lookup. SOCKS proxy downloads use at most four parallel fragments. These options improve preparation and segmented transfers; actual speed still depends on the source and connection.
 
 ### Background operation
 

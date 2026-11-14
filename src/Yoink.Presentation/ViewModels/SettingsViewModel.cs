@@ -50,6 +50,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _reuseRecentInspection;
     [ObservableProperty] private int _concurrentFragments = 8;
     public ObservableCollection<int> FragmentOptions { get; } = new() { 1, 2, 4, 8, 16 };
+    [ObservableProperty] private int _inspectionCacheMinutes = 2;
+    public ObservableCollection<int> InspectionCacheOptions { get; } = new() { 0, 1, 2, 5, 10 };
     [ObservableProperty] private string _preferredVideoContainer = "MP4";
     [ObservableProperty] private string _preferredAudioContainer = "M4A";
     [ObservableProperty] private string _preferredVideoQuality = "Best Quality";
@@ -65,7 +67,7 @@ public partial class SettingsViewModel : ObservableObject
     // Option lists
     public ObservableCollection<string> SimultaneousOptions { get; } = new() { "1", "2", "3", "4", "5", "6", "8" };
     public ObservableCollection<string> SpeedLimitOptions { get; } =
-        new() { "0 (Unlimited)", "512 KB/s", "1 MB/s", "2 MB/s", "5 MB/s", "10 MB/s" };
+        new() { "0 (Unlimited)", "512 KB/s", "1 MB/s", "2 MB/s", "5 MB/s", "10 MB/s", "20 MB/s", "50 MB/s" };
     public ObservableCollection<string> VideoContainerOptions { get; } = new() { "MP4", "MKV", "WEBM" };
     public ObservableCollection<string> AudioContainerOptions { get; } = new() { "M4A", "MP3", "OPUS", "FLAC", "WAV" };
     public ObservableCollection<string> VideoQualityOptions { get; } =
@@ -114,6 +116,7 @@ public partial class SettingsViewModel : ObservableObject
         DefaultDownloadFolder = s.DefaultDownloadFolder;
         SimultaneousDownloads = s.SimultaneousDownloads.ToString();
         DownloadSpeedLimit = KbpsToLabel(s.DownloadSpeedLimitKbps);
+        if (!SpeedLimitOptions.Contains(DownloadSpeedLimit)) SpeedLimitOptions.Add(DownloadSpeedLimit);
         DesktopNotifications = s.DesktopNotifications;
         SoundNotifications = s.SoundNotifications;
         CloseToTray = s.CloseToTray;
@@ -125,6 +128,7 @@ public partial class SettingsViewModel : ObservableObject
         ReuseRecentInspection = s.ReuseRecentInspection;
         HidePrivateVideos = s.HidePrivateVideos;
         ConcurrentFragments = Math.Clamp(s.ConcurrentFragments, 1, 16);
+        InspectionCacheMinutes = Math.Clamp(s.InspectionCacheMinutes, 0, 10);
         PreferredVideoContainer = s.PreferredVideoContainer.ToUpperInvariant();
         PreferredAudioContainer = s.PreferredAudioContainer.ToUpperInvariant();
         PreferredVideoQuality = s.PreferredVideoQuality == "best" ? "Best Quality" : s.PreferredVideoQuality;
@@ -164,6 +168,7 @@ public partial class SettingsViewModel : ObservableObject
         s.ReuseRecentInspection = ReuseRecentInspection;
         s.HidePrivateVideos = HidePrivateVideos;
         s.ConcurrentFragments = Math.Clamp(ConcurrentFragments, 1, 16);
+        s.InspectionCacheMinutes = Math.Clamp(InspectionCacheMinutes, 0, 10);
         s.PreferredVideoContainer = PreferredVideoContainer.ToLowerInvariant();
         s.PreferredAudioContainer = PreferredAudioContainer.ToLowerInvariant();
         s.PreferredVideoQuality = PreferredVideoQuality == "Best Quality" ? "best" : PreferredVideoQuality;
@@ -396,6 +401,8 @@ public partial class SettingsViewModel : ObservableObject
         2048 => "2 MB/s",
         5120 => "5 MB/s",
         10240 => "10 MB/s",
+        20480 => "20 MB/s",
+        51200 => "50 MB/s",
         _ => $"{kbps} KB/s"
     };
 
@@ -406,7 +413,10 @@ public partial class SettingsViewModel : ObservableObject
         "2 MB/s" => 2048,
         "5 MB/s" => 5120,
         "10 MB/s" => 10240,
-        _ => 0
+        "20 MB/s" => 20480,
+        "50 MB/s" => 51200,
+        _ => label.EndsWith(" KB/s", StringComparison.Ordinal)
+            && int.TryParse(label[..^5], out var kbps) && kbps > 0 ? kbps : 0
     };
 
     private static string LangToLabel(string lang) => lang switch

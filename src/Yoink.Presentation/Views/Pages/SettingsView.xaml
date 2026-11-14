@@ -248,6 +248,9 @@
                             <TextBlock Text="Parallel fragments per download" Style="{StaticResource SettingTitle}" Margin="0,18,0,0"/>
                             <TextBlock Text="Download HLS/DASH segments in parallel. SOCKS proxy downloads use at most 4." Style="{StaticResource SettingHint}" TextWrapping="Wrap" Margin="0,0,0,6"/>
                             <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding FragmentOptions}" SelectedItem="{Binding ConcurrentFragments}" Margin="0,0,0,18"/>
+                            <TextBlock Text="Inspection cache (minutes)" Style="{StaticResource SettingTitle}"/>
+                            <TextBlock Text="Reuse recent media details when reopening a link. Choose 0 to always inspect again." Style="{StaticResource SettingHint}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                            <ComboBox Style="{StaticResource FieldComboBox}" ItemsSource="{Binding InspectionCacheOptions}" SelectedItem="{Binding InspectionCacheMinutes}" Margin="0,0,0,18"/>
                             <Grid>
                                 <StackPanel Margin="0,0,64,0">
                                     <TextBlock Text="Quick start using recent inspection" Style="{StaticResource SettingTitle}"/>

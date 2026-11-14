@@ -13,6 +13,7 @@ public sealed class AppSettings
     public bool SoundNotifications { get; set; }
     public int ConcurrentFragments { get; set; } = 8;
     public bool ReuseRecentInspection { get; set; } = true;
+    public int InspectionCacheMinutes { get; set; } = 2;
     public bool CloseToTray { get; set; } = true;
     public bool MinimizeToTray { get; set; }
     public bool StartWithWindows { get; set; }

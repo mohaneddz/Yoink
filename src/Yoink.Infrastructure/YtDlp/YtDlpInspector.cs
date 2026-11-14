@@ -70,7 +70,8 @@ public sealed partial class YtDlpInspector : IMediaInspector
     {
         var settings = _settings.Current;
         var key = (url.Trim(), settings.Proxy, settings.CookiesFile);
-        return _cache.GetAsync(key, token => InspectCoreAsync(url, token), forceRefresh, ct);
+        return _cache.GetAsync(key, token => InspectCoreAsync(url, token), forceRefresh, ct,
+            Math.Clamp(settings.InspectionCacheMinutes, 0, 10));
     }
 
     private async Task<Result<MediaMetadata>> InspectCoreAsync(string url, CancellationToken ct)
