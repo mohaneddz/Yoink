@@ -10,6 +10,8 @@ public sealed class AppSettings
     public int SimultaneousDownloads { get; set; } = 3;
     public int DownloadSpeedLimitKbps { get; set; }
     public bool DesktopNotifications { get; set; } = true;
+    public bool NotifyOnCompletion { get; set; } = true;
+    public bool NotifyOnFailure { get; set; } = true;
     public bool SoundNotifications { get; set; }
     public int ConcurrentFragments { get; set; } = 8;
     public bool ReuseRecentInspection { get; set; } = true;

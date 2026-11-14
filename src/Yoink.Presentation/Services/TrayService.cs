@@ -73,18 +73,20 @@ public sealed class TrayService : IDisposable
             else failed.Add(job);
         }
         if (completed.Count > 0 && _settings.Current.SoundNotifications) SystemSounds.Asterisk.Play();
-        if (_settings.Current.DesktopNotifications && (completed.Count > 0 || failed.Count > 0))
+        var visibleCompleted = _settings.Current.NotifyOnCompletion ? completed : [];
+        var visibleFailed = _settings.Current.NotifyOnFailure ? failed : [];
+        if (_settings.Current.DesktopNotifications && (visibleCompleted.Count > 0 || visibleFailed.Count > 0))
         {
             // Windows only displays one tray balloon at a time. Summarize a batch instead of
             // replacing each notification with the next job in the same queue update.
-            var title = failed.Count > 0
-                ? failed.Count == 1 ? "Download failed" : $"{failed.Count} downloads failed"
-                : completed.Count == 1 ? "Download completed" : $"{completed.Count} downloads completed";
-            var detail = failed.Count == 1 ? ShortTitle(failed[0].Title)
-                : completed.Count == 1 && failed.Count == 0 ? ShortTitle(completed[0].Title)
-                : $"{completed.Count} completed, {failed.Count} failed. Open Yoink for details.";
+            var title = visibleFailed.Count > 0
+                ? visibleFailed.Count == 1 ? "Download failed" : $"{visibleFailed.Count} downloads failed"
+                : visibleCompleted.Count == 1 ? "Download completed" : $"{visibleCompleted.Count} downloads completed";
+            var detail = visibleFailed.Count == 1 && visibleCompleted.Count == 0 ? ShortTitle(visibleFailed[0].Title)
+                : visibleCompleted.Count == 1 && visibleFailed.Count == 0 ? ShortTitle(visibleCompleted[0].Title)
+                : $"{visibleCompleted.Count} completed, {visibleFailed.Count} failed. Open Yoink for details.";
             _icon.ShowBalloonTip(5000, title, detail,
-                failed.Count > 0 ? Forms.ToolTipIcon.Warning : Forms.ToolTipIcon.Info);
+                visibleFailed.Count > 0 ? Forms.ToolTipIcon.Warning : Forms.ToolTipIcon.Info);
         }
         UpdateBackgroundState();
     }

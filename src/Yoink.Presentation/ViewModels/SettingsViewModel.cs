@@ -40,6 +40,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _simultaneousDownloads = "3";
     [ObservableProperty] private string _downloadSpeedLimit = "0 (Unlimited)";
     [ObservableProperty] private bool _desktopNotifications = true;
+    [ObservableProperty] private bool _notifyOnCompletion = true;
+    [ObservableProperty] private bool _notifyOnFailure = true;
     [ObservableProperty] private bool _soundNotifications;
     [ObservableProperty] private bool _closeToTray;
     [ObservableProperty] private bool _minimizeToTray;
@@ -118,6 +120,8 @@ public partial class SettingsViewModel : ObservableObject
         DownloadSpeedLimit = KbpsToLabel(s.DownloadSpeedLimitKbps);
         if (!SpeedLimitOptions.Contains(DownloadSpeedLimit)) SpeedLimitOptions.Add(DownloadSpeedLimit);
         DesktopNotifications = s.DesktopNotifications;
+        NotifyOnCompletion = s.NotifyOnCompletion;
+        NotifyOnFailure = s.NotifyOnFailure;
         SoundNotifications = s.SoundNotifications;
         CloseToTray = s.CloseToTray;
         MinimizeToTray = s.MinimizeToTray;
@@ -158,6 +162,8 @@ public partial class SettingsViewModel : ObservableObject
         s.SimultaneousDownloads = int.TryParse(SimultaneousDownloads, out var n) ? n : 3;
         s.DownloadSpeedLimitKbps = LabelToKbps(DownloadSpeedLimit);
         s.DesktopNotifications = DesktopNotifications;
+        s.NotifyOnCompletion = NotifyOnCompletion;
+        s.NotifyOnFailure = NotifyOnFailure;
         s.SoundNotifications = SoundNotifications;
         s.CloseToTray = CloseToTray;
         s.MinimizeToTray = MinimizeToTray;
